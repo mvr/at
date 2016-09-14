@@ -160,7 +160,7 @@ ensureAllDivide s = do
       smallestR = s + blockR
       smallestC = s + blockC
 
-  when (s /= M.nrows m && s /= M.ncols m && blockR /= 1 && blockC /= 1) $ do
+  when (s /= M.nrows m && s /= M.ncols m && (blockR /= 1 || blockC /= 1)) $ do
     modify $ addRowMultiple s 1 smallestR
     t <- get
     let q = M.unsafeGet s smallestC (middle t) `quot` mss
