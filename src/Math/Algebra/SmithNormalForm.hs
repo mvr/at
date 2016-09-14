@@ -69,9 +69,9 @@ lowerRightBlock s m = M.submatrix s r s c m
         c = M.ncols m
 
 findSmallest :: (Num a, Ord a) => Matrix a -> (a, (Int, Int))
-findSmallest m = foldWithIndex f (1000000, (0, 0)) m
+findSmallest m = foldWithIndex f (M.unsafeGet 1 1 m, (1, 1)) m
   where f newIndices new (smallest, smallestIndices) =
-          if new /= 0 && abs new < abs smallest then (new, newIndices)
+          if (smallest == 0) || (new /= 0 && abs new < abs smallest) then (new, newIndices)
           else (smallest, smallestIndices)
 
 findSmallestRemainder :: Integer -> Matrix Integer -> (Integer, (Int, Int))
@@ -159,6 +159,7 @@ ensureAllDivide s = do
   let (_, (blockR, blockC)) = findSmallestRemainder mss $ lowerRightBlock (s + 1) $ middle t
       smallestR = s + blockR
       smallestC = s + blockC
+
   when (s /= M.nrows m && s /= M.ncols m && blockR /= 1 && blockC /= 1) $ do
     modify $ addRowMultiple s 1 smallestR
     t <- get
