@@ -156,11 +156,11 @@ ensureAllDivide s = do
   t <- get
   let m = middle t
       mss = M.unsafeGet s s m
-  let (_, (blockR, blockC)) = findSmallestRemainder mss $ lowerRightBlock (s + 1) $ middle t
+  let (remainder, (blockR, blockC)) = findSmallestRemainder mss $ lowerRightBlock (s + 1) $ middle t
       smallestR = s + blockR
       smallestC = s + blockC
 
-  when (s /= M.nrows m && s /= M.ncols m && (blockR /= 1 || blockC /= 1)) $ do
+  when (s /= M.nrows m && s /= M.ncols m && remainder /= mss) $ do
     modify $ addRowMultiple s 1 smallestR
     t <- get
     let q = M.unsafeGet s smallestC (middle t) `quot` mss
