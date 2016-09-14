@@ -13,6 +13,8 @@ import qualified Data.Matrix as M
 
 
 -- This entire file could benefit from being more lensy
+-- And more recursive, although if we are looking for speed
+-- it should just be rewritten in C.
 
 --------------------------------------------------------------------------------
 -- Utilities missing from Data.Matrix
@@ -123,6 +125,9 @@ moveLeastEdgingToStart s = do
   when (smallestC /= s) $ modify $ swapCols smallestC s
 
 -- TODO: short circut
+matrixIsNull :: Matrix Integer -> Bool
+matrixIsNull m = getAll $ foldWithIndex (\_ i a -> a <> All (i == 0)) (All True) m
+
 edgingIsNull :: Int -> Matrix Integer -> Bool
 edgingIsNull s m = getAll $ foldWithIndices (edgingIndices s m) (\_ i a -> a <> All (i == 0)) (All True) m
 
@@ -167,6 +172,8 @@ ensureAllDivide s = do
 smithNormalForm :: Matrix Integer -> Triple
 smithNormalForm m = flip execState (matrixToTriple m) $ do
     forM_ [1 .. min (M.ncols m) (M.nrows m)] $ \s -> do
-      moveLeastToStart s
-      modifyEdging s
-      nullifyEdging s
+      t <- get
+      when (not $ matrixIsNull $ lowerRightBlock s $ middle t) $ do
+        moveLeastToStart s
+        modifyEdging s
+        nullifyEdging s
