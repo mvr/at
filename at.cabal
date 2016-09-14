@@ -32,6 +32,7 @@ test-suite at-test
   build-depends:       base
                      , at
                      , matrix
+                     , vector
                      , hspec
                      , QuickCheck
   default-language:    Haskell2010
