@@ -16,11 +16,22 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  -- exposed-modules:     
+  exposed-modules:     Math.Algebra.SmithNormalForm
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.10,
                        matrix,
                        mtl
   hs-source-dirs:      src
+  default-language:    Haskell2010
+
+test-suite at-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , at
+                     , matrix
+                     , hspec
+                     , QuickCheck
   default-language:    Haskell2010
