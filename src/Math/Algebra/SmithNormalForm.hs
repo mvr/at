@@ -35,29 +35,30 @@ foldWithIndex f s m = foldWithIndices [ (i, j) | j <- [1 .. M.ncols m],  i <- [1
 -- Triples
 -- These keep track of a (L, M, R) decomposition of a matrix
 
--- Could be generalised to any PID
-data Triple = Triple { left   :: Matrix Integer,
+data Triple = Triple { leftInverse :: Matrix Integer,
+                       left   :: Matrix Integer,
                        middle :: Matrix Integer,
-                       right  :: Matrix Integer }
+                       right  :: Matrix Integer,
+                       rightInverse :: Matrix Integer}
   deriving (Show, Eq)
 
 matrixToTriple :: Matrix Integer -> Triple
-matrixToTriple m = Triple (M.identity $ M.nrows m) m (M.identity $ M.ncols m)
+matrixToTriple m = Triple (M.identity $ M.nrows m) (M.identity $ M.nrows m) m (M.identity $ M.ncols m) (M.identity $ M.ncols m)
 
 swapRows :: Int -> Int -> Triple -> Triple
-swapRows i j (Triple l m r) = Triple (M.switchCols i j l) (M.switchRows i j m) r
+swapRows i j (Triple li l m r ri) = Triple (M.switchRows i j li) (M.switchCols i j l) (M.switchRows i j m) r ri
 
 swapCols :: Int -> Int -> Triple -> Triple
-swapCols i j (Triple l m r) = Triple l (M.switchCols i j m) (M.switchRows i j r)
+swapCols i j (Triple li l m r ri) = Triple li l (M.switchCols i j m) (M.switchRows i j r) (M.switchCols i j ri)
 
 addRowMultiple :: Int -> Integer -> Int -> Triple -> Triple
-addRowMultiple i x j (Triple l m r) = Triple (combineCols j (-x) i l) (M.combineRows i x j m) r
+addRowMultiple i x j (Triple li l m r ri) = Triple (M.combineRows i x j li) (combineCols j (-x) i l) (M.combineRows i x j m) r ri
 
 addColMultiple :: Int -> Integer -> Int -> Triple -> Triple
-addColMultiple i x j (Triple l m r) = Triple l (combineCols i x j m) (M.combineRows j (-x) i r)
+addColMultiple i x j (Triple li l m r ri) = Triple li l (combineCols i x j m) (M.combineRows j (-x) i r) (combineCols i x j ri)
 
 negateRow :: Int -> Triple -> Triple
-negateRow i (Triple l m r) = Triple (M.mapCol (const negate) i l) (M.mapRow (const negate) i m) r
+negateRow i (Triple li l m r ri) = Triple (M.mapRow (const negate) i li) (M.mapCol (const negate) i l) (M.mapRow (const negate) i m) r ri
 
 --------------------------------------------------------------------------------
 -- Smith Normal Form
@@ -99,7 +100,6 @@ moveLeastToStart s = do
   when (smallestR /= s) $ modify $ swapRows smallestR s
   when (smallestC /= s) $ modify $ swapCols smallestC s
   when (smallest < 0)   $ modify $ negateRow s
-
 
 modifyEdging :: Int -> State Triple ()
 modifyEdging s = do

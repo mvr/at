@@ -22,14 +22,22 @@ isDiagonal m = m == (M.extendTo 0 r c $ M.diagonal 0 (M.getDiag m))
 spec = do
   describe "Smith Normal Form" $ do
     it "multiplies to the original matrix" $ property $
-      \m -> let (Triple l d r) = smithNormalForm m in
+      \m -> let (Triple _ l d r _) = smithNormalForm m in
             m == l*d*r
 
     it "results in a diagonal matrix" $ property $
-      \m -> let (Triple _ d _) = smithNormalForm m in
+      \m -> let (Triple _ _ d _ _) = smithNormalForm m in
             isDiagonal d
 
     it "has entries in order" $ property $
-      \m -> let (Triple _ d _) = smithNormalForm m
+      \m -> let (Triple _ _ d _ _) = smithNormalForm m
                 l = dropWhileEnd (==0) $ V.toList (M.getDiag d) in
             sort l == l
+
+    it "computes L inverse" $ property $
+      \m -> let (Triple li l _ _ _) = smithNormalForm m in
+            all (== 1) $ V.toList (M.getDiag (li * l))
+
+    it "computes R inverse" $ property $
+      \m -> let (Triple _ _ _ r ri) = smithNormalForm m in
+            all (== 1) $ V.toList (M.getDiag (r * ri))
