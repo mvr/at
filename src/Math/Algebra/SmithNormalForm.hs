@@ -26,7 +26,7 @@ scaleCol :: Num a => a -> Int -> Matrix a -> Matrix a
 scaleCol = M.mapCol . const . (*)
 
 foldWithIndices :: [(Int, Int)] -> ((Int, Int) -> a -> b -> b) -> b -> Matrix a -> b
-foldWithIndices is f s m = foldl' (\b (i, j) -> f (i, j) (M.unsafeGet i j m) b) s is
+foldWithIndices is f s m = foldl' (\b (i, j) -> f (i, j) (M.getElem i j m) b) s is
 
 foldWithIndex :: ((Int, Int) -> a -> b -> b) -> b -> Matrix a -> b
 foldWithIndex f s m = foldWithIndices [ (i, j) | j <- [1 .. M.ncols m],  i <- [1 .. M.nrows m] ] f s m
@@ -70,7 +70,7 @@ lowerRightBlock s m = M.submatrix s r s c m
         c = M.ncols m
 
 findSmallest :: (Num a, Ord a) => Matrix a -> (a, (Int, Int))
-findSmallest m = foldWithIndex f (M.unsafeGet 1 1 m, (1, 1)) m
+findSmallest m = foldWithIndex f (M.getElem 1 1 m, (1, 1)) m
   where f newIndices new (smallest, smallestIndices) =
           if (smallest == 0) || (new /= 0 && abs new < abs smallest) then (new, newIndices)
           else (smallest, smallestIndices)
@@ -86,7 +86,7 @@ edgingIndices :: Int -> Matrix a -> [(Int, Int)]
 edgingIndices s m = [ (i, s) | i <- [s+1 .. M.nrows m]] ++ [ (s, j) | j <- [s+1 .. M.ncols m]]
 
 findSmallestInEdging :: (Num a, Ord a) => Int -> Matrix a -> (a, (Int, Int))
-findSmallestInEdging s m = foldWithIndices (edgingIndices s m) f (M.unsafeGet s s m, (s, s)) m
+findSmallestInEdging s m = foldWithIndices (edgingIndices s m) f (M.getElem s s m, (s, s)) m
   where f newIndices new (smallest, smallestIndices) =
           if new /= 0 && abs new < abs smallest then (new, newIndices)
           else (smallest, smallestIndices)
@@ -105,22 +105,23 @@ modifyEdging :: Int -> State Triple ()
 modifyEdging s = do
   t <- get
   let m = middle t
-      mss = M.unsafeGet s s m
+      mss = M.getElem s s m
+
   forM_ [s+1 .. M.nrows m] $ \i ->
-    when (M.unsafeGet i s m /= 0) $ modify $
-      let q = M.unsafeGet i s m `quot` mss in
+    when (M.getElem i s m /= 0) $ modify $
+      let q = M.getElem i s m `quot` mss in
       addRowMultiple i (-q) s
 
   forM_ [s+1 .. M.ncols m] $ \j ->
-    when (M.unsafeGet s j m /= 0) $ modify $
-      let q = M.unsafeGet s j m `quot` mss in
+    when (M.getElem s j m /= 0) $ modify $
+      let q = M.getElem s j m `quot` mss in
       addColMultiple j (-q) s
 
 
 moveLeastEdgingToStart :: Int -> State Triple ()
 moveLeastEdgingToStart s = do
   t <- get
-  let (_, (smallestR, smallestC)) = findSmallestInEdging s $ middle t
+  let (smallest, (smallestR, smallestC)) = findSmallestInEdging s $ middle t
   when (smallestR /= s) $ modify $ swapRows smallestR s
   when (smallestC /= s) $ modify $ swapCols smallestC s
 
@@ -146,7 +147,7 @@ nullifyEdging s = do
 
   t <- get
   let m = middle t
-      mss = M.unsafeGet s s m
+      mss = M.getElem s s m
   when (mss < 0) $ modify $ negateRow s
 
   ensureAllDivide s
@@ -155,7 +156,7 @@ ensureAllDivide :: Int -> State Triple ()
 ensureAllDivide s = do
   t <- get
   let m = middle t
-      mss = M.unsafeGet s s m
+      mss = M.getElem s s m
   let (remainder, (blockR, blockC)) = findSmallestRemainder mss $ lowerRightBlock (s + 1) $ middle t
       smallestR = s + blockR
       smallestC = s + blockC
@@ -163,12 +164,11 @@ ensureAllDivide s = do
   when (s /= M.nrows m && s /= M.ncols m && remainder /= mss) $ do
     modify $ addRowMultiple s 1 smallestR
     t <- get
-    let q = M.unsafeGet s smallestC (middle t) `quot` mss
+    let q = M.getElem s smallestC (middle t) `quot` mss
     modify $ addColMultiple smallestC (-q) s
     modify $ swapCols s smallestC
 
     nullifyEdging s
-
 
 smithNormalForm :: Matrix Integer -> Triple
 smithNormalForm m = flip execState (matrixToTriple m) $ do

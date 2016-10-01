@@ -18,7 +18,6 @@ isDiagonal m = m == (M.extendTo 0 r c $ M.diagonal 0 (M.getDiag m))
   where r = M.nrows m
         c = M.ncols m
 
-
 spec = do
   describe "Smith Normal Form" $ do
     it "multiplies to the original matrix" $ property $
@@ -41,3 +40,7 @@ spec = do
     it "computes R inverse" $ property $
       \m -> let (Triple _ _ _ r ri) = smithNormalForm m in
             all (== 1) $ V.toList (M.getDiag (r * ri))
+
+    it "works for bad case 1" $
+      let m = M.fromList 2 3 [1,0,0,0,0,1] in
+      middle (smithNormalForm m) `shouldBe` M.fromList 2 3 [1,0,0,0,1,0]
