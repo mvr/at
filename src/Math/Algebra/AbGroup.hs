@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Math.Algebra.FGAbelianGroup where
+module Math.Algebra.AbGroup where
 
 import Data.List (intercalate, group, sort)
 import Data.Matrix as M
@@ -46,7 +46,7 @@ fromInvariantFactors rank factors =
 
 --------------------------------------------------------------------------------
 
-data FGAbelianGroup = FGAbelianGroup
+data AbGroup = AbGroup
   {
     presentation :: Matrix Integer,
     reduced      :: Matrix Integer,
@@ -55,25 +55,25 @@ data FGAbelianGroup = FGAbelianGroup
     fromReduced  :: Matrix Integer
   }
 
-instance Eq FGAbelianGroup where
+instance Eq AbGroup where
   a == b = reduced a == reduced b
 
-isoClass :: FGAbelianGroup -> IsoClass
-isoClass (FGAbelianGroup _ d _ _) = fromInvariantFactors (fromIntegral r) diag
+isoClass :: AbGroup -> IsoClass
+isoClass (AbGroup _ d _ _) = fromInvariantFactors (fromIntegral r) diag
   where diag = filter (/= 0) $ V.toList $ getDiag d
         r    = M.nrows d - length diag
 
-instance Show FGAbelianGroup where
+instance Show AbGroup where
   show = show . isoClass
 
 -- Direct sum
-instance Monoid FGAbelianGroup where
+instance Monoid AbGroup where
   -- TODO
 
-zeroGroup :: FGAbelianGroup
-zeroGroup = FGAbelianGroup (M.fromList 1 1 [1]) (M.fromList 1 1 [1]) (M.fromList 1 1 [1]) (M.fromList 1 1 [1])
+zeroGroup :: AbGroup
+zeroGroup = AbGroup (M.fromList 1 1 [1]) (M.fromList 1 1 [1]) (M.fromList 1 1 [1]) (M.fromList 1 1 [1])
 
--- Remove useless generators
+-- Remove useless generators:
 -- Delete rows and cols with a 1 on the diagonal
 stripOnes :: (Matrix Integer, Matrix Integer, Matrix Integer)
           -> (Matrix Integer, Matrix Integer, Matrix Integer)
@@ -89,7 +89,7 @@ stripOnes (li, l, d) = (li,
                                (False, True) -> (countOnes + 1, countOnes)
                                (False, False) -> (countOnes + 1, countOnes + 1)
 
--- Remove useless relations
+-- Remove useless relations:
 -- Delete cols that are all 0
 -- TODO: this may fail on d with 0 cols
 stripZeroes :: (Matrix Integer, Matrix Integer, Matrix Integer)
@@ -106,8 +106,8 @@ reducePresentation m = let (Triple li l d _ _) = smithNormalForm m
                            (li', l', d') = stripOnes (li, l, d)
                        in stripZeroes (li', l', d')
 
-fromPresentation :: Matrix Integer -> FGAbelianGroup
-fromPresentation m = FGAbelianGroup m d li l
+fromPresentation :: Matrix Integer -> AbGroup
+fromPresentation m = AbGroup m d li l
   where (li, l, d) = reducePresentation m
 
 --------------------------------------------------------------------------------
@@ -133,30 +133,56 @@ matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols bi
 --------------------------------------------------------------------------------
 
 data Morphism = Morphism {
-  domain :: FGAbelianGroup,
-  codomain :: FGAbelianGroup,
+  domain :: AbGroup,
+  codomain :: AbGroup,
   fullMorphism :: Matrix Integer,
   reducedMorphism :: Matrix Integer
 }
 
-morphismFromFullMatrix :: FGAbelianGroup -> FGAbelianGroup -> Matrix Integer -> Morphism
+morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Morphism
 morphismFromFullMatrix a b f = Morphism a b f (toReduced b * f * fromReduced a)
 
-morphismFromReducedMatrix :: FGAbelianGroup -> FGAbelianGroup -> Matrix Integer -> Morphism
+morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Morphism
 morphismFromReducedMatrix a b f = Morphism a b (fromReduced b * f * toReduced a ) f
 
-identityMorphism :: FGAbelianGroup -> Morphism
+identityMorphism :: AbGroup -> Morphism
 identityMorphism a = Morphism a a (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
 
-zeroMorphism :: FGAbelianGroup -> FGAbelianGroup -> Morphism
+zeroMorphism :: AbGroup -> AbGroup -> Morphism
 zeroMorphism a b = morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
 
---------------------------------------------------------------------------------
+composeMorphisms :: Morphism -> Morphism -> Morphism
+composeMorphisms (Morphism _ c f' r') (Morphism d _ f r)
+  = Morphism d c (f' * f) (r' * r)
 
-kernel :: Morphism -> FGAbelianGroup
+--------------------------------------------------------------------------------
+-- Following some ideas in
+-- "A Coq Formalization of Finitely Presented Modules"
+--  by Cyril Cohen and Anders Mörtberg
+-- International Conference on Interactive Theorem Proving
+-- Springer International Publishing, 2014
+
+-- TODO: Check performance vs. using reduced matrices.
+kernel :: Morphism -> AbGroup
 kernel f = fromPresentation ker
   where ker   = matrixKernelModulo kappa            (presentation (domain f))
         kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
 
-cokernel :: Morphism -> FGAbelianGroup
+kernelMorphism :: Morphism -> Morphism
+kernelMorphism f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
+  where ker   = matrixKernelModulo kappa            (presentation (domain f))
+        kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
+
+cokernel :: Morphism -> AbGroup
 cokernel f = fromPresentation (fullMorphism f <|> presentation (codomain f))
+
+-- TODO: just supply reduced matrix directly
+cokernelMorphism :: Morphism -> Morphism
+cokernelMorphism f = morphismFromFullMatrix (codomain f) (cokernel f)
+                       (M.identity $ M.nrows $ presentation $ codomain f)
+
+image :: Morphism -> AbGroup
+image = kernel . cokernelMorphism
+
+imageMorphism :: Morphism -> Morphism
+imageMorphism = kernelMorphism . cokernelMorphism

@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Math.Algebra.SmithNormalForm,
-                       Math.Algebra.FGAbelianGroup
+                       Math.Algebra.AbGroup
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.10,

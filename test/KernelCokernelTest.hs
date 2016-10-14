@@ -9,7 +9,7 @@ import Data.Matrix (Matrix)
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
 
-import Math.Algebra.FGAbelianGroup
+import Math.Algebra.AbGroup
 
 import ArbitraryMatrix()
 
@@ -30,3 +30,12 @@ spec = do
       \(m1, m2) -> let a = fromPresentation m1
                        b = fromPresentation m2 in
                    cokernel (zeroMorphism a b) == b
+
+  describe "image" $ do
+    it "of identity is itself" $ property $
+      \m -> image (identityMorphism (fromPresentation m)) == fromPresentation m
+
+    it "of zero map is zero" $ property $
+      \(m1, m2) -> let a = fromPresentation m1
+                       b = fromPresentation m2 in
+                   image (zeroMorphism a b) == zeroGroup
