@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE PatternSynonyms #-}
 module Math.Algebra.AbGroup.Effective where
 
@@ -11,30 +12,41 @@ import Math.Algebra.AbGroup
 
 -- A f.g. abelian group, presented as the colimit of an infinite
 -- sequence of f.g. abelian groups.
--- TODO: Consider lists instead, as memoization
+-- TODO: Consider intmap memo instead
 data Effective = Effective {
   groups    :: Integer -> AbGroup,
   morphisms :: Integer -> Integer -> Morphism,
   monocal   :: Maybe (Integer -> (Integer, Integer)),
-  epical    :: Maybe (Integer -> (Integer, Integer)),
-  isocal    :: Maybe (Integer -> (Integer, Integer))
+  epical    :: Maybe (Integer -> (Integer, Integer))
 }
 
-pattern Monocal gs ms mono <- Effective gs ms (Just mono) _ _ where
-  Monocal gs ms mono = Effective gs ms (Just mono) Nothing Nothing
+pattern Monocal gs ms mono <- Effective gs ms (Just mono) _ where
+  Monocal gs ms mono = Effective gs ms (Just mono) Nothing
 
-pattern Epical gs ms epi <- Effective gs ms _ (Just epi) _ where
-  Epical gs ms epi = Effective gs ms Nothing (Just epi) Nothing
+pattern Epical gs ms epi <- Effective gs ms _ (Just epi) where
+  Epical gs ms epi = Effective gs ms Nothing (Just epi)
 
-pattern Isocal gs ms iso <- Effective gs ms _ _ (Just iso) where
-  Isocal gs ms iso = Effective gs ms (Just iso) (Just iso) (Just iso)
+
+pattern Isocal gs ms iso <- ((\i@(Effective gs ms mono epi) -> (gs, ms, isocal i)) -> (gs, ms, Just iso)) where
+  Isocal gs ms iso = Effective gs ms (Just iso) (Just iso)
+
+isocalFunc :: (Integer -> (Integer, Integer))
+           -> (Integer -> (Integer, Integer))
+           -> (Integer -> (Integer, Integer))
+isocalFunc mono epi i = let j = fst $ epi i in mono j
+
+isocal :: Effective -> Maybe (Integer -> (Integer, Integer))
+isocal (Effective gs ms mmono mepi) = do
+  mono <- mmono
+  epi  <- mepi
+  return (isocalFunc mono epi)
 
 instance Show Effective where
-  show (Isocal _ ms isocal) = show $ image $ ms i j
-   where (i, j) = isocal 1
+  show (Isocal _ ms iso) = show $ image $ ms i j
+    where (i, j) = iso 1
   show (Epical _ _ _)  = "<An epical group>"
   show (Monocal _ _ _) = "<A monocal group>"
-  show _               = "<An unspecified group>"
+  show _               = "<A totally unknown group>"
 
 autocomposeMorphisms :: (Integer -> Morphism) -> (Integer -> Integer -> Morphism)
 autocomposeMorphisms ms i j
@@ -42,27 +54,9 @@ autocomposeMorphisms ms i j
   | j == i + 1 = ms i
   | otherwise  = autocomposeMorphisms ms (i+1) j `composeMorphisms` ms i
 
--- Smart constructor for Effective that fills in gaps as necessary.
-effectiveGroup
-  :: (Integer -> AbGroup)
-     -> (Integer -> Integer -> Morphism)
-     -> Maybe (Integer -> (Integer, Integer))
-     -> Maybe (Integer -> (Integer, Integer))
-     -> Maybe (Integer -> (Integer, Integer))
-     -> Effective
-effectiveGroup gs ms Nothing Nothing (Just isocal)
-  = Effective gs ms (Just isocal) (Just isocal) (Just isocal)
-effectiveGroup gs ms (Just monocal) (Just epical) Nothing
-  = Effective gs ms (Just monocal) (Just epical) (Just isocal)
-    where isocal i = let j = fst $ epical i in
-                     monocal j
-effectiveGroup gs ms mono epi iso
-  = Effective gs ms mono epi iso
-
 constantEffectiveGroup :: AbGroup -> Effective
 constantEffectiveGroup g
-  = Effective (const g) (const $ const $ identityMorphism g)
-              (Just idIndices) (Just idIndices) (Just idIndices)
+  = Isocal (const g) (const $ const $ identityMorphism g) idIndices
   where idIndices i = (i, i)
 
 zeroEffectiveGroup :: Effective
@@ -85,7 +79,7 @@ composeEffectiveMorphisms (EffectiveMorphism _ c f') (EffectiveMorphism d _ f)
 --------------------------------------------------------------------------------
 -- The Five Lemma Algorithm
 
-fiveLemma
+fiveLemmaEpical
   :: Effective
      -> Effective
      -> Effective
@@ -96,4 +90,17 @@ fiveLemma
      -> EffectiveMorphism
      -> EffectiveMorphism
      -> Effective
-fiveLemma j k l m n f g h = undefined
+fiveLemmaEpical j k l m n f g h i = undefined
+
+-- fiveLemma
+--   :: Effective
+--      -> Effective
+--      -> Effective
+--      -> Effective
+--      -> Effective
+--      -> EffectiveMorphism
+--      -> EffectiveMorphism
+--      -> EffectiveMorphism
+--      -> EffectiveMorphism
+--      -> Effective
+-- fiveLemma j k l m n f g h i = undefined
