@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE RecordWildCards #-}
 module Math.Algebra.AbGroup where
 
@@ -5,6 +6,8 @@ import Data.Matrix as M
 import qualified Data.Vector as V
 import Math.Algebra.SmithNormalForm
 import Math.Algebra.AbGroup.IsoClass
+import Math.ValueCategory
+import Math.ValueCategory.Abelian
 
 data AbGroup = AbGroup
   {
@@ -29,9 +32,6 @@ instance Show AbGroup where
 -- Direct sum
 instance Monoid AbGroup where
   -- TODO
-
-zeroGroup :: AbGroup
-zeroGroup = AbGroup (M.fromList 1 1 [1]) (M.fromList 1 1 [1]) (M.fromList 1 1 [1]) (M.fromList 1 1 [1])
 
 -- Remove useless generators:
 -- Delete rows and cols with a 1 on the diagonal
@@ -92,28 +92,24 @@ matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols bi
 
 --------------------------------------------------------------------------------
 
-data Morphism = Morphism {
+data AbMorphism = AbMorphism {
   domain :: AbGroup,
   codomain :: AbGroup,
   fullMorphism :: Matrix Integer,
   reducedMorphism :: Matrix Integer
 }
 
-morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Morphism
-morphismFromFullMatrix a b f = Morphism a b f (toReduced b * f * fromReduced a)
+morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
+morphismFromFullMatrix a b f = AbMorphism a b f (toReduced b * f * fromReduced a)
 
-morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Morphism
-morphismFromReducedMatrix a b f = Morphism a b (fromReduced b * f * toReduced a ) f
+morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
+morphismFromReducedMatrix a b f = AbMorphism a b (fromReduced b * f * toReduced a ) f
 
-identityMorphism :: AbGroup -> Morphism
-identityMorphism a = Morphism a a (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
+instance ValueCategory AbGroup where
+  type Morphism AbGroup = AbMorphism
 
-zeroMorphism :: AbGroup -> AbGroup -> Morphism
-zeroMorphism a b = morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
-
-composeMorphisms :: Morphism -> Morphism -> Morphism
-composeMorphisms (Morphism _ c f' r') (Morphism d _ f r)
-  = Morphism d c (f' * f) (r' * r)
+  vid a  = AbMorphism a a (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
+  (AbMorphism _ c f' r') .* (AbMorphism d _ f r) = AbMorphism d c (f' * f) (r' * r)
 
 --------------------------------------------------------------------------------
 -- Following some ideas in
@@ -123,26 +119,24 @@ composeMorphisms (Morphism _ c f' r') (Morphism d _ f r)
 -- Springer International Publishing, 2014
 
 -- TODO: Check performance vs. using reduced matrices.
-kernel :: Morphism -> AbGroup
-kernel f = fromPresentation ker
-  where ker   = matrixKernelModulo kappa            (presentation (domain f))
-        kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
+instance AbelianCategory AbGroup where
+  zero = AbGroup (M.fromList 1 1 [1])
+                 (M.fromList 1 1 [1])
+                 (M.fromList 1 1 [1])
+                 (M.fromList 1 1 [1])
 
-kernelMorphism :: Morphism -> Morphism
-kernelMorphism f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
-  where ker   = matrixKernelModulo kappa            (presentation (domain f))
-        kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
+  zeroMorphism a b = morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
 
-cokernel :: Morphism -> AbGroup
-cokernel f = fromPresentation (fullMorphism f <|> presentation (codomain f))
+  kernel f = fromPresentation ker
+    where ker   = matrixKernelModulo kappa            (presentation (domain f))
+          kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
 
--- TODO: just supply reduced matrix directly
-cokernelMorphism :: Morphism -> Morphism
-cokernelMorphism f = morphismFromFullMatrix (codomain f) (cokernel f)
+  kernelMorphism f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
+    where ker   = matrixKernelModulo kappa            (presentation (domain f))
+          kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
+
+  cokernel f = fromPresentation (fullMorphism f <|> presentation (codomain f))
+
+  -- TODO: just supply reduced matrix directly
+  cokernelMorphism f = morphismFromFullMatrix (codomain f) (cokernel f)
                        (M.identity $ M.nrows $ presentation $ codomain f)
-
-image :: Morphism -> AbGroup
-image = kernel . cokernelMorphism
-
-imageMorphism :: Morphism -> Morphism
-imageMorphism = kernelMorphism . cokernelMorphism

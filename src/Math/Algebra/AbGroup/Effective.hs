@@ -3,6 +3,8 @@
 module Math.Algebra.AbGroup.Effective where
 
 import Math.Algebra.AbGroup
+import Math.ValueCategory
+import Math.ValueCategory.Abelian
 
 --------------------------------------------------------------------------------
 -- Following
@@ -15,7 +17,7 @@ import Math.Algebra.AbGroup
 -- TODO: Consider intmap memo instead
 data Effective = Effective {
   groups    :: Integer -> AbGroup,
-  morphisms :: Integer -> Integer -> Morphism,
+  morphisms :: Integer -> Integer -> AbMorphism,
   monocal   :: Maybe (Integer -> (Integer, Integer)),
   epical    :: Maybe (Integer -> (Integer, Integer))
 }
@@ -25,7 +27,6 @@ pattern Monocal gs ms mono <- Effective gs ms (Just mono) _ where
 
 pattern Epical gs ms epi <- Effective gs ms _ (Just epi) where
   Epical gs ms epi = Effective gs ms Nothing (Just epi)
-
 
 pattern Isocal gs ms iso <- ((\i@(Effective gs ms mono epi) -> (gs, ms, isocal i)) -> (gs, ms, Just iso)) where
   Isocal gs ms iso = Effective gs ms (Just iso) (Just iso)
@@ -48,19 +49,19 @@ instance Show Effective where
   show (Monocal _ _ _) = "<A monocal group>"
   show _               = "<A totally unknown group>"
 
-autocomposeMorphisms :: (Integer -> Morphism) -> (Integer -> Integer -> Morphism)
+autocomposeMorphisms :: (Integer -> AbMorphism) -> (Integer -> Integer -> AbMorphism)
 autocomposeMorphisms ms i j
-  | i == j     = identityMorphism $ domain $ ms i
+  | i == j     = vid $ domain $ ms i
   | j == i + 1 = ms i
-  | otherwise  = autocomposeMorphisms ms (i+1) j `composeMorphisms` ms i
+  | otherwise  = autocomposeMorphisms ms (i+1) j .* ms i
 
 constantEffectiveGroup :: AbGroup -> Effective
 constantEffectiveGroup g
-  = Isocal (const g) (const $ const $ identityMorphism g) idIndices
+  = Isocal (const g) (const $ const $ vid g) idIndices
   where idIndices i = (i, i)
 
 zeroEffectiveGroup :: Effective
-zeroEffectiveGroup = constantEffectiveGroup zeroGroup
+zeroEffectiveGroup = constantEffectiveGroup zero
 
 --------------------------------------------------------------------------------
 -- Morphisms
@@ -68,13 +69,13 @@ zeroEffectiveGroup = constantEffectiveGroup zeroGroup
 data EffectiveMorphism = EffectiveMorphism {
   effectiveDomain             :: Effective,
   effectiveCodomain           :: Effective,
-  effectivePointwiseMorphisms :: Integer -> Morphism
+  effectivePointwiseMorphisms :: Integer -> AbMorphism
 }
 
 composeEffectiveMorphisms
   :: EffectiveMorphism -> EffectiveMorphism -> EffectiveMorphism
 composeEffectiveMorphisms (EffectiveMorphism _ c f') (EffectiveMorphism d _ f)
-  = EffectiveMorphism d c (\i -> f' i `composeMorphisms` f i)
+  = EffectiveMorphism d c (\i -> f' i .* f i)
 
 --------------------------------------------------------------------------------
 -- The Five Lemma Algorithm
