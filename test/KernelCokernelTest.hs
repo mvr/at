@@ -41,3 +41,14 @@ spec = do
       \(m1, m2) -> let a = fromPresentation m1
                        b = fromPresentation m2 in
                    image (zeroMorphism a b) == zero
+
+  describe "homology" $ do
+    it "of test 1 is correct" $ do
+      let zmod2 = fromPresentation $ M.fromList 1 1 [2]
+          times2 = morphismFromReducedMatrix zmod2 zmod2 (M.fromList 1 1 [2])
+        in homology times2 times2 `shouldBe` zmod2
+
+    it "of test 2 is correct" $ do
+      let zmod4 = fromPresentation $ M.fromList 1 1 [4]
+          times2 = morphismFromReducedMatrix zmod4 zmod4 (M.fromList 1 1 [2])
+        in homology times2 times2 `shouldBe` zero

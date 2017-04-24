@@ -32,7 +32,7 @@ coimageMorphism = cokernelMorphism . kernelMorphism
 
 -- Morphisms assumed to be composable, with gf = 0
 homology :: (AbelianCategory a) => Morphism a -> Morphism a -> a
-homology f g = image (cokernelMorphism f .* cokernelMorphism g)
+homology f g = image (cokernelMorphism f .* kernelMorphism g)
 
 isExact :: (Eq a, AbelianCategory a) => Morphism a -> Morphism a -> Bool
 isExact f g = homology f g == zero
