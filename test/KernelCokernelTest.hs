@@ -10,13 +10,15 @@ import qualified Data.Matrix as M
 import qualified Data.Vector as V
 
 import Math.Algebra.AbGroup
+import Math.ValueCategory
+import Math.ValueCategory.Abelian
 
 import ArbitraryMatrix()
 
 spec = do
   describe "kernel" $ do
     it "of identity is zero" $ property $
-      \m -> kernel (identityMorphism (fromPresentation m)) == zeroGroup
+      \m -> kernel (vid (fromPresentation m)) == zero
     it "of zero map is domain" $ property $
       \(m1, m2) -> let a = fromPresentation m1
                        b = fromPresentation m2 in
@@ -24,7 +26,7 @@ spec = do
 
   describe "cokernel" $ do
     it "of identity is zero" $ property $
-      \m -> cokernel (identityMorphism (fromPresentation m)) == zeroGroup
+      \m -> cokernel (vid (fromPresentation m)) == zero
 
     it "of zero map is codomain" $ property $
       \(m1, m2) -> let a = fromPresentation m1
@@ -33,9 +35,9 @@ spec = do
 
   describe "image" $ do
     it "of identity is itself" $ property $
-      \m -> image (identityMorphism (fromPresentation m)) == fromPresentation m
+      \m -> image (vid (fromPresentation m)) == fromPresentation m
 
     it "of zero map is zero" $ property $
       \(m1, m2) -> let a = fromPresentation m1
                        b = fromPresentation m2 in
-                   image (zeroMorphism a b) == zeroGroup
+                   image (zeroMorphism a b) == zero
