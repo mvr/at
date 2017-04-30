@@ -27,29 +27,26 @@ spec = do
 
   describe "kernelObject" $ do
     it "of identity is zero" $ property $
-      \m -> kernel (vid (fromPresentation m)) == zero
+      \(a :: AbGroup) -> kernelObject (vid a) == zero
     it "of zero map is domain" $ property $
-      \(m1, m2) -> let a = fromPresentation m1
-                       b = fromPresentation m2 in
-                   kernel (zeroMorphism a b) == a
+      \(a :: AbGroup, b) -> kernelObject (zeroMorphism a b) == a
 
-  describe "cokernel" $ do
+  describe "cokernelObject" $ do
     it "of identity is zero" $ property $
-      \m -> cokernel (vid (fromPresentation m)) == zero
+      \(a :: AbGroup) -> cokernelObject (vid a) == zero
 
     it "of zero map is codomain" $ property $
-      \(m1, m2) -> let a = fromPresentation m1
-                       b = fromPresentation m2 in
-                   cokernel (zeroMorphism a b) == b
+      \(a :: AbGroup, b) -> cokernelObject (zeroMorphism a b) == b
 
-  describe "image" $ do
+  describe "cokernelMorphism" $ do
+    it "induced by identity is identity" $ property $
+      \(l :: AbMorphism) -> cokernelMorphism l l (vid $ codomain l) == (vid $ cokernelObject l)
+
+  describe "imageObject" $ do
     it "of identity is itself" $ property $
-      \m -> image (vid (fromPresentation m)) == fromPresentation m
-
+      \(a :: AbGroup) -> imageObject (vid a) == a
     it "of zero map is zero" $ property $
-      \(m1, m2) -> let a = fromPresentation m1
-                       b = fromPresentation m2 in
-                   image (zeroMorphism a b) == zero
+      \(a :: AbGroup, b) -> imageObject (zeroMorphism a b) == zero
 
   describe "homology" $ do
     it "of test 1 is correct" $ do

@@ -12,27 +12,36 @@ class ValueCategory ob => AbelianCategory ob where
   zeroMorphism :: ob -> ob -> Morphism ob
   zeroMorphism a b = fromZero b .* toZero a
 
-  kernel         :: Morphism ob -> ob
-  kernelMorphism :: Morphism ob -> Morphism ob
+  kernelObject :: Morphism ob -> ob
+  kernel       :: Morphism ob -> Morphism ob
+  -- Given f : A -> B, f' : A' -> B' and phi : A -> A' such that TODO, this is the induced map ker f -> ker f'
+  kernelMorphism :: Morphism ob -> Morphism ob -> Morphism ob -> Morphism ob
 
-  cokernel         :: Morphism ob -> ob
-  cokernelMorphism :: Morphism ob -> Morphism ob
+  cokernelObject :: Morphism ob -> ob
+  cokernel       :: Morphism ob -> Morphism ob
+  -- Given f : A -> B, f' : A' -> B' and B -> B' such that TODO, this is the induced map coker f -> coker f'
+  cokernelMorphism :: Morphism ob -> Morphism ob -> Morphism ob -> Morphism ob
 
-image :: (AbelianCategory a) => Morphism a -> a
-image = kernel . cokernelMorphism
+imageObject :: (AbelianCategory a) => Morphism a -> a
+imageObject = kernelObject . cokernel
 
-imageMorphism :: (AbelianCategory a) => Morphism a -> Morphism a
-imageMorphism = kernelMorphism . cokernelMorphism
+image :: (AbelianCategory a) => Morphism a -> Morphism a
+image = kernel . cokernel
 
-coimage :: (AbelianCategory a) => Morphism a -> a
-coimage = cokernel . kernelMorphism
+coimageObject :: (AbelianCategory a) => Morphism a -> a
+coimageObject = cokernelObject . kernel
 
-coimageMorphism :: (AbelianCategory a) => Morphism a -> Morphism a
-coimageMorphism = cokernelMorphism . kernelMorphism
+coimage :: (AbelianCategory a) => Morphism a -> Morphism a
+coimage = cokernel . kernel
 
 -- Morphisms assumed to be composable, with gf = 0
 homology :: (AbelianCategory a) => Morphism a -> Morphism a -> a
-homology f g = image (cokernelMorphism f .* kernelMorphism g)
+homology f g = imageObject (cokernel f .* kernel g)
 
 isExact :: (Eq a, AbelianCategory a) => Morphism a -> Morphism a -> Bool
 isExact f g = homology f g == zero
+
+isExactSequence :: (Eq a, AbelianCategory a) => [Morphism a] -> Bool
+isExactSequence [] = True
+isExactSequence [x] = True
+isExactSequence (x:y:xs) = isExact x y && isExactSequence (y:xs)

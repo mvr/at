@@ -43,7 +43,7 @@ isocal (Effective gs ms mmono mepi) = do
   return (isocalFunc mono epi)
 
 instance Show Effective where
-  show (Isocal _ ms iso) = show $ image $ ms i j
+  show (Isocal _ ms iso) = show $ imageObject $ ms i j
     where (i, j) = iso 1
   show (Epical _ _ _)  = "<An epical group>"
   show (Monocal _ _ _) = "<A monocal group>"

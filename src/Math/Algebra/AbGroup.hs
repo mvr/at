@@ -100,6 +100,8 @@ matrixKernel m = if nonzeroes /= 0 then
         diag   = V.toList $ M.getDiag d
         nonzeroes = length $ takeWhile (/=0) diag
 
+-- This solves (M L) (X Y)^T = 0 and returns the part of the solution
+-- corresponding to X.
 matrixKernelModulo :: Matrix Integer -> Matrix Integer -> Matrix Integer
 matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols bigl) bigl
   where bigl = matrixKernel (m <|> l)
@@ -107,22 +109,26 @@ matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols bi
 --------------------------------------------------------------------------------
 
 data AbMorphism = AbMorphism {
-  domain :: AbGroup,
-  codomain :: AbGroup,
+  abDomain :: AbGroup,
+  abCodomain :: AbGroup,
   fullMorphism :: Matrix Integer,
   reducedMorphism :: Matrix Integer
-}
+} deriving (Show, Eq)
 
 morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
 morphismFromFullMatrix a b f = AbMorphism a b f (toReduced b * f * fromReduced a)
 
 morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
-morphismFromReducedMatrix a b f = AbMorphism a b (fromReduced b * f * toReduced a ) f
+morphismFromReducedMatrix a b f = AbMorphism a b (fromReduced b * f * toReduced a) f
 
 instance ValueCategory AbGroup where
   type Morphism AbGroup = AbMorphism
 
   vid a  = AbMorphism a a (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
+
+  domain = abDomain
+  codomain = abCodomain
+
   (AbMorphism _ c f' r') .* (AbMorphism d _ f r) = AbMorphism d c (f' * f) (r' * r)
 
 --------------------------------------------------------------------------------
@@ -141,16 +147,20 @@ instance AbelianCategory AbGroup where
 
   zeroMorphism a b = morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
 
-  kernel f = fromPresentation ker
+  kernelObject f = fromPresentation ker
     where ker   = matrixKernelModulo kappa            (presentation (domain f))
           kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
 
-  kernelMorphism f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
+  kernel f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
     where ker   = matrixKernelModulo kappa            (presentation (domain f))
           kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
 
-  cokernel f = fromPresentation (fullMorphism f <|> presentation (codomain f))
+  kernelMorphism f g phi = undefined
+
+  cokernelObject f = fromPresentation (fullMorphism f <|> presentation (codomain f))
 
   -- TODO: just supply reduced matrix directly
-  cokernelMorphism f = morphismFromFullMatrix (codomain f) (cokernel f)
-                       (M.identity $ M.nrows $ presentation $ codomain f)
+  cokernel f = morphismFromFullMatrix (codomain f) (cokernelObject f)
+               (M.identity $ M.nrows $ presentation $ codomain f)
+
+  cokernelMorphism f g phi = morphismFromFullMatrix (cokernelObject f) (cokernelObject g) (fullMorphism phi)
