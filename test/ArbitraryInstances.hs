@@ -1,4 +1,4 @@
-module ArbitraryMatrix where
+module ArbitraryInstances where
 
 import Data.List (sort)
 

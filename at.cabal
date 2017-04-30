@@ -16,8 +16,14 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Math.Algebra.SmithNormalForm,
-                       Math.Algebra.AbGroup
+  exposed-modules:     Math.ValueCategory
+                     , Math.ValueCategory.Abelian
+
+                     , Math.Algebra.SmithNormalForm
+                     , Math.Algebra.AbGroup
+                     , Math.Algebra.AbGroup.IsoClass
+                     , Math.Algebra.AbGroup.Effective
+
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.10,
@@ -31,7 +37,7 @@ test-suite at-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       ArbitraryMatrix,
+  other-modules:       ArbitraryInstances,
                        KernelCokernelTest,
                        SmithNormalFormTest
   build-depends:       base

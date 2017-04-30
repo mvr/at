@@ -16,7 +16,7 @@ import Math.Algebra.AbGroup.IsoClass
 import Math.ValueCategory
 import Math.ValueCategory.Abelian
 
-import ArbitraryMatrix()
+import ArbitraryInstances ()
 
 spec = do
   describe "isoClass" $ do

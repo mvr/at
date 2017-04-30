@@ -11,7 +11,7 @@ import qualified Data.Vector as V
 
 import Math.Algebra.SmithNormalForm
 
-import ArbitraryMatrix()
+import ArbitraryInstances ()
 
 isDiagonal :: (Eq a, Num a) => Matrix a -> Bool
 isDiagonal m = m == (M.extendTo 0 r c $ M.diagonal 0 (M.getDiag m))
