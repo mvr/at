@@ -1,31 +1,33 @@
 {-# LANGUAGE RecordWildCards #-}
 module Math.Algebra.AbGroup.IsoClass (
   IsoClass(..),
-  fromInvariantFactors
+  invariantFactorsToElementaryDivisors,
+  elementaryDivisorsToInvariantFactors
 ) where
 
-import Data.List (intercalate, group, sort)
+import Data.List (intercalate, group, groupBy, sort, transpose)
+import Data.Function (on)
 
 data IsoClass = IsoClass
   {
     rank    :: Integer,
-    torsion :: [Integer] -- Should be sorted prime powers
-  } deriving Eq
+    torsion :: [(Integer, Integer)] -- Should be sorted prime + power pairs
+  } deriving (Eq)
 
 instance Show IsoClass where
   show IsoClass{..} =
     if rank > 0 || length torsion > 0 then
       intercalate " + " $ (replicate (fromIntegral rank) "Z") ++
-                          fmap (\ps -> if length ps == 1 then
-                                         "Z/" ++ show (head ps) ++ "Z"
+                          fmap (\(prime, power) -> if power == 1 then
+                                         "Z/" ++ show prime ++ "Z"
                                        else
-                                         "(Z/" ++ show (head ps) ++ "Z)^" ++ show (length ps)
-                                   ) (group torsion)
+                                         "(Z/" ++ show prime ++ "Z)^" ++ show power
+                                   ) torsion
     else
       "0"
 
-factors :: Integer -> [Integer]
-factors = f (head primes) (tail primes) where
+factorsOf :: Integer -> [Integer]
+factorsOf = f (head primes) (tail primes) where
   f n ns m
     | m < 2          = []
     | m < n^2        = [m]
@@ -33,11 +35,17 @@ factors = f (head primes) (tail primes) where
     | otherwise      = f (head ns) (tail ns) m
 
 primes :: [Integer]
-primes = 2 : filter (\n -> head (factors n) == n) [3,5..]
+primes = 2 : filter (\n -> head (factorsOf n) == n) [3,5..]
 
-splitFactors :: Integer -> [Integer]
-splitFactors = fmap product . group . factors
+splitFactors :: Integer -> [(Integer, Integer)]
+splitFactors = fmap (\gp -> (head gp, fromIntegral $ length gp)) . group . factorsOf
 
-fromInvariantFactors :: Integer -> [Integer] -> IsoClass
-fromInvariantFactors rank factors =
-  IsoClass rank (sort $ factors >>= splitFactors)
+invariantFactorsToElementaryDivisors :: [Integer] -> [(Integer, Integer)]
+invariantFactorsToElementaryDivisors factors = sort $ factors >>= splitFactors
+
+elementaryDivisorsToInvariantFactors :: [(Integer, Integer)] -> [Integer]
+elementaryDivisorsToInvariantFactors = reverse .
+                                       fmap (product . fmap (\(prime, power) -> prime^power)) .
+                                       transpose .
+                                       fmap reverse .
+                                       groupBy ((==) `on` fst)

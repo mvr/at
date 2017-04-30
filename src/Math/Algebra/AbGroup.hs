@@ -2,7 +2,8 @@
 {-# LANGUAGE RecordWildCards #-}
 module Math.Algebra.AbGroup where
 
-import Data.Matrix as M
+import qualified Data.Matrix as M
+import Data.Matrix (Matrix, (<|>))
 import qualified Data.Vector as V
 import Math.Algebra.SmithNormalForm
 import Math.Algebra.AbGroup.IsoClass
@@ -22,12 +23,25 @@ instance Eq AbGroup where
   a == b = reduced a == reduced b
 
 isoClass :: AbGroup -> IsoClass
-isoClass (AbGroup _ d _ _) = fromInvariantFactors (fromIntegral r) diag
-  where diag = filter (/= 0) $ V.toList $ getDiag d
+isoClass (AbGroup _ d _ _) = IsoClass (fromIntegral r) (invariantFactorsToElementaryDivisors diag)
+  where diag = filter (/= 0) $ V.toList $ M.getDiag d
         r    = M.nrows d - length diag
 
 instance Show AbGroup where
   show = show . isoClass
+
+fromIsoClass :: IsoClass -> AbGroup
+fromIsoClass (IsoClass 0 []) = zero
+fromIsoClass (IsoClass rank torsion) = AbGroup m m i i
+  where invFactors = elementaryDivisorsToInvariantFactors torsion
+        rows = fromIntegral (rank + fromIntegral (length invFactors))
+        cols = max 1 (length invFactors)
+        m = M.extendTo 0 rows cols $
+            M.diagonal 0 $ V.fromList invFactors
+        i = M.identity rows
+
+freeAbGroup :: Integer -> AbGroup
+freeAbGroup n = fromIsoClass (IsoClass n [])
 
 -- Direct sum
 instance Monoid AbGroup where

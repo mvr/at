@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module KernelCokernelTest where
 
 import Test.Hspec
@@ -10,13 +12,20 @@ import qualified Data.Matrix as M
 import qualified Data.Vector as V
 
 import Math.Algebra.AbGroup
+import Math.Algebra.AbGroup.IsoClass
 import Math.ValueCategory
 import Math.ValueCategory.Abelian
 
 import ArbitraryMatrix()
 
 spec = do
-  describe "kernel" $ do
+  describe "isoClass" $ do
+    it "survives class -> group -> class" $ property $  do
+      \(a :: IsoClass) -> isoClass (fromIsoClass a) == a
+    it "survives group -> class -> group" $ property $ do
+      \(a :: AbGroup) -> fromIsoClass (isoClass a) == a
+
+  describe "kernelObject" $ do
     it "of identity is zero" $ property $
       \m -> kernel (vid (fromPresentation m)) == zero
     it "of zero map is domain" $ property $
