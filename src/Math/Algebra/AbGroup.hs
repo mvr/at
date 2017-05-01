@@ -3,6 +3,7 @@
 module Math.Algebra.AbGroup where
 
 import qualified Data.Matrix as M
+import Data.Maybe (isJust, fromJust)
 import Data.Matrix (Matrix, (<|>))
 import qualified Data.Vector as V
 import Math.Algebra.SmithNormalForm
@@ -141,7 +142,11 @@ data AbMorphism = AbMorphism {
   abCodomain :: AbGroup,
   fullMorphism :: Matrix Integer,
   reducedMorphism :: Matrix Integer
-} deriving (Show, Eq)
+} deriving (Show)
+
+instance Eq AbMorphism where
+  (AbMorphism d c f r) == (AbMorphism d' c' f' r') =
+    (d == d') && (c == c') && (isJust $ solveMatrix (presentation c) (f - f'))
 
 morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
 morphismFromFullMatrix a b f = AbMorphism a b f (toReduced b * f * fromReduced a)
@@ -174,6 +179,10 @@ instance AbelianCategory AbGroup where
                  (M.fromList 1 1 [1])
 
   zeroMorphism a b = morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
+
+  addMorphisms (AbMorphism d c f' r') (AbMorphism _ _ f r) = AbMorphism d c (f' + f) (r' + r)
+  subtractMorphisms (AbMorphism d c f' r') (AbMorphism _ _ f r) = AbMorphism d c (f' - f) (r' - r)
+  negateMorphism (AbMorphism d c f' r') = AbMorphism d c (negate f') (negate r')
 
   kernelObject f = fromPresentation ker
     where ker   = matrixKernelModulo kappa            (presentation (domain f))

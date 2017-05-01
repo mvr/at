@@ -12,6 +12,10 @@ class ValueCategory ob => AbelianCategory ob where
   zeroMorphism :: ob -> ob -> Morphism ob
   zeroMorphism a b = fromZero b .* toZero a
 
+  addMorphisms :: Morphism ob -> Morphism ob -> Morphism ob
+  subtractMorphisms :: Morphism ob -> Morphism ob -> Morphism ob
+  negateMorphism :: Morphism ob -> Morphism ob
+
   kernelObject :: Morphism ob -> ob
   kernel       :: Morphism ob -> Morphism ob
   -- Given f : A -> B, f' : A' -> B' and phi : A -> A' such that TODO, this is the induced map ker f -> ker f'
