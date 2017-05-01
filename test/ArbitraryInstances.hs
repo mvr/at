@@ -4,6 +4,7 @@ import Data.List (sort)
 
 import Data.Matrix
 import Test.QuickCheck
+import Debug.Trace
 
 import Math.Algebra.AbGroup
 import Math.Algebra.AbGroup.IsoClass
@@ -53,14 +54,10 @@ instance Arbitrary AbGroup where
   arbitrary = fromPresentation <$> arbitraryMatrix
 
 instance Arbitrary AbMorphism where
-  arbitrary = do
-    domM <- arbitrary
-    codM <- arbitrary
+  arbitrary = sized $ \i -> do
+    let s = max 2 (min i 10)
+    domr <- choose (1, s)
+    codr <- choose (1, s)
 
-    let dom = fromPresentation domM
-        cod = fromPresentation codM
-        rows = ncols (reduced dom)
-        cols = ncols (reduced cod)
-
-    m <- arbitraryMatrixOfSize rows cols
-    return $ morphismFromReducedMatrix dom cod m
+    m <- arbitraryMatrixOfSize codr domr
+    return $ morphismFromReducedMatrix (freeAbGroup $ fromIntegral domr) (freeAbGroup $ fromIntegral codr) m

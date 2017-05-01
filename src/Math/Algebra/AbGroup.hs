@@ -51,7 +51,7 @@ instance Monoid AbGroup where
 -- Delete rows and cols with a 1 on the diagonal
 stripOnes :: (Matrix Integer, Matrix Integer, Matrix Integer)
           -> (Matrix Integer, Matrix Integer, Matrix Integer)
-stripOnes (li, l, d) = (li,
+stripOnes (li, l, d) = (M.submatrix newrows (M.nrows li) 1      (M.ncols li) li,
                         M.submatrix 1       (M.nrows l) newcols (M.ncols l) l,
                         M.submatrix newrows (M.nrows d) newcols (M.ncols d) d)
   where diag = V.toList $ M.getDiag d
