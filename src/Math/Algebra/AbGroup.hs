@@ -192,7 +192,11 @@ instance AbelianCategory AbGroup where
     where ker   = matrixKernelModulo kappa            (presentation (domain f))
           kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
 
-  kernelMorphism f g phi = undefined
+  kernelMorphism f g phi = morphismFromFullMatrix (domain kerf) (domain kerg) (fromJust $ solveMatrix m a)
+    where kerf = kernel f
+          kerg = kernel g
+          m = fullMorphism kerg
+          a = fullMorphism (phi .* kerf)
 
   cokernelObject f = fromPresentation (fullMorphism f <|> presentation (codomain f))
 

@@ -41,6 +41,10 @@ spec = do
     it "induced by identity is identity" $ property $
       \(l :: AbMorphism) -> cokernelMorphism l l (vid $ codomain l) == (vid $ cokernelObject l)
 
+  describe "kernelMorphism" $ do
+    it "induced by identity is identity" $ property $
+      \(l :: AbMorphism) -> kernelMorphism l l (vid $ domain l) == (vid $ kernelObject l)
+
   describe "imageObject" $ do
     it "of identity is itself" $ property $
       \(a :: AbGroup) -> imageObject (vid a) == a
