@@ -38,6 +38,7 @@ test-suite at-test
   hs-source-dirs:      test
   main-is:             Spec.hs
   other-modules:       ArbitraryInstances,
+                       MatrixOpsTest,
                        KernelCokernelTest,
                        SmithNormalFormTest
   build-depends:       base
@@ -46,4 +47,5 @@ test-suite at-test
                      , vector
                      , hspec
                      , QuickCheck
+                     , random
   default-language:    Haskell2010

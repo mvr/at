@@ -28,3 +28,15 @@ spec = do
       case divideDiag s a of
         Just d -> return $ s * d == a
         Nothing -> return False
+
+  describe "solveMatrix" $ do
+    it "solves correctly" $ property $ do
+      mrows <- choose (1, 5)
+      mcols <- choose (1, 5)
+      xcols <- choose (1, 5)
+      m <- arbitraryMatrixOfSize mrows mcols
+      x <- arbitraryMatrixOfSize mcols xcols
+      let a = m * x
+      case solveMatrix m a of
+        Just d -> return $ m * d == a
+        Nothing -> return False

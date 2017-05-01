@@ -126,6 +126,13 @@ divideDiag s a = do
           in return $ x M.<-> M.zero diff (M.ncols a)
     GT -> return $ M.submatrix 1 (M.ncols s) 1 (M.ncols x) x
 
+-- If MX = A, find an X
+-- In other words, 'right divide'
+solveMatrix :: Matrix Integer -> Matrix Integer -> Maybe (Matrix Integer)
+solveMatrix m a = do
+  let (Triple li _ d _ ri) = smithNormalForm m
+  rx <- divideDiag d (li * a)
+  return $ ri * rx
 
 --------------------------------------------------------------------------------
 
