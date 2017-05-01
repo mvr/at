@@ -1,6 +1,7 @@
 module ArbitraryInstances where
 
 import Data.List (sort)
+import System.Random
 
 import Data.Matrix
 import Test.QuickCheck
@@ -31,6 +32,14 @@ arbitraryMatrixOnesZeroes = sized $ \i -> do
   rows <- choose (1, s)
   cols <- choose (1, s)
   elts <- vectorOf (rows * cols) arbitrary
+  return $ fromList rows cols elts
+
+arbitraryMatrixSmallEntries :: (Random a, Arbitrary a, Num a) => Gen (Matrix a)
+arbitraryMatrixSmallEntries = sized $ \i -> do
+  let s = max 1 (min i 5)
+  rows <- choose (1, s)
+  cols <- choose (1, s)
+  elts <- vectorOf (rows * cols) $ choose (0, 10)
   return $ fromList rows cols elts
 
 allMinors :: Matrix a -> [Matrix a]

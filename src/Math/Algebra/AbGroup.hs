@@ -85,8 +85,11 @@ fromPresentation m = AbGroup m d li l
   where (li, l, d) = reducePresentation m
 
 --------------------------------------------------------------------------------
--- General integer matrix routines
--- (Do they need their own file?)
+-- The following section is the "ring package" for the integers, in
+-- principle all of homological algebra should be implementable in
+-- terms of these.
+
+-- TODO: One day us the Integer Matrix Library for these.
 
 -- Z is "coherent": Given M, we compute a L such that
 -- MX = 0   <->   exists Y. X = LY
@@ -105,6 +108,24 @@ matrixKernel m = if nonzeroes /= 0 then
 matrixKernelModulo :: Matrix Integer -> Matrix Integer -> Matrix Integer
 matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols bigl) bigl
   where bigl = matrixKernel (m <|> l)
+
+-- If SX = A with S a square diagonal matrix, calculate S^{-1}A if possible
+divideDiag :: Matrix Integer -> Matrix Integer -> Maybe (Matrix Integer)
+divideDiag s a = do
+  let diag = V.toList (M.getDiag s) ++ repeat 0
+      stripes = M.matrix (M.nrows a) (M.ncols a) $ \(i, _) -> diag !! (i - 1)
+      doDivide 0 0 = Just 0
+      doDivide 0 _ = Nothing
+      doDivide i n = case divMod n i of
+        (q, 0) -> Just q
+        _      -> Nothing
+  x <- sequence $ M.elementwise doDivide stripes a
+  case compare (M.nrows s) (M.ncols s) of
+    EQ -> return x
+    LT -> let diff = M.ncols s - M.nrows s
+          in return $ x M.<-> M.zero diff (M.ncols a)
+    GT -> return $ M.submatrix 1 (M.ncols s) 1 (M.ncols x) x
+
 
 --------------------------------------------------------------------------------
 
