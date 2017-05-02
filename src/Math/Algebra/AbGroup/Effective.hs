@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE PatternSynonyms #-}
 module Math.Algebra.AbGroup.Effective where
@@ -72,13 +73,38 @@ data EffectiveMorphism = EffectiveMorphism {
   effectivePointwiseMorphisms :: Integer -> AbMorphism
 }
 
-composeEffectiveMorphisms
-  :: EffectiveMorphism -> EffectiveMorphism -> EffectiveMorphism
-composeEffectiveMorphisms (EffectiveMorphism _ c f') (EffectiveMorphism d _ f)
-  = EffectiveMorphism d c (\i -> f' i .* f i)
+instance ValueCategory Effective where
+  type Morphism Effective = EffectiveMorphism
+
+  vid e = EffectiveMorphism e e (\i -> vid $ groups e i)
+
+  domain = effectiveDomain
+  codomain = effectiveCodomain
+
+  (EffectiveMorphism _ c f') .* (EffectiveMorphism d _ f)
+    = EffectiveMorphism d c (\i -> f' i .* f i)
 
 --------------------------------------------------------------------------------
 -- The Five Lemma Algorithm
+
+-- The setup is an exact sequence
+-- J -f-> K -g-> L -h-> M -i-> N
+-- We are trying to determine epi/monocals for l
+
+
+-- TODO: A different ordering may be more efficient
+enumeratePairs :: [(Integer, Integer)]
+enumeratePairs = [ (m - n, n) | m <- [0..], n <- [0..m] ]
+
+enumeratePairsFrom :: (Integer -> Integer) -> [(Integer, Integer)]
+enumeratePairsFrom start = do
+  m <- [0..]
+  let mStart = start m
+  n <- [mStart .. (m + mStart)]
+  return (m - n, n)
+
+-- enumeratePairsFrom :: (Integer, Integer) -> [(Integer, Integer)]
+-- enumeratePairsFrom (a, b) = fmap (\(i, j) -> (i + a, j + b)) enumeratePairs
 
 fiveLemmaEpical
   :: Effective
@@ -90,18 +116,89 @@ fiveLemmaEpical
      -> EffectiveMorphism
      -> EffectiveMorphism
      -> EffectiveMorphism
-     -> Effective
-fiveLemmaEpical j k l m n f g h i = undefined
+     -> Maybe (Integer -> (Integer, Integer))
+fiveLemmaEpical
+  _
+  (Epical kgs kms kepi)
+  (Effective lgs lms _ _)
+  (Epical mgs mms mepi)
+  (Monocal ngs nms nmono)
+  _
+  (EffectiveMorphism _ _ g)
+  (EffectiveMorphism _ _ h)
+  (EffectiveMorphism _ _ i)
+  =
+  let
+      start j = maximum [kl, ml, nl]
+        where (ke, kl) = kepi j
+              (me, ml) = mepi ke
+              (ne, nl) = nmono me
 
--- fiveLemma
---   :: Effective
---      -> Effective
---      -> Effective
---      -> Effective
---      -> Effective
---      -> EffectiveMorphism
---      -> EffectiveMorphism
---      -> EffectiveMorphism
---      -> EffectiveMorphism
---      -> Effective
--- fiveLemma j k l m n f g h i = undefined
+      -- K(ke(j), k) -> L(ke(j), k) -> M(me(ke(j)), k) -> N(ne(me(ke(j))), k)
+      toComplex (j, k) = [ imageMorphism (kms ke k) (lms ke k) (g k)
+                         , imageMorphism (lms ke k) (mms me k) (h k)
+                         , imageMorphism (mms me k) (nms ne k) (i k)]
+        where (ke, kl) = kepi j
+              (me, ml) = mepi ke
+              (ne, nl) = nmono me
+
+      workingSequence i = head $ filter (isExactSequence . toComplex) $ enumeratePairsFrom start
+
+    in Just $ \i -> let (j, k) = workingSequence i in (fst $ kepi j, k)
+fiveLemmaEpical _ _ _ _ _ _ _ _ _ = Nothing
+
+fiveLemmaMonocal
+  :: Effective
+     -> Effective
+     -> Effective
+     -> Effective
+     -> Effective
+     -> EffectiveMorphism
+     -> EffectiveMorphism
+     -> EffectiveMorphism
+     -> EffectiveMorphism
+     -> Maybe (Integer -> (Integer, Integer))
+fiveLemmaMonocal
+  (Epical jgs jms jepi)
+  (Monocal kgs kms kmono)
+  (Effective lgs lms _ _)
+  (Monocal mgs mms mmono)
+  _
+  (EffectiveMorphism _ _ f)
+  (EffectiveMorphism _ _ g)
+  (EffectiveMorphism _ _ h)
+  _
+  =
+  let
+      start j = maximum [jl, kl, ml]
+        where (je, jl) = jepi j
+              (ke, kl) = kmono je
+              (me, ml) = mmono ke
+
+      toComplex (j, k) = [ imageMorphism (jms je k) (kms ke k) (f k)
+                         , imageMorphism (kms ke k) (lms ke k) (g k)
+                         , imageMorphism (lms ke k) (mms me k) (h k)]
+        where (je, jl) = jepi j
+              (ke, kl) = kmono je
+              (me, ml) = mmono ke
+
+      workingSequence i = head $ filter (isExactSequence . toComplex) $ enumeratePairsFrom start
+
+    in Just $ \i -> let (j, k) = workingSequence i in (fst $ kmono $ fst $ jepi j, k)
+fiveLemmaMonocal _ _ _ _ _ _ _ _ _ = Nothing
+
+fiveLemma
+  :: Effective
+     -> Effective
+     -> Effective
+     -> Effective
+     -> Effective
+     -> EffectiveMorphism
+     -> EffectiveMorphism
+     -> EffectiveMorphism
+     -> EffectiveMorphism
+     -> Effective
+fiveLemma j k l@(Effective lgs lms _ _) m n f g h i =
+  Effective lgs lms
+    (fiveLemmaMonocal j k l m n f g h i)
+    (fiveLemmaEpical  j k l m n f g h i)
