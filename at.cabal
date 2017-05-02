@@ -39,7 +39,8 @@ test-suite at-test
   main-is:             Spec.hs
   other-modules:       ArbitraryInstances,
                        MatrixOpsTest,
-                       KernelCokernelTest,
+                       AbGroupTest,
+                       AbelianCategoryProperties,
                        SmithNormalFormTest
   build-depends:       base
                      , at
