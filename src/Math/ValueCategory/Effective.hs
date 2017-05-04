@@ -1,11 +1,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE PatternSynonyms #-}
-module Math.Algebra.AbGroup.Effective where
+module Math.ValueCategory.Effective where
 
-import Math.Algebra.AbGroup
 import Math.ValueCategory
 import Math.ValueCategory.Abelian
+import Math.ValueCategory.Sequential
 
 --------------------------------------------------------------------------------
 -- Following
@@ -13,84 +13,74 @@ import Math.ValueCategory.Abelian
 --  by Rolf Schön
 -- Mem. Amer. Math. Soc. 92 (1991), no. 451, vi+63 pp.
 
--- A f.g. abelian group, presented as the colimit of an infinite
--- sequence of f.g. abelian groups.
 -- TODO: Consider intmap memo instead
-data Effective = Effective {
-  groups    :: Integer -> AbGroup,
-  morphisms :: Integer -> Integer -> AbMorphism,
-  monocal   :: Maybe (Integer -> (Integer, Integer)),
-  epical    :: Maybe (Integer -> (Integer, Integer))
+data Effective a = Effective {
+  effectiveSequence :: Sequential a,
+  monocal  :: Maybe (Integer -> (Integer, Integer)),
+  epical   :: Maybe (Integer -> (Integer, Integer))
 }
 
-pattern Monocal gs ms mono <- Effective gs ms (Just mono) _ where
-  Monocal gs ms mono = Effective gs ms (Just mono) Nothing
+pattern Monocal gs ms mono <- Effective (Sequential gs ms) (Just mono) _ where
+  Monocal gs ms mono = Effective (Sequential gs ms) (Just mono) Nothing
 
-pattern Epical gs ms epi <- Effective gs ms _ (Just epi) where
-  Epical gs ms epi = Effective gs ms Nothing (Just epi)
+pattern Epical gs ms epi <- Effective (Sequential gs ms) _ (Just epi) where
+  Epical gs ms epi = Effective (Sequential gs ms) Nothing (Just epi)
 
-pattern Isocal gs ms iso <- ((\i@(Effective gs ms mono epi) -> (gs, ms, isocal i)) -> (gs, ms, Just iso)) where
-  Isocal gs ms iso = Effective gs ms (Just iso) (Just iso)
+pattern Isocal gs ms iso <- ((\i@(Effective (Sequential gs ms) mono epi) -> (gs, ms, isocal i)) -> (gs, ms, Just iso)) where
+  Isocal gs ms iso = Effective (Sequential gs ms) (Just iso) (Just iso)
 
 isocalFunc :: (Integer -> (Integer, Integer))
            -> (Integer -> (Integer, Integer))
            -> (Integer -> (Integer, Integer))
 isocalFunc mono epi i = let j = fst $ epi i in mono j
 
-isocal :: Effective -> Maybe (Integer -> (Integer, Integer))
-isocal (Effective gs ms mmono mepi) = do
+isocal :: Effective a -> Maybe (Integer -> (Integer, Integer))
+isocal (Effective _ mmono mepi) = do
   mono <- mmono
   epi  <- mepi
   return (isocalFunc mono epi)
 
-instance Show Effective where
+instance (Show a, AbelianCategory a) => Show (Effective a) where
   show (Isocal _ ms iso) = show $ imageObject $ ms i j
     where (i, j) = iso 1
   show (Epical _ _ _)  = "<An epical group>"
   show (Monocal _ _ _) = "<A monocal group>"
   show _               = "<A totally unknown group>"
 
-autocomposeMorphisms :: (Integer -> AbMorphism) -> (Integer -> Integer -> AbMorphism)
-autocomposeMorphisms ms i j
-  | i == j     = vid $ domain $ ms i
-  | j == i + 1 = ms i
-  | otherwise  = autocomposeMorphisms ms (i+1) j .* ms i
-
-constantEffectiveGroup :: AbGroup -> Effective
-constantEffectiveGroup g
-  = Isocal (const g) (const $ const $ vid g) idIndices
+constantEffectiveGroup :: (ValueCategory a) => a -> Effective a
+constantEffectiveGroup g = Effective (constantSequence g) (Just idIndices) (Just idIndices)
   where idIndices i = (i, i)
-
-zeroEffectiveGroup :: Effective
-zeroEffectiveGroup = constantEffectiveGroup zero
 
 --------------------------------------------------------------------------------
 -- Morphisms
 
-data EffectiveMorphism = EffectiveMorphism {
-  effectiveDomain             :: Effective,
-  effectiveCodomain           :: Effective,
-  effectivePointwiseMorphisms :: Integer -> AbMorphism
+data EffectiveMorphism a = EffectiveMorphism {
+  effectiveDomain  :: Effective a,
+  effectiveCodomain  :: Effective a,
+  sequenceMorphism :: SequentialMorphism a
 }
 
-instance ValueCategory Effective where
-  type Morphism Effective = EffectiveMorphism
+instance (ValueCategory a) => ValueCategory (Effective a) where
+  type Morphism (Effective a) = EffectiveMorphism a
 
-  vid e = EffectiveMorphism e e (\i -> vid $ groups e i)
+  vid e = EffectiveMorphism e e (vid $ effectiveSequence e)
 
   domain = effectiveDomain
   codomain = effectiveCodomain
 
-  (EffectiveMorphism _ c f') .* (EffectiveMorphism d _ f)
-    = EffectiveMorphism d c (\i -> f' i .* f i)
+  (EffectiveMorphism _ c f') .* (EffectiveMorphism _ d f)
+    = EffectiveMorphism d c (f' .* f)
 
 --------------------------------------------------------------------------------
 -- The Five Lemma Algorithm
 
--- The setup is an exact sequence
+-- The setup is an sequence of Effectives whose colimits fit into an
+-- exact sequence:
 -- J -f-> K -g-> L -h-> M -i-> N
--- We are trying to determine epi/monocals for l
 
+-- We are trying to determine epi/monocals for L. Here we do not
+-- require the levelwise sequences to be exact, only the
+-- colimiting sequence.
 
 -- TODO: A different ordering may be more efficient
 enumeratePairs :: [(Integer, Integer)]
@@ -107,26 +97,27 @@ enumeratePairsFrom start = do
 -- enumeratePairsFrom (a, b) = fmap (\(i, j) -> (i + a, j + b)) enumeratePairs
 
 fiveLemmaEpical
-  :: Effective
-     -> Effective
-     -> Effective
-     -> Effective
-     -> Effective
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> EffectiveMorphism
+  :: (Eq a, AbelianCategory a) =>
+        Effective a
+     -> Effective a
+     -> Effective a
+     -> Effective a
+     -> Effective a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
      -> Maybe (Integer -> (Integer, Integer))
 fiveLemmaEpical
   _
   (Epical kgs kms kepi)
-  (Effective lgs lms _ _)
+  (Effective (Sequential lgs lms) _ _)
   (Epical mgs mms mepi)
   (Monocal ngs nms nmono)
   _
-  (EffectiveMorphism _ _ g)
-  (EffectiveMorphism _ _ h)
-  (EffectiveMorphism _ _ i)
+  (EffectiveMorphism _ _ (SequentialMorphism _ _ g))
+  (EffectiveMorphism _ _ (SequentialMorphism _ _ h))
+  (EffectiveMorphism _ _ (SequentialMorphism _ _ i))
   =
   let
       start j = maximum [kl, ml, nl]
@@ -148,25 +139,26 @@ fiveLemmaEpical
 fiveLemmaEpical _ _ _ _ _ _ _ _ _ = Nothing
 
 fiveLemmaMonocal
-  :: Effective
-     -> Effective
-     -> Effective
-     -> Effective
-     -> Effective
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> EffectiveMorphism
+  :: (Eq a, AbelianCategory a) =>
+        Effective a
+     -> Effective a
+     -> Effective a
+     -> Effective a
+     -> Effective a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
      -> Maybe (Integer -> (Integer, Integer))
 fiveLemmaMonocal
   (Epical jgs jms jepi)
   (Monocal kgs kms kmono)
-  (Effective lgs lms _ _)
+  (Effective (Sequential lgs lms) _ _)
   (Monocal mgs mms mmono)
   _
-  (EffectiveMorphism _ _ f)
-  (EffectiveMorphism _ _ g)
-  (EffectiveMorphism _ _ h)
+  (EffectiveMorphism _ _ (SequentialMorphism _ _ f))
+  (EffectiveMorphism _ _ (SequentialMorphism _ _ g))
+  (EffectiveMorphism _ _ (SequentialMorphism _ _ h))
   _
   =
   let
@@ -188,17 +180,21 @@ fiveLemmaMonocal
 fiveLemmaMonocal _ _ _ _ _ _ _ _ _ = Nothing
 
 fiveLemma
-  :: Effective
-     -> Effective
-     -> Effective
-     -> Effective
-     -> Effective
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> EffectiveMorphism
-     -> Effective
-fiveLemma j k l@(Effective lgs lms _ _) m n f g h i =
-  Effective lgs lms
+  :: (Eq a, AbelianCategory a) =>
+        Effective a
+     -> Effective a
+     -> Effective a
+     -> Effective a
+     -> Effective a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> EffectiveMorphism a
+     -> Effective a
+fiveLemma j k l@(Effective (Sequential lgs lms) _ _) m n f g h i =
+  Effective (Sequential lgs lms)
     (fiveLemmaMonocal j k l m n f g h i)
     (fiveLemmaEpical  j k l m n f g h i)
+
+--------------------------------------------------------------------------------
+-- The Five Lemma Algorithm for levelwise exact sequences
