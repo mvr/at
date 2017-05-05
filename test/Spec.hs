@@ -2,6 +2,7 @@ import Test.Hspec (hspec, describe)
 import Data.Proxy
 
 import Math.Algebra.AbGroup
+import Math.Algebra.ValueCategory.Abelian.Cached
 
 import qualified SmithNormalFormTest
 import qualified MatrixOpsTest
@@ -16,4 +17,5 @@ spec = do
   MatrixOpsTest.spec
 
   describe "Abelian category problems for AbGroup" $ AbelianCategoryProperties.spec (Proxy :: Proxy AbGroup)
+  describe "Abelian category problems for Cached AbGroup" $ AbelianCategoryProperties.spec (Proxy :: Proxy (Cached AbGroup))
   AbGroupTest.spec

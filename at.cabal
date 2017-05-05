@@ -18,6 +18,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Math.ValueCategory
                      , Math.ValueCategory.Abelian
+                     , Math.ValueCategory.Abelian.Cached
 
                      , Math.Algebra.SmithNormalForm
                      , Math.Algebra.AbGroup

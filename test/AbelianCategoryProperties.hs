@@ -27,6 +27,10 @@ spec p = do
     it "of zero map is domain" $ property $
       \(a :: c, b) -> kernelObject (zeroMorphism a b) == a
 
+  describe "kernelMorphism" $ do
+    it "induced by identity is identity" $ property $
+      \(l :: Morphism c) -> kernelMorphism l l (vid $ domain l) == (vid $ kernelObject l)
+
   describe "cokernel" $ do
     it "has domain the codomain of f" $ property $
       \(f :: Morphism c) -> domain (cokernel f) == codomain f
@@ -43,12 +47,12 @@ spec p = do
     it "induced by identity is identity" $ property $
       \(l :: Morphism c) -> cokernelMorphism l l (vid $ codomain l) == (vid $ cokernelObject l)
 
-  describe "kernelMorphism" $ do
-    it "induced by identity is identity" $ property $
-      \(l :: Morphism c) -> kernelMorphism l l (vid $ domain l) == (vid $ kernelObject l)
-
   describe "imageObject" $ do
     it "of identity is itself" $ property $
       \(a :: c) -> imageObject (vid a) == a
     it "of zero map is zero" $ property $
       \(a :: c, b) -> imageObject (zeroMorphism a b) == zero
+
+  describe "image == coimage" $ do
+    it "is true" $ property $
+      \(f :: Morphism c) -> imageObject f == coimageObject f

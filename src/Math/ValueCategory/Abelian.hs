@@ -17,15 +17,26 @@ class ValueCategory a => AbelianCategory a where
   subtractMorphisms :: Morphism a -> Morphism a -> Morphism a
   negateMorphism :: Morphism a -> Morphism a
 
-  kernelObject :: Morphism a -> a
   kernel       :: Morphism a -> Morphism a
   -- Given f : A -> B, f' : A' -> B' and phi : A -> A' such that TODO, this is the induced map ker f -> ker f'
   kernelMorphism :: Morphism a -> Morphism a -> Morphism a -> Morphism a
 
-  cokernelObject :: Morphism a -> a
   cokernel       :: Morphism a -> Morphism a
   -- Given f : A -> B, f' : A' -> B' and B -> B' such that TODO, this is the induced map coker f -> coker f'
   cokernelMorphism :: Morphism a -> Morphism a -> Morphism a -> Morphism a
+
+  {-# MINIMAL zero,
+              (toZero, fromZero | zeroMorphism),
+              addMorphisms,
+              (subtractMorphisms | negateMorphism),
+              kernel, kernelMorphism,
+              cokernel, cokernelMorphism #-}
+
+kernelObject :: AbelianCategory a => Morphism a -> a
+kernelObject = domain . kernel
+
+cokernelObject :: AbelianCategory a => Morphism a -> a
+cokernelObject = codomain . cokernel
 
 imageObject :: (AbelianCategory a) => Morphism a -> a
 imageObject = kernelObject . cokernel
@@ -47,6 +58,9 @@ isInjective f = kernelObject f == zero
 
 isSurjective :: (Eq a, AbelianCategory a) => Morphism a -> Bool
 isSurjective f = cokernelObject f == zero
+
+isZeroMorphism :: (Eq a, AbelianCategory a) => Morphism a -> Bool
+isZeroMorphism f = imageObject f == zero
 
 -- Morphisms assumed to be composable, with gf = 0
 homology :: (AbelianCategory a) => Morphism a -> Morphism a -> a
