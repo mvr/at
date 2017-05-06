@@ -17,13 +17,15 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Math.ValueCategory
+                     , Math.ValueCategory.Arrow
                      , Math.ValueCategory.Abelian
                      , Math.ValueCategory.Abelian.Cached
+                     , Math.ValueCategory.Sequential
+                     , Math.ValueCategory.Effective
 
                      , Math.Algebra.SmithNormalForm
                      , Math.Algebra.AbGroup
                      , Math.Algebra.AbGroup.IsoClass
-                     , Math.Algebra.AbGroup.Effective
 
   -- other-modules:       
   -- other-extensions:    

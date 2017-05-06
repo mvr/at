@@ -2,7 +2,7 @@ import Test.Hspec (hspec, describe)
 import Data.Proxy
 
 import Math.Algebra.AbGroup
-import Math.Algebra.ValueCategory.Abelian.Cached
+import Math.ValueCategory.Abelian.Cached
 
 import qualified SmithNormalFormTest
 import qualified MatrixOpsTest

@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 module ArbitraryInstances where
 
 import Data.List (sort)
@@ -9,6 +11,10 @@ import Debug.Trace
 
 import Math.Algebra.AbGroup
 import Math.Algebra.AbGroup.IsoClass
+
+import Math.ValueCategory
+import Math.ValueCategory.Abelian
+import Math.ValueCategory.Abelian.Cached
 
 instance Arbitrary a => Arbitrary (Matrix a) where
   arbitrary = arbitraryMatrix
@@ -70,3 +76,9 @@ instance Arbitrary AbMorphism where
 
     m <- arbitraryMatrixOfSize codr domr
     return $ morphismFromReducedMatrix (freeAbGroup $ fromIntegral domr) (freeAbGroup $ fromIntegral codr) m
+
+instance (AbelianCategory a, Eq a, Arbitrary a) => Arbitrary (Cached a) where
+  arbitrary = fmap toCached arbitrary
+
+instance (AbelianCategory a, Eq a, Eq (Morphism a), Arbitrary (Morphism a)) => Arbitrary (CachedMorphism a) where
+  arbitrary = fmap toCachedMorphism arbitrary

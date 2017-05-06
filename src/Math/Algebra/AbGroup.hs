@@ -184,10 +184,6 @@ instance AbelianCategory AbGroup where
   subtractMorphisms (AbMorphism d c f' r') (AbMorphism _ _ f r) = AbMorphism d c (f' - f) (r' - r)
   negateMorphism (AbMorphism d c f' r') = AbMorphism d c (negate f') (negate r')
 
-  kernelObject f = fromPresentation ker
-    where ker   = matrixKernelModulo kappa            (presentation (domain f))
-          kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
-
   kernel f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
     where ker   = matrixKernelModulo kappa            (presentation (domain f))
           kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
@@ -198,10 +194,9 @@ instance AbelianCategory AbGroup where
           m = fullMorphism kerg
           a = fullMorphism (phi .* kerf)
 
-  cokernelObject f = fromPresentation (fullMorphism f <|> presentation (codomain f))
-
   -- TODO: just supply reduced matrix directly
   cokernel f = morphismFromFullMatrix (codomain f) (cokernelObject f)
                (M.identity $ M.nrows $ presentation $ codomain f)
+    where cokernelObject f = fromPresentation (fullMorphism f <|> presentation (codomain f))
 
   cokernelMorphism f g phi = morphismFromFullMatrix (cokernelObject f) (cokernelObject g) (fullMorphism phi)
