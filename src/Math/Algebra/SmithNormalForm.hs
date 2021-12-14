@@ -3,10 +3,9 @@ module Math.Algebra.SmithNormalForm (
   smithNormalForm
 ) where
 
-import Data.Monoid (All(..), (<>))
+import Data.Monoid (All(..))
 import Data.List (foldl')
 import Control.Monad.State
-import Debug.Trace
 
 import Data.Matrix (Matrix)
 import qualified Data.Matrix as M
@@ -22,8 +21,8 @@ import qualified Data.Matrix as M
 combineCols :: Num a => Int -> a -> Int -> Matrix a -> Matrix a
 combineCols c1 l c2 m = M.mapCol (\j x -> x + l * M.getElem j c2 m) c1 m
 
-scaleCol :: Num a => a -> Int -> Matrix a -> Matrix a
-scaleCol = M.mapCol . const . (*)
+-- scaleCol :: Num a => a -> Int -> Matrix a -> Matrix a
+-- scaleCol = M.mapCol . const . (*)
 
 foldWithIndices :: [(Int, Int)] -> ((Int, Int) -> a -> b -> b) -> b -> Matrix a -> b
 foldWithIndices is f s m = foldl' (\b (i, j) -> f (i, j) (M.getElem i j m) b) s is
@@ -76,7 +75,7 @@ findSmallest m = foldWithIndex f (M.getElem 1 1 m, (1, 1)) m
           else (smallest, smallestIndices)
 
 findSmallestRemainder :: Integer -> Matrix Integer -> (Integer, (Int, Int))
-findSmallestRemainder x m = foldWithIndex f (x, (1, 1)) m
+findSmallestRemainder x = foldWithIndex f (x, (1, 1))
   where f newIndices new (smallest, smallestIndices) =
           let r = new `rem` x in
           if r /= 0 && r < smallest then (new, newIndices)
@@ -136,12 +135,11 @@ whileM_ :: (Monad m) => m Bool -> m a -> m ()
 whileM_ p f = go
     where go = do
             x <- p
-            if x then f >> go
-            else return ()
+            when x (f >> go)
 
 nullifyEdging :: Int -> State Triple ()
 nullifyEdging s = do
-  whileM_ (do t <- get; return (not $ edgingIsNull s (middle t))) $ do
+  whileM_ (gets (not . edgingIsNull s . middle)) $ do
     moveLeastEdgingToStart s
     modifyEdging s
 
@@ -174,7 +172,7 @@ smithNormalForm :: Matrix Integer -> Triple
 smithNormalForm m = flip execState (matrixToTriple m) $ do
     forM_ [1 .. min (M.ncols m) (M.nrows m)] $ \s -> do
       t <- get
-      when (not $ matrixIsNull $ lowerRightBlock s $ middle t) $ do
+      unless (matrixIsNull $ lowerRightBlock s $ middle t) $ do
         moveLeastToStart s
         modifyEdging s
         nullifyEdging s

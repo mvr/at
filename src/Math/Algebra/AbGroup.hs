@@ -8,7 +8,11 @@ import Data.Matrix (Matrix, (<|>))
 import qualified Data.Vector as V
 import Math.Algebra.SmithNormalForm
 import Math.Algebra.AbGroup.IsoClass
+    ( elementaryDivisorsToInvariantFactors,
+      invariantFactorsToElementaryDivisors,
+      IsoClass(IsoClass) )
 import Math.ValueCategory
+import Math.ValueCategory.Additive
 import Math.ValueCategory.Abelian
 
 data AbGroup = AbGroup
@@ -45,6 +49,7 @@ freeAbGroup :: Integer -> AbGroup
 freeAbGroup n = fromIsoClass (IsoClass n [])
 
 -- Direct sum
+instance Semigroup AbGroup where
 instance Monoid AbGroup where
   -- TODO
 
@@ -138,31 +143,41 @@ solveMatrix m a = do
 --------------------------------------------------------------------------------
 
 data AbMorphism = AbMorphism {
-  abDomain :: AbGroup,
-  abCodomain :: AbGroup,
   fullMorphism :: Matrix Integer,
   reducedMorphism :: Matrix Integer
 } deriving (Show)
 
-instance Eq AbMorphism where
-  (AbMorphism d c f r) == (AbMorphism d' c' f' r') =
-    (d == d') && (c == c') && (isJust $ solveMatrix (presentation c) (f - f'))
+instance Eq (Arrow AbGroup) where
+  (Arrow d (AbMorphism f r) c) == (Arrow d' (AbMorphism f' r') c') =
+    (isJust $ solveMatrix (presentation c) (f - f'))
 
-morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
-morphismFromFullMatrix a b f = AbMorphism a b f (toReduced b * f * fromReduced a)
+morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Arrow AbGroup
+morphismFromFullMatrix a b f = Arrow a (AbMorphism f (toReduced b * f * fromReduced a)) b
 
-morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> AbMorphism
-morphismFromReducedMatrix a b f = AbMorphism a b (fromReduced b * f * toReduced a) f
+morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Arrow AbGroup
+morphismFromReducedMatrix a b f = Arrow a (AbMorphism (fromReduced b * f * toReduced a) f) b
+
+instance Semigroup (Arrow AbGroup) where
+  (Arrow d (AbMorphism f r) _) <> (Arrow _ (AbMorphism f' r') c) = Arrow d (AbMorphism (f' * f) (r' * r)) c
 
 instance ValueCategory AbGroup where
-  type Morphism AbGroup = AbMorphism
+  type LooseMorphism AbGroup = AbMorphism
 
-  vid a  = AbMorphism a a (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
+  looseid a = AbMorphism (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
 
-  domain = abDomain
-  codomain = abCodomain
+instance Num AbMorphism where
+  (AbMorphism f' r') + (AbMorphism f r) = AbMorphism (f' + f) (r' + r)
+  (AbMorphism f' r') - (AbMorphism f r) = AbMorphism (f' - f) (r' - r)
+  negate (AbMorphism f r) = AbMorphism (negate f) (negate r)
 
-  (AbMorphism _ c f' r') .* (AbMorphism d _ f r) = AbMorphism d c (f' * f) (r' * r)
+instance AdditiveCategory AbGroup where
+  zero = AbGroup (M.fromList 1 1 [1])
+                 (M.fromList 1 1 [1])
+                 (M.fromList 1 1 [1])
+                 (M.fromList 1 1 [1])
+
+  looseZeroMorphism a b = mor $ morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
+
 
 --------------------------------------------------------------------------------
 -- Following some ideas in
@@ -173,30 +188,19 @@ instance ValueCategory AbGroup where
 
 -- TODO: Check performance vs. using reduced matrices.
 instance AbelianCategory AbGroup where
-  zero = AbGroup (M.fromList 1 1 [1])
-                 (M.fromList 1 1 [1])
-                 (M.fromList 1 1 [1])
-                 (M.fromList 1 1 [1])
-
-  zeroMorphism a b = morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
-
-  addMorphisms (AbMorphism d c f' r') (AbMorphism _ _ f r) = AbMorphism d c (f' + f) (r' + r)
-  subtractMorphisms (AbMorphism d c f' r') (AbMorphism _ _ f r) = AbMorphism d c (f' - f) (r' - r)
-  negateMorphism (AbMorphism d c f' r') = AbMorphism d c (negate f') (negate r')
-
   kernel f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
-    where ker   = matrixKernelModulo kappa            (presentation (domain f))
-          kappa = matrixKernelModulo (fullMorphism f) (presentation (codomain f))
+    where ker   = matrixKernelModulo kappa                  (presentation (domain f))
+          kappa = matrixKernelModulo (fullMorphism $ mor f) (presentation (codomain f))
 
-  kernelMorphism f g phi = morphismFromFullMatrix (domain kerf) (domain kerg) (fromJust $ solveMatrix m a)
+  kernelArrow f g phi = morphismFromFullMatrix (domain kerf) (domain kerg) (fromJust $ solveMatrix m a)
     where kerf = kernel f
           kerg = kernel g
-          m = fullMorphism kerg
-          a = fullMorphism (phi .* kerf)
+          m = fullMorphism (mor kerg)
+          a = fullMorphism (mor $ kerf <> phi)
 
   -- TODO: just supply reduced matrix directly
   cokernel f = morphismFromFullMatrix (codomain f) (cokernelObject f)
                (M.identity $ M.nrows $ presentation $ codomain f)
-    where cokernelObject f = fromPresentation (fullMorphism f <|> presentation (codomain f))
+    where cokernelObject f = fromPresentation (fullMorphism (mor f) <|> presentation (codomain f))
 
-  cokernelMorphism f g phi = morphismFromFullMatrix (cokernelObject f) (cokernelObject g) (fullMorphism phi)
+  cokernelArrow f g phi = morphismFromFullMatrix (cokernelObject f) (cokernelObject g) (fullMorphism (mor phi))
