@@ -1,0 +1,75 @@
+name:                at
+version:             0.0.1.0
+github:              "mvr/at"
+license:             BSD3
+author:              "Mitchell Riley"
+maintainer:          "mitchell.v.riley@gmail.com"
+
+extra-source-files:
+- README.md
+
+synopsis:  Haskell rewrite of Kenzo
+category:  Math
+description: In README
+
+dependencies:
+- base >= 4.7 && < 5
+default-extensions:
+- ConstraintKinds
+- BangPatterns
+- DeriveFoldable
+- DeriveFunctor
+- DeriveTraversable
+- EmptyCase
+- FlexibleContexts
+- FlexibleInstances
+- FunctionalDependencies
+- GADTs
+- GeneralizedNewtypeDeriving
+- KindSignatures
+- MultiParamTypeClasses
+- NoMonomorphismRestriction
+- OverloadedStrings
+- PartialTypeSignatures
+- PatternGuards
+- PatternSynonyms
+- RankNTypes
+- RecordWildCards
+- RoleAnnotations
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TupleSections
+- TypeApplications
+- TypeFamilies
+- TypeInType
+- UnboxedTuples
+- UnicodeSyntax
+- ViewPatterns
+
+library:
+  source-dirs:
+      src
+  dependencies:
+    - vector
+    - matrix
+    - mtl
+  ghc-options:
+    - -Wall
+    - -Wno-missing-signatures
+    - -Wno-name-shadowing
+    - -Wno-unused-do-bind
+    - -Wno-unused-matches
+    - -Wno-partial-type-signatures
+    - -O2
+
+tests:
+  at-test:
+    main:  test/Spec.hs
+    ghc-options:
+    - -O2
+    dependencies:
+    - at
+    - hspec
+    - QuickCheck
+    - random
