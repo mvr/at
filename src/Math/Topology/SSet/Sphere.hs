@@ -20,7 +20,7 @@ instance SSet Sphere where
   geomFace (Sphere n) Basepoint _ = undefined
   geomFace (Sphere n) Cell _ = constantAtVertex (Sphere n) Basepoint (n - 1)
 
-instance LevelwiseFiniteSSet Sphere where
+instance LevelwiseFinite Sphere where
   geomBasis (Sphere n) i
     | i == 0 = [Basepoint]
     | i == n = [Cell]

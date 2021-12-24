@@ -46,6 +46,8 @@ Critial path to computing some non-trivial homotopy groups:
 1. Whitehead tower
 2. Pullbacks of fibrations
 2. Effective fibrations
+2. Cohomology classes, first non-trivial
+2. Enough K(G,1)s
 2. Classifying space of simplicial group
 3. Bar construction on chain complexes
 4. Tensor product of chain complexes <!-- 3. Product of simplicial sets, using the DVF method -->
@@ -61,44 +63,60 @@ Wishlist
     - [ ] Cobar
   - [ ] Reduction
   - [ ] Perturbation
-- [ ] Topology
+- [ ] Definitions
   - [x] Simplicial Set
-  - [ ] Simplicial Morphism
-  - [ ] Fibration
-  - [ ] SSet With Effective Homology
-  - [ ] Whitehead Tower
-- [ ] Simplicial Sets
+  - [x] Simplicial Morphism
+  - [x] Simplicial Group
+  - [x] SSet With Effective Homology
+  - [ ] Principal Fibrations
+- [ ] Constructions
   - [x] Spheres
   - [x] Moore Spaces
   - [ ] Projective Spaces
+  - [ ] Products
+  - [ ] Total Space of a Fibration
   - [ ] Loop Space
-    - [ ] Simplicial Group Structure
-  - [ ] Classifying Space
-    - [ ] 0-reduced Group
-    - [ ] Non-reduced Group?
-  - [ ] Eilenberg-Maclane Spaces
+    - [ ] Group Structure
+  - [x] Classifying Space
+    - [x] For 0-reduced Group
+    - [x] For Non-reduced Group?
+    - [x] Special Case for Discrete Groups?
+    - [ ] Group Structure
+  - [ ] Specific Eilenberg-Maclane Spaces
+    - [ ] K(Z,1)
+    - [ ] K(Z/2,1) (Can be made particularly efficient)
+    - [ ] K(Z/p,1)
+    - [ ] Reduction of K(Z,1) to S^1
   - [ ] Suspension
 - [ ] Effective Homology
   - [ ] Finite Simplicial Sets
   - [ ] Loop Space
-  - [ ] Eilenberg-Maclane Spaces
-  - [ ] Fibration
+  - [ ] Classifying Spaces
+  - [ ] Total Space of a Fibration
   - [ ] Suspension
+- [ ] Discrete Vector Field Algorithms
+  - [ ] Classifying Spaces
+  - [ ] Products
+  - [ ] Fibrations
+- [ ] Whitehead Tower
 
 References
 ----------
 
 ### Code:
 * [Kenzo homepage](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/)
-* [Kenzo documenation](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/Kenzo-doc.pdf), possibly out of date with the code.
-* [Kenzo mirror on Github](https://github.com/gheber/kenzo), there are three different versions of
-  the code [here](https://github.com/gheber/kenzo/tree/master/src), I am not clear on the what gained/lost between
-  them. There are some online [Jypter notebooks](https://sur-l-analysis-sit.us/) that let you play
-  with Kenzo (which version?) without having to figure out how to install and operate a
-  Common Lisp environment
-* [Kenzo fork](https://github.com/miguelmarco/kenzo), looks like it is updated by Ana Romero and
-  collaborators
-* [Modules written by Ana Romero](https://github.com/ana-romero/Kenzo-external-modules)
+* [Kenzo documenation](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/Kenzo-doc.pdf), likely out of date with the code
+* ['Official' Kenzo mirror on Github](https://github.com/gheber/kenzo), there are three different
+  versions of the code [here](https://github.com/gheber/kenzo/tree/master/src), I am not clear on the what
+  gained/lost between them. There are some online [Jypter
+  notebooks](https://sur-l-analysis-sit.us/) that let you play with Kenzo (which version?) without
+  having to figure out how to install and operate a Common Lisp
+  environment
+* [Fork by Ana Romero + collaborators](https://github.com/miguelmarco/kenzo), has some added features
+  over the mirror above, worth looking at [resolutions.lisp](https://github.com/miguelmarco/kenzo/blob/master/src/anromero/resolutions.lisp) and
+  [homotopy.lisp](https://github.com/miguelmarco/kenzo/blob/master/src/anromero/homotopy.lisp), but is missing all the discrete vector field code
+* [Modules written by Ana Romero](https://github.com/ana-romero/Kenzo-external-modules), mostly to do with spectral
+  sequences
 
 ### Papers:
 (Everything related to Kenzo I can find:)
@@ -215,10 +233,9 @@ Symbolic Comput. 41 (2006) 1059–1079.</span>
 
 <span class="csl-left-margin">\[12\] </span><span
 class="csl-right-inline">J. Rubio, F. Sergeraert, [Locally effective
-objects and algebraic
-topology](https://doi.org/10.1007/978-1-4612-2752-6\_17), in:
-Computational Algebraic Geometry (Nice, 1992), Birkhäuser Boston,
-Boston, MA, 1993: pp. 235–251.</span>
+objects and algebraic topology](https://doi.org/10.1007/978-1-4612-2752-6_17), in: Computational Algebraic
+Geometry (Nice, 1992), Birkhäuser Boston, Boston, MA, 1993:
+pp. 235–251.</span>
 
 </div>
 

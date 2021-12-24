@@ -31,5 +31,5 @@ choose 0 _ = [[]]
 choose i [] = []
 choose i (x:xs) = fmap (x:) (choose (i-1) xs) ++ choose i xs
 
-instance LevelwiseFiniteSSet NSimplex where
+instance LevelwiseFinite NSimplex where
   geomBasis (NSimplex d) i = NSimplexSimplex <$> choose i [0..d]

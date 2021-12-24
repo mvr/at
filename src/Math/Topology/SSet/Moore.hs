@@ -24,7 +24,7 @@ instance SSet Moore where
     | even i && i < p*2 = NonDegen N
     | otherwise         = constantAtVertex (Moore p n) Basepoint n
 
-instance LevelwiseFiniteSSet Moore where
+instance LevelwiseFinite Moore where
   geomBasis (Moore p n) i
     | i == 0 = [Basepoint]
     | i == n = [N]
