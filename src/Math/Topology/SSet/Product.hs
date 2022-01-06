@@ -1,15 +1,19 @@
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-unused-local-binds #-}
 
 -- | Cartesian product of simplicial sets
 -- See as:dvf, as:ez-dvf
 module Math.Topology.SSet.Product where
 
+import Control.Category.Constrained (return)
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.DVF hiding (DVF)
 import Math.Algebra.ChainComplex.Tensor
+import Math.Topology.NormalisedChains
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
+import Prelude hiding (return)
 
 data Product a b = Product a b
 
@@ -18,7 +22,7 @@ data Product a b = Product a b
 -- https://stackoverflow.com/questions/21144237/standard-c11-code-equivalent-to-the-pext-haswell-instruction-and-likely-to-be
 prodNormalise :: Product a b -> (Simplex a, Simplex b) -> Simplex (Product a b)
 prodNormalise p (Degen i s, Degen j t)
-  | i == j = degen p (prodNormalise p (s, t)) i
+  | i == j = degen (prodNormalise p (s, t)) i
   | i > j = fmap (\(s', t') -> (Degen i s', t')) (prodNormalise p (s, Degen j t))
   | i < j = fmap (\(s', t') -> (s', Degen j t')) (prodNormalise p (Degen i s, t))
 prodNormalise p s = NonDegen s
@@ -35,6 +39,8 @@ instance (SSet a, SSet b) => SSet (Product a b) where
   geomSimplexDim (Product a _) (s, _) = simplexDim a s
 
   geomFace p@(Product a b) (s, t) i = prodNormalise p (face a s i, face b t i)
+
+
 
 instance (SSet a, SSet b, Eq (GeomSimplex a), Eq (GeomSimplex b)) => DVF (Product a b) where
   vf = status
@@ -78,13 +84,35 @@ status (Product a b) (s, t) =
   fmap (\(_, _, s, t) -> (s, t)) $
     statusStep
       (Product a b)
-      ( simplexDim a s - degenCount a s,
-        simplexDim b t - degenCount b t,
+      ( simplexDim a s - degenCount s,
+        simplexDim b t - degenCount t,
         s,
         t
       )
 
+criticalIso ::
+  a ->
+  b ->
+  Morphism
+    (CriticalComplex (NormalisedChains (Product a b)))
+    (Tensor (NormalisedChains a) (NormalisedChains b))
+criticalIso _ _ = Morphism 0 $ \(s, t) -> return (underlyingGeom s, underlyingGeom t)
+
+criticalIsoInv ::
+  (SSet a, SSet b) =>
+  a ->
+  b ->
+  Morphism
+    (Tensor (NormalisedChains a) (NormalisedChains b))
+    (CriticalComplex (NormalisedChains (Product a b)))
+criticalIsoInv a b =
+  Morphism 0 $ \(s, t) ->
+    let n = geomSimplexDim a s
+        m = geomSimplexDim b t
+     in return (downshiftN n (constantAt s m), constantAt t n)
+
 instance (Effective a, Effective b, Eq (GeomSimplex a), Eq (GeomSimplex b), Eq (Basis (Model a)), Eq (Basis (Model b))) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
   model (Product a b) = Tensor (model a) (model b)
-  eff = undefined -- TODO! All that remains is the isomorphism between the critical complex and the tensor product complex (should be easy)
+
+  eff = equivComposeIso

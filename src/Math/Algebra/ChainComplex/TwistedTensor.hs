@@ -4,6 +4,7 @@
 -- factor must be a coalgebra and the right an algebra. There is an
 -- (unimplemented) extension to comodules and modules.
 -- See Section 8.3 in https://arxiv.org/abs/1208.3816
+-- Maybe https://arxiv.org/abs/1006.2781
 module Math.Algebra.ChainComplex.TwistedTensor where
 
 import Control.Category.Constrained

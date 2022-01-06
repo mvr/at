@@ -31,19 +31,20 @@ default-extensions:
 - LambdaCase
 - MultiParamTypeClasses
 - NoMonomorphismRestriction
-- OverloadedStrings
-- PartialTypeSignatures
+# - OverloadedStrings
+# - PartialTypeSignatures
 - PatternGuards
 - PatternSynonyms
 - PolyKinds
 - RankNTypes
-- RecordWildCards
+# - RecordWildCards
 - RoleAnnotations
 - ScopedTypeVariables
 - StandaloneDeriving
 # - TemplateHaskell
 - TupleSections
 - TypeApplications
+- TypeOperators
 - TypeFamilies
 # - TypeInType
 # - UnboxedTuples

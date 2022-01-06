@@ -19,9 +19,9 @@ instance SSet Sphere where
   geomSimplexDim (Sphere n) Cell = n
 
   geomFace (Sphere n) Basepoint _ = undefined
-  geomFace (Sphere n) Cell _ = constantAtVertex (Sphere n) Basepoint (n - 1)
+  geomFace (Sphere n) Cell _ = constantAt Basepoint (n - 1)
   geomFaces (Sphere n) Basepoint = []
-  geomFaces (Sphere n) Cell = replicate (n+1) $ constantAtVertex (Sphere n) Basepoint (n - 1)
+  geomFaces (Sphere n) Cell = replicate (n+1) $ constantAt Basepoint (n - 1)
 
 instance LevelwiseFinite Sphere where
   geomBasis (Sphere n) i

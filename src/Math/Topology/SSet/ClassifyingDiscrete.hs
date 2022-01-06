@@ -18,8 +18,8 @@ newtype ClassifyingDiscrete a = ClassifyingDiscrete a
 normalise :: (Group a, Eq (Element a)) => a -> [Element a] -> Simplex (ClassifyingDiscrete a)
 normalise a [] = NonDegen []
 normalise a (e:es)
-  | e == unit a = degen (ClassifyingDiscrete a) (normalise a es) 0
-  | otherwise   = fmap (e:) (downshift (ClassifyingDiscrete a) (normalise a es))
+  | e == unit a = degen (normalise a es) 0
+  | otherwise   = fmap (e:) (downshift (normalise a es))
 
 instance (Group a, Eq (Element a)) => SSet (ClassifyingDiscrete a) where
   -- A non-degenerate n-simplex is a list of n non-identity elements

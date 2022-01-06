@@ -20,6 +20,9 @@ instance Category Reduction where
   id = Reduction id id (morphismZeroOfDeg 1)
   (Reduction f1 g1 h1) . (Reduction f2 g2 h2) = Reduction (f1 . f2) (g2 . g1) (h2 + (g2 . h1 . f2))
 
+isoToReduction :: (Eq (Basis a)) => Morphism a b -> Morphism b a -> Reduction a b
+isoToReduction f g = Reduction f g 0
+
 data Perturbed a = Perturbed a (Morphism a a)
 
 instance (ChainComplex a, Eq (Basis a)) => ChainComplex (Perturbed a) where
@@ -47,13 +50,20 @@ perturbBottom a b (Reduction f g h) delta =
   where
     deltahat = g . delta . f
 
-data Equivalence a b = forall c.
+data Equivalence a b = forall c. (ChainComplex c, Eq (Basis c)) =>
   Equivalence
   { equivLeft :: Reduction c a,
     equivRight :: Reduction c b
   }
 
 instance Category Equivalence where
-  type Object Equivalence a = Eq (Basis a)
+  type Object Equivalence a = (ChainComplex a, Eq (Basis a))
   id = Equivalence id id
   e1 . e2 = undefined
+
+
+isoToEquiv :: (ChainComplex a, Eq (Basis a)) => Morphism a b -> Morphism b a -> Equivalence a b
+isoToEquiv f g = Equivalence id (isoToReduction f g)
+
+equivComposeIso :: (Eq (Basis b), Eq (Basis c)) => Equivalence a b -> Morphism b c -> Morphism c b -> Equivalence a c
+equivComposeIso (Equivalence rl (Reduction f g h)) p q = Equivalence rl (Reduction (p . f) (g . q) h)

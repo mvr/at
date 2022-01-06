@@ -14,9 +14,9 @@ import Math.Topology.SSet.Product
 
 class (SSet a, Pointed a) => SGrp a where
   prodMor :: a -> Morphism (Product a a) a
-
   -- The identity map is always just picking out a 0-simplex, so we
   -- can assume a is pointed.
+
   invMor :: a -> Morphism a a
 
 isUnit :: (Pointed g, Eq (GeomSimplex g)) => g -> Simplex g -> Bool
@@ -29,7 +29,7 @@ data NSimplicesOf a = NSimplicesOf Int a
 instance (SGrp a) => Group (NSimplicesOf a) where
   type Element (NSimplicesOf a) = Simplex a
   prod (NSimplicesOf n a) s t = prodMor a `mapSimplex` prodNormalise (Product a a) (s, t)
-  unit (NSimplicesOf n a) = constantAtVertex a (basepoint a) n
+  unit (NSimplicesOf n a) = constantAt (basepoint a) n
   inv (NSimplicesOf n a) s = invMor a `mapSimplex` s
 
 class SGrp a => SAb a

@@ -16,6 +16,50 @@ isDegen :: FormalDegen a -> Bool
 isDegen (NonDegen _) = False
 isDegen (Degen _ _) = True
 
+underlyingGeom :: FormalDegen a -> a
+underlyingGeom (NonDegen s) = s
+underlyingGeom (Degen _ s) = underlyingGeom s
+
+degen :: FormalDegen a -> Int -> FormalDegen a
+degen (Degen j s) i | i <= j = Degen (j + 1) (degen s i)
+degen s i = Degen i s
+
+degenList :: FormalDegen a -> [Int]
+degenList (NonDegen _) = []
+degenList (Degen i s) = i : degenList s
+
+degenCount :: FormalDegen a -> Int
+degenCount (NonDegen _) = 0
+degenCount (Degen i s) = 1 + degenCount s
+
+-- In this representation, we just need to check that the index is
+-- somewhere in the list. (Not necessarily the first thing)
+isImageOfDegen :: FormalDegen a -> Int -> Bool
+isImageOfDegen (NonDegen _) _ = False
+isImageOfDegen (Degen j s) i
+  | i == j = True
+  | i >  j = False -- We missed it, it can't be further down.
+  | otherwise = isImageOfDegen s i
+
+constantAt :: a -> Int -> FormalDegen a
+constantAt a 0 = NonDegen a
+constantAt a n = Degen (n - 1) $ constantAt a (n -1)
+
+-- The following are dangerous and only make sense in certain situations.
+downshiftN :: Int -> FormalDegen a -> FormalDegen a
+downshiftN n (NonDegen s) = NonDegen s
+downshiftN n (Degen i s) = Degen (i + n) (downshift s)
+
+downshift :: FormalDegen a -> FormalDegen a
+downshift = downshiftN 1
+
+unDegen :: FormalDegen a -> [Int] -> FormalDegen a
+unDegen s [] = s
+unDegen (NonDegen _) js = undefined -- shouldn't happen
+unDegen (Degen i s) (j : js)
+  | i == j = unDegen s js
+  | otherwise = Degen (i - length (j : js)) (unDegen s (j : js))
+
 type Simplex a = FormalDegen (GeomSimplex a)
 
 class SSet a where
@@ -63,43 +107,6 @@ frontFace a s = face a s 0
 
 backFace :: SSet a => a -> Simplex a -> Simplex a
 backFace a s = face a s (simplexDim a s)
-
-degen :: a -> Simplex a -> Int -> Simplex a
-degen a (Degen j s) i | i <= j = Degen (j + 1) (degen a s i)
-degen a s i = Degen i s
-
-degenList :: a -> Simplex a -> [Int]
-degenList a (NonDegen _) = []
-degenList a (Degen i s) = i : degenList a s
-
-degenCount :: a -> Simplex a -> Int
-degenCount a (NonDegen _) = 0
-degenCount a (Degen i s) = 1 + degenCount a s
-
--- In this representation, we just need to check that the index is
--- somewhere in the list. (Not necessarily the first thing)
-isImageOfDegen :: a -> Simplex a -> Int -> Bool
-isImageOfDegen a (NonDegen _) _ = False
-isImageOfDegen a (Degen j s) i
-  | i == j = True
-  | i >  j = False -- We missed it, it can't be further down.
-  | otherwise = isImageOfDegen a s i
-
-constantAtVertex :: SSet a => a -> GeomSimplex a -> Int -> Simplex a
-constantAtVertex a g 0 = NonDegen g
-constantAtVertex a g n = Degen (n -1) $ constantAtVertex a g (n -1)
-
--- The following are dangerous and only make sense in certain situations.
-downshift :: a -> Simplex a -> Simplex a
-downshift a (NonDegen s) = NonDegen s
-downshift a (Degen i s) = Degen (i + 1) (downshift a s)
-
-unDegen :: a -> Simplex a -> [Int] -> Simplex a
-unDegen a s [] = s
-unDegen a (NonDegen _) js = undefined -- shouldn't happen
-unDegen a (Degen i s) (j : js)
-  | i == j = unDegen a s js
-  | otherwise = Degen (i - length (j : js)) (unDegen a s (j : js))
 
 class SSet a => LevelwiseFinite a where
   -- * `all isSimplex (geomBasis n)`

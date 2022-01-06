@@ -20,10 +20,10 @@ instance SSet Moore where
   geomSimplexDim (Moore p n) NPlusOne = n + 1
 
   geomFace (Moore p n) Basepoint _ = undefined
-  geomFace (Moore p n) N _ = constantAtVertex (Moore p n) Basepoint (n - 1)
+  geomFace (Moore p n) N _ = constantAt Basepoint (n - 1)
   geomFace (Moore p n) NPlusOne i
     | even i && i < p*2 = NonDegen N
-    | otherwise         = constantAtVertex (Moore p n) Basepoint n
+    | otherwise         = constantAt Basepoint n
 
 instance LevelwiseFinite Moore where
   geomBasis (Moore p n) i

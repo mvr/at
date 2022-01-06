@@ -21,7 +21,7 @@ newtype PrincipalFibration a g = PrincipalFibration {geomTwistOp :: GeomSimplex 
 
 twistOp :: PrincipalFibration a g -> g -> Simplex a -> Simplex g
 twistOp f g (NonDegen s) = geomTwistOp f s
-twistOp f g (Degen i s) = degen g (twistOp f g s) i
+twistOp f g (Degen i s) = degen (twistOp f g s) i
 
 data TotalSpace a g = TotalSpace a g (PrincipalFibration a g)
 
