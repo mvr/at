@@ -48,7 +48,7 @@ isZeroArrow f = imageObject f == zero
 
 -- Arrows assumed to be composable, with gf = 0
 homology :: (AbelianCategory a) => Arrow a -> Arrow a -> a
-homology f g = imageObject (kernel g <> cokernel f)
+homology f g = imageObject (cokernel f <> kernel g)
 
 isExact :: (Eq a, AbelianCategory a) => Arrow a -> Arrow a -> Bool
 isExact f g = homology f g == zero

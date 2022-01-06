@@ -1,18 +1,23 @@
--- | Simplicial Group
+{-# LANGUAGE UndecidableInstances #-}
+-- sue me
+{-# OPTIONS_GHC -Wno-orphans #-}
 
+-- | Simplicial Group
 module Math.Topology.SGrp where
 
+import Math.Algebra.ChainComplex.Algebra
+import Math.Algebra.Group
+import Math.Topology.NormalisedChains
 import Math.Topology.SSet
 import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
 
-import Math.Algebra.Group
-
 class (SSet a, Pointed a) => SGrp a where
-  prod :: a -> Morphism (Product a a) a
+  prodMor :: a -> Morphism (Product a a) a
+
   -- The identity map is always just picking out a 0-simplex, so we
   -- can assume a is pointed.
-  inv :: a -> Morphism a a
+  invMor :: a -> Morphism a a
 
 isUnit :: (Pointed g, Eq (GeomSimplex g)) => g -> Simplex g -> Bool
 isUnit g (NonDegen s) = s == basepoint g
@@ -23,10 +28,15 @@ data NSimplicesOf a = NSimplicesOf Int a
 
 instance (SGrp a) => Group (NSimplicesOf a) where
   type Element (NSimplicesOf a) = Simplex a
-  prod (NSimplicesOf n a) s t = Math.Topology.SGrp.prod a `mapSimplex` prodNormalise (Product a a) (s, t)
+  prod (NSimplicesOf n a) s t = prodMor a `mapSimplex` prodNormalise (Product a a) (s, t)
   unit (NSimplicesOf n a) = constantAtVertex a (basepoint a) n
-  inv (NSimplicesOf n a) s = Math.Topology.SGrp.inv a `mapSimplex` s
+  inv (NSimplicesOf n a) s = invMor a `mapSimplex` s
 
-class SGrp a => SAb a where
+class SGrp a => SAb a
 
 instance (SAb a) => Abelian (NSimplicesOf a)
+
+instance (SGrp g, (Eq (GeomSimplex g))) => Algebra (NormalisedChains g) where
+
+
+-- TODO

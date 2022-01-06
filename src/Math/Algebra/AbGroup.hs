@@ -48,10 +48,9 @@ fromIsoClass (IsoClass rank torsion) = AbGroup m m i i
 freeAbGroup :: Integer -> AbGroup
 freeAbGroup n = fromIsoClass (IsoClass n [])
 
--- Direct sum
-instance Semigroup AbGroup where
-instance Monoid AbGroup where
-  -- TODO
+-- TODO: Direct sum
+-- instance Semigroup AbGroup where
+-- instance Monoid AbGroup where
 
 -- Remove useless generators:
 -- Delete rows and cols with a 1 on the diagonal
@@ -158,7 +157,7 @@ morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Arrow AbGro
 morphismFromReducedMatrix a b f = Arrow a (AbMorphism (fromReduced b * f * toReduced a) f) b
 
 instance Semigroup (Arrow AbGroup) where
-  (Arrow d (AbMorphism f r) _) <> (Arrow _ (AbMorphism f' r') c) = Arrow d (AbMorphism (f' * f) (r' * r)) c
+  (Arrow d (AbMorphism f r) _) <> (Arrow _ (AbMorphism f' r') c) = Arrow d (AbMorphism (f * f') (r * r')) c
 
 instance ValueCategory AbGroup where
   type LooseMorphism AbGroup = AbMorphism
@@ -196,7 +195,7 @@ instance AbelianCategory AbGroup where
     where kerf = kernel f
           kerg = kernel g
           m = fullMorphism (mor kerg)
-          a = fullMorphism (mor $ kerf <> phi)
+          a = fullMorphism (mor $ phi <> kerf)
 
   -- TODO: just supply reduced matrix directly
   cokernel f = morphismFromFullMatrix (codomain f) (cokernelObject f)

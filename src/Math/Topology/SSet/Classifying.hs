@@ -5,6 +5,7 @@
 -- See https://ncatlab.org/nlab/show/simplicial+classifying+space
 -- In the Kenzo source, this is spread over
 -- classifying-spaces.lisp, cl-space-efhm.lisp and anromero/resolutions.lisp
+
 module Math.Topology.SSet.Classifying where
 
 import Math.Topology.SSet
@@ -13,6 +14,8 @@ import Math.Topology.SSet.Product
 -- import Math.Topology.SSet.Effective
 import Math.Topology.SGrp
 import Data.List (intersect)
+import Math.Algebra.ChainComplex.DVF
+import Math.Topology.NormalisedChains
 
 newtype Classifying g = Classifying g
 
@@ -27,7 +30,6 @@ filterCandidates g ss@(st:srest) cs@(ct:crest) j
                   else
                     filterCandidates g srest crest (j+1)
   | otherwise   = filterCandidates g srest (cs `intersect` fmap (+j) (degenList g st)) (j+1)
-
 
 downshiftList :: [Int] -> [Int]
 downshiftList [] = []
@@ -55,9 +57,9 @@ instance (SGrp g, Eq (GeomSimplex g)) => SSet (Classifying g) where
   -- contains a unit, and the things proceding it are all degeneracies
   type GeomSimplex (Classifying g) = [Simplex g]
 
-  isSimplex (Classifying g) ss = undefined -- not (any (isUnit g) ss)
+  isGeomSimplex (Classifying g) ss = undefined -- not (any (isUnit g) ss)
 
-  simplexDim _ ss = length ss
+  geomSimplexDim _ ss = length ss
 
   geomFace _ [] _ = undefined
   geomFace (Classifying g) ss i = normalise g (underlying ss i)
@@ -65,7 +67,7 @@ instance (SGrp g, Eq (GeomSimplex g)) => SSet (Classifying g) where
             | i == 0 = tail ss
             | i == 1 && length ss == 1 = []
             | i == 1 = let (s:s':rest) = ss in
-                         (prod g `mapSimplex` prodNormalise (Product g g) (face g s 0, s')) : rest
+                         (prodMor g `mapSimplex` prodNormalise (Product g g) (face g s 0, s')) : rest
             | otherwise = let (s:rest) = ss in
                             (face g s (i-1)) : underlying rest (i-1)
 
@@ -81,3 +83,13 @@ instance (SAb g, Eq (GeomSimplex g)) => SGrp (Classifying g) where
 instance (SAb g, Eq (GeomSimplex g)) => SAb (Classifying g)
 
 -- instance (SGrp g) => Kan (Classifying g)
+
+-- Kenzo implements this via DVF when `g` is a 1-reduced simplicial
+-- abelian group. This should be enough to compute homotopy groups of
+-- 1-reduced simplicial sets, as the K(G,n)s involved should all be of
+-- that type.
+
+-- Other simplicial groups will need the more complicated method
+-- described in serre.lisp and cl-space-efhm.lisp
+instance (SGrp g, Eq (GeomSimplex g)) => DVF (NormalisedChains (Classifying g)) where
+  vf = undefined

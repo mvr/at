@@ -15,8 +15,9 @@ description: In README
 dependencies:
 - base >= 4.7 && < 5
 default-extensions:
-- ConstraintKinds
-- BangPatterns
+# - ConstraintKinds
+# - BangPatterns
+- DefaultSignatures
 - DeriveFoldable
 - DeriveFunctor
 - DeriveTraversable
@@ -27,23 +28,25 @@ default-extensions:
 - GADTs
 - GeneralizedNewtypeDeriving
 - KindSignatures
+- LambdaCase
 - MultiParamTypeClasses
 - NoMonomorphismRestriction
 - OverloadedStrings
 - PartialTypeSignatures
 - PatternGuards
 - PatternSynonyms
+- PolyKinds
 - RankNTypes
 - RecordWildCards
 - RoleAnnotations
 - ScopedTypeVariables
 - StandaloneDeriving
-- TemplateHaskell
+# - TemplateHaskell
 - TupleSections
 - TypeApplications
 - TypeFamilies
-- TypeInType
-- UnboxedTuples
+# - TypeInType
+# - UnboxedTuples
 - UnicodeSyntax
 - ViewPatterns
 

@@ -2,7 +2,8 @@
 
 -- | Classifying spaces for discrete groups
 -- Wbar : Grp -> 0-reduced sSet_*
--- Much easier than the case of general simplicail groups
+-- Much easier than the case of general simplicial groups
+-- See also https://dl.acm.org/doi/10.1145/1576702.1576744
 module Math.Topology.SSet.ClassifyingDiscrete where
 
 -- import Math.Topology.SSet.Effective
@@ -25,9 +26,9 @@ instance (Group a, Eq (Element a)) => SSet (ClassifyingDiscrete a) where
   -- of `a`
   type GeomSimplex (ClassifyingDiscrete a) = [Element a]
 
-  isSimplex (ClassifyingDiscrete a) ss = undefined -- not (any (isUnit a) ss)
+  isGeomSimplex (ClassifyingDiscrete a) ss = undefined -- not (any (isUnit a) ss)
 
-  simplexDim _ ss = length ss
+  geomSimplexDim _ ss = length ss
 
   geomFace _ [] _ = undefined
   geomFace (ClassifyingDiscrete a) ss i = normalise a (underlying ss i)

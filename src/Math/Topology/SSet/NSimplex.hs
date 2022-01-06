@@ -3,6 +3,7 @@
 module Math.Topology.SSet.NSimplex where
 
 import Math.Topology.SSet
+import Math.Topology.SSet.Effective
 
 newtype NSimplex = NSimplex { simplexDimension :: Int }
   deriving (Eq, Ord, Show)
@@ -22,7 +23,8 @@ deleteAt i (x:xs) = x : deleteAt (i - 1) xs
 
 instance SSet NSimplex where
   type GeomSimplex NSimplex = NSimplexSimplex
-  isSimplex (NSimplex d) (NSimplexSimplex vs) = length vs <= d+1 && isOrdered vs
+  geomSimplexDim (NSimplex d) (NSimplexSimplex vs) = length vs - 1
+  isGeomSimplex (NSimplex d) (NSimplexSimplex vs) = length vs <= d+1 && isOrdered vs
   geomFace (NSimplex d) (NSimplexSimplex vs) i = NonDegen (NSimplexSimplex (deleteAt i vs))
 
 -- TODO: could be more efficient
@@ -32,4 +34,9 @@ choose i [] = []
 choose i (x:xs) = fmap (x:) (choose (i-1) xs) ++ choose i xs
 
 instance LevelwiseFinite NSimplex where
-  geomBasis (NSimplex d) i = NSimplexSimplex <$> choose i [0..d]
+  geomBasis (NSimplex d) i = NSimplexSimplex <$> choose (i + 1) [0..d]
+
+instance Pointed NSimplex where
+  basepoint _ = NSimplexSimplex [0]
+
+instance Effective NSimplex

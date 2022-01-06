@@ -1,22 +1,12 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 module Math.Topology.SSet where
 
-import Math.Algebra.ChainComplex as CC
-  ( ChainComplex (..),
-    ChainMorphism (ChainMorphism),
-    Combination (Combination),
-  )
-import qualified Math.Algebra.ChainComplex as CC
-  ( LevelwiseFinite (..),
-  )
-
--- NOTE: This could be made much more efficient. This could be
+-- NOTE: This should be made much more efficient. First, it could be
 -- flattened so that in a degenerate simplex you have immediate access
--- to the underlying non-degenerate simplex. The list of ints is
+-- to the underlying non-degenerate simplex. Also, the list of ints is
 -- always strictly decreasing, and so could be stored as a bit mask as
 -- is done in Kenzo.  Can use pattern synonyms to make this
--- indistinguishable from what is used currently.
+-- indistinguishable from what is used currently, but a lot of the
+-- algorithms could then be done using bit operations.
 data FormalDegen a
   = NonDegen a
   | Degen Int (FormalDegen a)
@@ -36,12 +26,30 @@ class SSet a where
   -- class and SSet is the associated type.
   type GeomSimplex a
 
-  isSimplex :: a -> GeomSimplex a -> Bool
-  simplexDim :: a -> GeomSimplex a -> Int
+  -- In a language with dependent types, this could be folded into the
+  -- GeomSimplex type.
+  isGeomSimplex :: a -> GeomSimplex a -> Bool
+  isGeomSimplex _ _ = True
+
+  geomSimplexDim :: a -> GeomSimplex a -> Int
+  -- geomSimplexDim a s = length (geomFaces a s)
   geomFace :: a -> GeomSimplex a -> Int -> Simplex a
 
   geomFaces :: a -> GeomSimplex a -> [Simplex a]
-  geomFaces a s = fmap (geomFace a s) [0 .. simplexDim a s]
+  geomFaces a s =
+    let d = geomSimplexDim a s
+     in if d == 0 then [] else fmap (geomFace a s) [0 .. d]
+
+  -- TODO: for efficiency
+  -- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
+
+isSimplex :: SSet a => a -> Simplex a -> Bool
+isSimplex a (NonDegen s) = isGeomSimplex a s
+isSimplex a (Degen _ s) = isSimplex a s
+
+simplexDim :: SSet a => a -> Simplex a -> Int
+simplexDim a (NonDegen s) = geomSimplexDim a s
+simplexDim a (Degen i s) = 1 + simplexDim a s
 
 face :: SSet a => a -> Simplex a -> Int -> Simplex a
 face a (NonDegen s) i = geomFace a s i
@@ -50,24 +58,23 @@ face a (Degen j s) i
   | i > j + 1 = Degen j (face a s (i -1))
   | otherwise = s
 
+frontFace :: SSet a => a -> Simplex a ->  Simplex a
+frontFace a s = face a s 0
+
+backFace :: SSet a => a -> Simplex a -> Simplex a
+backFace a s = face a s (simplexDim a s)
+
 degen :: a -> Simplex a -> Int -> Simplex a
 degen a (Degen j s) i | i <= j = Degen (j + 1) (degen a s i)
 degen a s i = Degen i s
-
-downshift :: a -> Simplex a -> Simplex a
-downshift a (NonDegen s) = NonDegen s
-downshift a (Degen i s) = Degen (i+1) (downshift a s)
 
 degenList :: a -> Simplex a -> [Int]
 degenList a (NonDegen _) = []
 degenList a (Degen i s) = i : degenList a s
 
-unDegen :: a -> Simplex a -> [Int] -> Simplex a
-unDegen a s [] = s
-unDegen a (NonDegen _) js = undefined -- shouldn't happe
-unDegen a (Degen i s) (j:js)
-  | i == j    = unDegen a s js
-  | otherwise = Degen (i - length (j : js)) (unDegen a s (j : js))
+degenCount :: a -> Simplex a -> Int
+degenCount a (NonDegen _) = 0
+degenCount a (Degen i s) = 1 + degenCount a s
 
 -- In this representation, we just need to check that the index is
 -- somewhere in the list. (Not necessarily the first thing)
@@ -82,30 +89,29 @@ constantAtVertex :: SSet a => a -> GeomSimplex a -> Int -> Simplex a
 constantAtVertex a g 0 = NonDegen g
 constantAtVertex a g n = Degen (n -1) $ constantAtVertex a g (n -1)
 
+-- The following are dangerous and only make sense in certain situations.
+downshift :: a -> Simplex a -> Simplex a
+downshift a (NonDegen s) = NonDegen s
+downshift a (Degen i s) = Degen (i + 1) (downshift a s)
+
+unDegen :: a -> Simplex a -> [Int] -> Simplex a
+unDegen a s [] = s
+unDegen a (NonDegen _) js = undefined -- shouldn't happen
+unDegen a (Degen i s) (j : js)
+  | i == j = unDegen a s js
+  | otherwise = Degen (i - length (j : js)) (unDegen a s (j : js))
+
 class SSet a => LevelwiseFinite a where
   -- * `all isSimplex (geomBasis n)`
   geomBasis :: a -> Int -> [GeomSimplex a]
-
--- https://kerodon.net/tag/00QH
-newtype NormalisedChains a = NormalisedChains a
-  deriving (Show)
-
-instance (Eq (GeomSimplex a), SSet a) => ChainComplex (NormalisedChains a) where
-  type Basis (NormalisedChains a) = GeomSimplex a
-  diff (NormalisedChains chs) = ChainMorphism (-1) act
-    where
-      act v = sum [Combination [(c, s)] | (c, NonDegen s) <- zip signs $ geomFaces chs v]
-      signs = cycle [1, -1]
-
-instance (Eq (GeomSimplex a), LevelwiseFinite a) => CC.LevelwiseFinite (NormalisedChains a) where
-  dim (NormalisedChains a) i = length (geomBasis a i)
-  basis (NormalisedChains a) i = geomBasis a i
 
 class Pointed a where
   basepoint :: a -> GeomSimplex a
 
 -- Reid Barton:
--- https://categorytheory.zulipchat.com/#narrow/stream/241590-theory.3A-algebraic.20topology.20.26.20homological.20algebra/topic/describing.20simplicial.20sets/near/260675092
+-- https://categorytheory.zulipchat.com/#narrow/stream/241590-theory.3A-
+-- algebraic.20topology.20.26.20homological.20algebra/topic/describing.
+-- 20simplicial.20sets/near/260675092
 --
 -- There's a lot more interesting stuff to say about this situation.
 --

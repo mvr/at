@@ -22,9 +22,6 @@ data CompArrows a = CompArrows a (LooseMorphism a) a (LooseMorphism a) a
 vid :: ValueCategory ob => ob -> Arrow ob
 vid a = Arrow a (looseid a) a
 
--- instance (Semigroup (LooseMorphism a)) => Semigroup (Arrow a) where
---   (Arrow d g _) <> (Arrow _ f c) = Arrow d (g <> f) c
-
 data Square a = Square
   { squareTop :: LooseMorphism a,
     squareBottom :: LooseMorphism a
@@ -41,8 +38,7 @@ instance (ValueCategory ob) => ValueCategory (Arrow ob) where
   -- codomain = Arrow . squareCodomain
 
 instance (Semigroup (Arrow ob)) => Semigroup (Arrow (Arrow ob)) where
-  (Arrow d@(Arrow dd _ dc) (Square tg bg) (Arrow md _ mc)) <>
-    (Arrow _ (Square tf bf) c@(Arrow cd _ cc))
+  (Arrow _ (Square tf bf) c@(Arrow cd _ cc)) <> (Arrow d@(Arrow dd _ dc) (Square tg bg) (Arrow md _ mc))
     = Arrow d (Square tfg bfg ) c
-      where Arrow _ tfg _ = Arrow dd tg md <> Arrow md tf cd
-            Arrow _ bfg _ = Arrow dc bg mc <> Arrow mc bf cc
+      where Arrow _ tfg _ = Arrow md tf cd <> Arrow dd tg md
+            Arrow _ bfg _ = Arrow mc bf cc <> Arrow dc bg mc

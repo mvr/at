@@ -2,6 +2,7 @@
 module Math.Topology.SSet.Moore where
 
 import Math.Topology.SSet
+import Math.Topology.SSet.Effective
 
 data Moore = Moore { mooreP :: Int, mooreDim :: Int }
   deriving (Eq, Ord, Show)
@@ -12,11 +13,11 @@ data MooreSimplex = Basepoint | N | NPlusOne
 instance SSet Moore where
   type GeomSimplex Moore = MooreSimplex
 
-  isSimplex _ _ = True
+  isGeomSimplex _ _ = True
 
-  simplexDim (Moore p n) Basepoint = 0
-  simplexDim (Moore p n) N = n
-  simplexDim (Moore p n) NPlusOne = n+1
+  geomSimplexDim (Moore p n) Basepoint = 0
+  geomSimplexDim (Moore p n) N = n
+  geomSimplexDim (Moore p n) NPlusOne = n + 1
 
   geomFace (Moore p n) Basepoint _ = undefined
   geomFace (Moore p n) N _ = constantAtVertex (Moore p n) Basepoint (n - 1)
@@ -30,3 +31,8 @@ instance LevelwiseFinite Moore where
     | i == n = [N]
     | i == n + 1 = [NPlusOne]
     | otherwise = []
+
+instance Pointed Moore where
+  basepoint _ = Basepoint
+
+instance Effective Moore
