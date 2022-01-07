@@ -1,13 +1,13 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE RecordWildCards #-}
-module Math.Algebra.AbGroup where
+module Math.Algebra.AbGroupPres where
 
 import qualified Data.Matrix as M
 import Data.Maybe (isJust, fromJust)
 import Data.Matrix (Matrix, (<|>))
 import qualified Data.Vector as V
 import Math.Algebra.SmithNormalForm
-import Math.Algebra.AbGroup.IsoClass
+import Math.Algebra.AbGroupPres.IsoClass
     ( elementaryDivisorsToInvariantFactors,
       invariantFactorsToElementaryDivisors,
       IsoClass(IsoClass) )
@@ -15,7 +15,7 @@ import Math.ValueCategory
 import Math.ValueCategory.Additive
 import Math.ValueCategory.Abelian
 
-data AbGroup = AbGroup
+data AbGroupPres = AbGroupPres
   {
     presentation :: Matrix Integer,
     reduced      :: Matrix Integer,
@@ -24,20 +24,20 @@ data AbGroup = AbGroup
     fromReduced  :: Matrix Integer
   }
 
-instance Eq AbGroup where
+instance Eq AbGroupPres where
   a == b = reduced a == reduced b
 
-isoClass :: AbGroup -> IsoClass
-isoClass (AbGroup _ d _ _) = IsoClass (fromIntegral r) (invariantFactorsToElementaryDivisors diag)
+isoClass :: AbGroupPres -> IsoClass
+isoClass (AbGroupPres _ d _ _) = IsoClass (fromIntegral r) (invariantFactorsToElementaryDivisors diag)
   where diag = filter (/= 0) $ V.toList $ M.getDiag d
         r    = M.nrows d - length diag
 
-instance Show AbGroup where
+instance Show AbGroupPres where
   show = show . isoClass
 
-fromIsoClass :: IsoClass -> AbGroup
+fromIsoClass :: IsoClass -> AbGroupPres
 fromIsoClass (IsoClass 0 []) = zero
-fromIsoClass (IsoClass rank torsion) = AbGroup m m i i
+fromIsoClass (IsoClass rank torsion) = AbGroupPres m m i i
   where invFactors = elementaryDivisorsToInvariantFactors torsion
         rows = fromIntegral (rank + fromIntegral (length invFactors))
         cols = max 1 (length invFactors)
@@ -45,12 +45,12 @@ fromIsoClass (IsoClass rank torsion) = AbGroup m m i i
             M.diagonal 0 $ V.fromList invFactors
         i = M.identity rows
 
-freeAbGroup :: Integer -> AbGroup
+freeAbGroup :: Integer -> AbGroupPres
 freeAbGroup n = fromIsoClass (IsoClass n [])
 
 -- TODO: Direct sum
--- instance Semigroup AbGroup where
--- instance Monoid AbGroup where
+-- instance Semigroup AbGroupPres where
+-- instance Monoid AbGroupPres where
 
 -- Remove useless generators:
 -- Delete rows and cols with a 1 on the diagonal
@@ -85,8 +85,8 @@ reducePresentation m = let (Triple li l d _ _) = smithNormalForm m
                            (li', l', d') = stripOnes (li, l, d)
                        in stripZeroes (li', l', d')
 
-fromPresentation :: Matrix Integer -> AbGroup
-fromPresentation m = AbGroup m d li l
+fromPresentation :: Matrix Integer -> AbGroupPres
+fromPresentation m = AbGroupPres m d li l
   where (li, l, d) = reducePresentation m
 
 --------------------------------------------------------------------------------
@@ -146,21 +146,21 @@ data AbMorphism = AbMorphism {
   reducedMorphism :: Matrix Integer
 } deriving (Show)
 
-instance Eq (Arrow AbGroup) where
+instance Eq (Arrow AbGroupPres) where
   (Arrow d (AbMorphism f r) c) == (Arrow d' (AbMorphism f' r') c') =
     (isJust $ solveMatrix (presentation c) (f - f'))
 
-morphismFromFullMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Arrow AbGroup
+morphismFromFullMatrix :: AbGroupPres -> AbGroupPres -> Matrix Integer -> Arrow AbGroupPres
 morphismFromFullMatrix a b f = Arrow a (AbMorphism f (toReduced b * f * fromReduced a)) b
 
-morphismFromReducedMatrix :: AbGroup -> AbGroup -> Matrix Integer -> Arrow AbGroup
+morphismFromReducedMatrix :: AbGroupPres -> AbGroupPres -> Matrix Integer -> Arrow AbGroupPres
 morphismFromReducedMatrix a b f = Arrow a (AbMorphism (fromReduced b * f * toReduced a) f) b
 
-instance Semigroup (Arrow AbGroup) where
+instance Semigroup (Arrow AbGroupPres) where
   (Arrow d (AbMorphism f r) _) <> (Arrow _ (AbMorphism f' r') c) = Arrow d (AbMorphism (f * f') (r * r')) c
 
-instance ValueCategory AbGroup where
-  type LooseMorphism AbGroup = AbMorphism
+instance ValueCategory AbGroupPres where
+  type LooseMorphism AbGroupPres = AbMorphism
 
   looseid a = AbMorphism (M.identity $ M.nrows $ presentation a) (M.identity $ M.nrows $ reduced a)
 
@@ -169,8 +169,8 @@ instance Num AbMorphism where
   (AbMorphism f' r') - (AbMorphism f r) = AbMorphism (f' - f) (r' - r)
   negate (AbMorphism f r) = AbMorphism (negate f) (negate r)
 
-instance AdditiveCategory AbGroup where
-  zero = AbGroup (M.fromList 1 1 [1])
+instance AdditiveCategory AbGroupPres where
+  zero = AbGroupPres (M.fromList 1 1 [1])
                  (M.fromList 1 1 [1])
                  (M.fromList 1 1 [1])
                  (M.fromList 1 1 [1])
@@ -186,7 +186,7 @@ instance AdditiveCategory AbGroup where
 -- Springer International Publishing, 2014
 
 -- TODO: Check performance vs. using reduced matrices.
-instance AbelianCategory AbGroup where
+instance AbelianCategory AbGroupPres where
   kernel f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
     where ker   = matrixKernelModulo kappa                  (presentation (domain f))
           kappa = matrixKernelModulo (fullMorphism $ mor f) (presentation (codomain f))

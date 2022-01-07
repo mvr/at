@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Math.Algebra.AbGroup.IsoClass (
+module Math.Algebra.AbGroupPres.IsoClass (
   IsoClass(..),
   invariantFactorsToElementaryDivisors,
   elementaryDivisorsToInvariantFactors

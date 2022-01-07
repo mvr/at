@@ -4,7 +4,7 @@
 -- Wbar : Grp -> 0-reduced sSet_*
 -- Much easier than the case of general simplicial groups
 -- See also https://dl.acm.org/doi/10.1145/1576702.1576744
-module Math.Topology.SSet.ClassifyingDiscrete where
+module Math.Topology.SSet.WbarDiscrete where
 
 -- import Math.Topology.SSet.Effective
 
@@ -13,38 +13,38 @@ import qualified Math.Topology.SGrp as S
 import Math.Topology.SSet
 
 -- If a is a discrete group, things get much easier.
-newtype ClassifyingDiscrete a = ClassifyingDiscrete a
+newtype WbarDiscrete a = WbarDiscrete a
 
-normalise :: (Group a, Eq (Element a)) => a -> [Element a] -> Simplex (ClassifyingDiscrete a)
+normalise :: (Group a, Eq (Element a)) => a -> [Element a] -> Simplex (WbarDiscrete a)
 normalise a [] = NonDegen []
 normalise a (e:es)
   | e == unit a = degen (normalise a es) 0
   | otherwise   = fmap (e:) (downshift (normalise a es))
 
-instance (Group a, Eq (Element a)) => SSet (ClassifyingDiscrete a) where
+instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
   -- A non-degenerate n-simplex is a list of n non-identity elements
   -- of `a`
-  type GeomSimplex (ClassifyingDiscrete a) = [Element a]
+  type GeomSimplex (WbarDiscrete a) = [Element a]
 
-  isGeomSimplex (ClassifyingDiscrete a) ss = undefined -- not (any (isUnit a) ss)
+  isGeomSimplex (WbarDiscrete a) ss = undefined -- not (any (isUnit a) ss)
 
   geomSimplexDim _ ss = length ss
 
   geomFace _ [] _ = undefined
-  geomFace (ClassifyingDiscrete a) ss i = normalise a (underlying ss i)
+  geomFace (WbarDiscrete a) ss i = normalise a (underlying ss i)
     where underlying ss 0 = tail ss
           underlying [s] 1 = []
           underlying (s : s' : ss) 1 = prod a s s' : ss
           underlying (s : ss) i = s : underlying ss (i - 1)
-          underlying _ _ = undefined -- can't happe
+          underlying _ _ = undefined -- can't happen
 
-instance Group a => Pointed (ClassifyingDiscrete a) where
-  basepoint (ClassifyingDiscrete a) = []
+instance Group a => Pointed (WbarDiscrete a) where
+  basepoint (WbarDiscrete a) = []
 
 -- Eventually:
--- instance (SGrp g, Effective a) => Effective (ClassifyingDiscrete a)
---   type Model (ClassifyingDiscrete a) = Bar (Model a)
+-- instance (SGrp g, Effective a) => Effective (WbarDiscrete a)
+--   type Model (WbarDiscrete a) = Bar (Model a)
 
-instance (Abelian a, Eq (Element a)) => S.SGrp (ClassifyingDiscrete a) where
+instance (Abelian a, Eq (Element a)) => S.SGrp (WbarDiscrete a) where
 
-instance (Abelian a, Eq (Element a)) => S.SAb (ClassifyingDiscrete a)
+instance (Abelian a, Eq (Element a)) => S.SAb (WbarDiscrete a)

@@ -9,7 +9,7 @@ import Math.Topology.SSet
 import Math.Topology.NormalisedChains
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Reduction
-import Math.Algebra.AbGroup
+import Math.Algebra.AbGroupPres
 
 class (SSet a, CC.ChainComplex (Model a)) => Effective a where
   type Model a
@@ -23,5 +23,5 @@ class (SSet a, CC.ChainComplex (Model a)) => Effective a where
   default eff :: (Model a ~ NormalisedChains a, Eq (GeomSimplex a)) => Equivalence (NormalisedChains a) (Model a)
   eff = id
 
-homology :: (Effective a, Eq (CC.Basis (Model a)), CC.LevelwiseFinite (Model a)) => a -> [AbGroup]
+homology :: (Effective a, Eq (CC.Basis (Model a)), CC.LevelwiseFinite (Model a)) => a -> [AbGroupPres]
 homology = CC.homologies . model

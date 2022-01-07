@@ -8,7 +8,7 @@ import qualified Control.Category.Constrained as Constrained
 import Data.List (find)
 import qualified Data.Matrix as M
 import Data.Maybe (fromJust)
-import Math.Algebra.AbGroup
+import Math.Algebra.AbGroupPres
 import Math.ValueCategory (Arrow)
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
@@ -119,7 +119,7 @@ instance Constrained.Category ClosedMorphism where
   type Object ClosedMorphism o = Eq (Basis o)
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
-chainGroup :: (LevelwiseFinite a) => a -> Int -> AbGroup
+chainGroup :: (LevelwiseFinite a) => a -> Int -> AbGroupPres
 chainGroup a n | n < 0 = zero
 chainGroup a n
   | d == 0 = zero -- Annoying that I have to do this
@@ -127,7 +127,7 @@ chainGroup a n
   where
     d = dim a n
 
-chainDiff :: (Eq (Basis a), LevelwiseFinite a) => a -> Int -> Arrow AbGroup
+chainDiff :: (Eq (Basis a), LevelwiseFinite a) => a -> Int -> Arrow AbGroupPres
 chainDiff a n | n < 0 = zeroArrow zero zero
 chainDiff a 0 = toZero (chainGroup a 0)
 chainDiff a n
@@ -147,7 +147,7 @@ chainDiff a n
     images = fmap (onBasis (diff a)) dombasis
     findCoef (i, j) = fromIntegral $ coeffOf (images !! (j - 1)) (codbasis !! (i - 1))
 
-homologies :: (Eq (Basis a), LevelwiseFinite a) => a -> [AbGroup]
+homologies :: (Eq (Basis a), LevelwiseFinite a) => a -> [AbGroupPres]
 homologies a = fmap (uncurry homology) pairs
   where
     diffs = fmap (chainDiff a) [0 ..]
