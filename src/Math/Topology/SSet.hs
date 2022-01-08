@@ -68,7 +68,7 @@ class SSet a where
 
   -- NOTE: Or we could even reverse things, so that GeomSimplex is the
   -- class and SSet is the associated type.
-  type GeomSimplex a
+  type GeomSimplex a = s | s -> a
 
   -- In a language with dependent types, this could be folded into the
   -- GeomSimplex type.

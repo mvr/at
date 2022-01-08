@@ -12,7 +12,5 @@ mapSimplex (Morphism f) (NonDegen s) = f s
 mapSimplex m (Degen i s) = Degen i (mapSimplex m s)
 
 instance Category Morphism where
-  type Object Morphism a = ()
-
   id = Morphism $ \s -> NonDegen s
   f2 . (Morphism f1) = Morphism $ \s -> f2 `mapSimplex` f1 s

@@ -46,6 +46,7 @@ default-extensions:
 - TypeApplications
 - TypeOperators
 - TypeFamilies
+- TypeFamilyDependencies
 # - TypeInType
 # - UnboxedTuples
 - UnicodeSyntax

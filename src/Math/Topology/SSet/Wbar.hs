@@ -70,7 +70,7 @@ instance (SGrp g, Eq (GeomSimplex g)) => SSet (Wbar g) where
         | i == 1 && length ss == 1 = []
         | i == 1 =
           let (s : s' : rest) = ss
-           in (prodMor g `mapSimplex` prodNormalise (Product g g) (face g s 0, s')) : rest
+           in (prodMor g `mapSimplex` prodNormalise (face g s 0, s')) : rest
         | otherwise =
           let (s : rest) = ss
            in (face g s (i -1)) : underlying rest (i -1)

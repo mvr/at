@@ -25,24 +25,26 @@ twistOp f g (Degen i s) = degen (twistOp f g s) i
 
 data TotalSpace a g = TotalSpace a g (PrincipalFibration a g)
 
+newtype TotalSpaceSimplex a g = TotalSpaceSimplex (Simplex a, Simplex g)
+deriving instance (Eq (GeomSimplex a), Eq (GeomSimplex g)) => Eq (TotalSpaceSimplex a g)
+
 instance (SSet a, SGrp g) => SSet (TotalSpace a g) where
-  type GeomSimplex (TotalSpace a g) = (Simplex a, Simplex g)
+  type GeomSimplex (TotalSpace a g) = TotalSpaceSimplex a g
 
   isGeomSimplex = undefined
 
-  geomSimplexDim (TotalSpace a _ _) (s, _) = simplexDim a s
+  geomSimplexDim (TotalSpace a _ _) (TotalSpaceSimplex (s, _)) = simplexDim a s
 
-  geomFace (TotalSpace a g tau) (s, t) i
+  geomFace (TotalSpace a g tau) (TotalSpaceSimplex (s, t)) i
     | i == n =
-      prodNormalise
-        (Product a g)
+      TotalSpaceSimplex <$> prodNormalise
         ( face a s n,
           prod
             (NSimplicesOf (n -1) g)
             (twistOp tau g s)
             (face g t n)
         )
-    | otherwise = prodNormalise (Product a g) (face a s i, face g t i)
+    | otherwise = TotalSpaceSimplex <$> prodNormalise (face a s i, face g t i)
     where
       n = simplexDim a s
 
