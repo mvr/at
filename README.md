@@ -1,7 +1,9 @@
 AT
 ==
 
-A Haskell rewrite of Kenzo.
+A Haskell rewrite of
+[Kenzo](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/), a
+collection of algorithms for 'effective algebraic topology'.
 
 Writing it from scratch myself is the only chance I have of
 understanding it!
@@ -41,22 +43,98 @@ But many constructions on simplicial sets do not preserve levelwise
 finiteness, and so we need some other way to calculate homology. This
 is where 'effective homology' comes in.
 
-A *strong chain equivalence* between two chain complexes `C` and `D` is a
-third chain complex `E` and two deformation retracts `l : E -> C` and
-`r : E -> D`.
+A *reduction* between chain complexes `C` and `D` is a strong
+deformation retract. The data of a reduction is a triple
+(`f : C ->D`, `g : D -> C`, `h : C -> C`) where `f` and `g` are degree
+0 and the homotopy operator `h` is degree 1, and certain equations
+between these maps and the differentials of `C` and `D` hold.  A
+*(strong chain) equivalence* between two chain complexes `C` and `D`
+is a span of reductions `l : E -> C` and `r : E -> D`.
 
-An *effective homology structure* on `X` is a strong chain equivalence
-between `N(X;Z)` and a levelwise finite dimensional chain complex `F`.
+An *effective homology structure* on `X` is an equivalence between
+`N(X;Z)` and a levelwise finite dimensional chain complex `F`.
 
 A *simplicial set with effective homology* is a simplicial set `X`
 equipped with an effective homology structure.
 
 The point of Kenzo is that although constructions on simplicial sets
-often do not preserve effectiveness, they *do* extend to effective
-homology structures. And so if we begin with a finite simplicial
-complex and perform operations on it, then we can compute the homology
-of the result, even if the actual simplices are now far too
-complicated to get a handle on.
+often do not preserve levelwise finiteness, they *do* extend to
+effective homology structures. And so if we begin with a finite
+simplicial complex and perform operations on it then we can compute
+the homology of the result, even if the actual simplicial sets are now
+far too complicated to get a handle on.
+
+Plan
+----
+- Algebra
+  - [x] Chain Complex
+    - [x] Tensor
+      - [x] Functoriality
+    - [ ] 'Bicone' (strict pushout)
+    - [ ] Bicomplex
+      - [ ] Tot and Diag
+    - [ ] Bar
+      - [ ] Functoriality
+    - [ ] Cobar
+      - [ ] Functoriality
+  - [x] Reduction
+    - [x] Perturbation
+  - [x] Strong Equivalence
+    - [ ] Composition via Span
+  - [ ] Freyd Category?
+- Simplicial Definitions
+  - [x] Simplicial Set
+  - [x] Simplicial Morphism
+  - [x] Simplicial Group
+  - [x] SSet With Effective Homology
+  - [ ] Principal Fibrations
+  - [x] Discrete Vector Fields
+- Simplicial Constructions
+  - [x] Spheres
+  - [x] Moore Spaces
+  - [ ] Projective Spaces
+  - [x] Products
+  - [ ] Total Space of Principal Fibration
+  - [ ] Loop Space
+    - [ ] Group Structure
+  - [x] Classifying Space
+    - [x] For 0-reduced Group
+    - [x] For Non-reduced Group?
+    - [x] Special Case for Discrete Groups?
+    - [ ] sGrp Structure
+  - [ ] Efficient Eilenberg-Maclane Spaces
+    - [ ] [`K(Z,1)`](#ref-kendoc)
+    - [ ] `K(Z/2,1)` (Can be made particularly efficient)
+    - [ ] `K(Z/p,1)`
+  - Colimits
+    - [ ] Suspension
+    - [ ] Pushouts (of 1-reduced sSets)
+    - [ ] Finite Homotopy Colimits
+- Effective Homology
+  - [ ] Classifying Spaces
+    - [ ] Direct Reduction of `K(Z,1)` to `S^1`
+    - [ ] [Of 1-Reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
+    - [ ] [Of General sGrps](#ref-kendoc)
+  - [x] Products
+    - [ ] Use specialised contraction maps for efficiency
+  - [ ] Total Space of a Fibration
+    - [ ] 1-reduced fiber
+    - [ ] [0-reduced fiber](#ref-filakovsky%3Atwisted-products)
+  - [ ] Loop Space
+  - Colimits
+    - [ ] Suspension
+    - [ ] [Pushouts (of 1-reduced sSets)](#ref-heras%3Apushout)
+    - [ ] [Finite Homotopy Colimits](#ref-filakovsky%3Ahocolim)
+- Discrete Vector Fields
+  - [x] Induced Reduction
+  - [x] Products
+  - [ ] Fibrations
+  - [ ] [Polynomial DVF for `K(Z,1)`](#ref-kms:poly-em-spaces)
+  - [ ] Classifying Spaces for 1-reduced sAb
+- [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
+- [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
+- Misc
+  - [ ] Pretty Printing for Everything
 
 Notes
 -----
@@ -64,15 +142,24 @@ Notes
 - I have switched a little terminology: I believe Kenzo uses
   'effective' for levelwise finite things and 'locally effective' for
   what I am calling effective things, but I find this a bit confusing.
-- In Kenzo, every sSet is automatically also the
+- In Kenzo, every sSet is conflated with its chain complex of
+  normalised chains, here I have kept them separate.
 - I am uncertain whether, in the definition of 'effective homology
-  structure', it is necessary to use a chain equivalence. Maybe an
-  uncollapsed zigzag of reductions is enough.
-- The algorithms for some of the constructions are very similar to
-  each other. There may be a way to unify them via bisimplicial sets
+  structure', it is necessary to use strong chain equivalence. Maybe
+  an uncollapsed zigzag of reductions is enough. Ah: functoriality of
+  the constructions on a pair of spans
+- There may be a way to unify some of the algorithms via bicomplexes
   and the ['generalised Eilenberg-Zilber
   theorm'](https://ncatlab.org/nlab/show/Eilenberg-Zilber+theorem)
-  releating the diagonal and total complexes.
+  releating the diagonal and total complexes. But the EZ-theorem only
+  gives a strong deformation retract in special cases, in general it
+  is just a chain homotopy equivalence.
+- The classifying space functor `Wbar` factors through the 'total
+  bisimplicial set' functor. But it would be difficult to describe the
+  total functor on bisimplicial spaces algorithmically, because its
+  definition involves the equaliser of certain face maps. So it only
+  makes sense to try and implement consider bicomplexes and not
+  general bisimplicial sets.
 - Running Kenzo with SBCL:
   ```
   > rlwrap sbcl
@@ -109,86 +196,16 @@ Notes
 - Unguessable CL functions
   * (ash x n) = bit shift x left by n
 
-Plan
-----
-Critial path to computing some non-trivial homotopy groups:
-(Read bottom to top)
-1. Whitehead tower
-2. Cohomology classes
-2. Effective classifying spaces via a DVF
-3. Bar construction on chain complexes
-2. Pullbacks of fibrations
-2. Effective principal fibrations via a DVF
-2. Effective products of sSets via DVF
-4. Tensor product of chain complexes
-5. Effective homology/reductions/equivalences
-
-General TODOs:
-- Consider using numeric-prelude to clean up the (1-)algebraic
-  structures
-
-
-Wishlist
---------
-- [ ] Algebra
-  - [ ] Freyd Category?
-  - [x] Chain Complex
-    - [x] Tensor
-    - [ ] Bar
-    - [ ] Cobar
-  - [x] Reduction
-  - [x] Perturbation
-- [ ] Definitions
-  - [x] Simplicial Set
-  - [x] Simplicial Morphism
-  - [x] Simplicial Group
-  - [x] SSet With Effective Homology
-  - [ ] Principal Fibrations
-- [ ] Constructions
-  - [x] Spheres
-  - [x] Moore Spaces
-  - [ ] Projective Spaces
-  - [x] Products
-  - [ ] Total Space of a Fibration
-  - [ ] Loop Space
-    - [ ] Group Structure
-  - [ ] Suspension
-  - [x] Classifying Space
-    - [x] For 0-reduced Group
-    - [x] For Non-reduced Group?
-    - [x] Special Case for Discrete Groups?
-    - [ ] Group Structure
-  - [ ] Efficient Eilenberg-Maclane Spaces
-    - [ ] `K(Z,1)`
-    - [ ] `K(Z/2,1)` (Can be made particularly efficient)
-    - [ ] `K(Z/p,1)`
-    - [ ] Reduction of `K(Z,1)` to `S^1`
-- [ ] Effective Homology
-  - [x] Effective Simplicial Sets
-  - [ ] Classifying Spaces
-    - [ ] Of 1-Reduced Abelian sGrps
-    - [ ] Of General sGrps
-  - [x] Products
-    - [ ] Use specialised `f` and `g` defined directly
-  - [ ] Total Space of a Fibration
-  - [ ] Loop Space
-  - [ ] Suspension
-- [x] Discrete Vector Field
-  - [x] Products
-  - [ ] Fibrations
-  - [ ] Classifying Spaces for 1-Reduced Abelian Groups
-- [ ] Whitehead Tower
-
 References
 ----------
 
 ### Code:
 * [Kenzo homepage](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/)
-* [Kenzo documenation](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/Kenzo-doc.pdf), likely out of date with the code
+* [Kenzo documenation](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/Kenzo-doc.pdf), likely out of date with the code in places
 * ['Official' Kenzo mirror on Github](https://github.com/gheber/kenzo), there are three different
   versions of the code [here](https://github.com/gheber/kenzo/tree/master/src), I am not clear on what is
   gained/lost between them. There are online [Jypter
-  notebooks](https://sur-l-analysis-sit.us/) that let you play with Kenzo (which version?) without
+  notebooks](https://sur-l-analysis-sit.us/) that let you play with Kenzo (I believe Kenzo-9) without
   having to figure out how to install and operate a Common Lisp
   environment
 * [Fork by Ana Romero + collaborators](https://github.com/miguelmarco/kenzo), has some added features
@@ -198,11 +215,13 @@ References
   sequences
 
 ### Papers:
-Everything related to Kenzo I can find. Some of the documents have
-different versions, I have tried to link to the most recent in each
-case.
+Everything related to Kenzo I can find (not all of which is relevant
+for implementaiton). Some of the documents have multiple versions, I
+have tried to link to the most recent in each case. Some material is
+repeated in different references.
 
 <!-- To generate: pandoc kenzo.bib -C --csl=elsevier-with-titles.csl -t gfm -o out.md -->
+
 <div id="refs" class="references csl-bib-body">
 
 <div id="ref-gr:leray-serre" class="csl-entry">
@@ -210,8 +229,8 @@ case.
 <span class="csl-left-margin">\[1\] </span><span
 class="csl-right-inline">A. Guidolin, A. Romero, [Computing higher
 Leray-Serre spectral sequences of towers of
-fibrations](https://doi.org/10.1007/s10208-020-09475-8), Found. Comput.
-Math. 21 (2021) 1023–1074.</span>
+fibrations](https://doi.org/10.1007/s10208-020-09475-8), Foundations of
+Computational Mathematics. 21 (2021) 1023–1074.</span>
 
 </div>
 
@@ -220,8 +239,8 @@ Math. 21 (2021) 1023–1074.</span>
 <span class="csl-left-margin">\[2\] </span><span
 class="csl-right-inline">A. Romero, J. Rubio, F. Sergeraert, M. Szymik,
 [A new Kenzo module for computing the Eilenberg-Moore spectral
-sequence](https://doi.org/10.1145/3427218.3427225), ACM Commun. Comput.
-Algebra. 54 (2020) 57–60.</span>
+sequence](https://doi.org/10.1145/3427218.3427225), ACM Communications
+in Computer Algebra. 54 (2020) 57–60.</span>
 
 </div>
 
@@ -230,8 +249,8 @@ Algebra. 54 (2020) 57–60.</span>
 <span class="csl-left-margin">\[3\] </span><span
 class="csl-right-inline">A. Romero, J. Rubio, F. Sergeraert, [An
 implementation of effective homotopy of
-fibrations](https://doi.org/10.1016/j.jsc.2018.08.001), J. Symbolic
-Comput. 94 (2019) 149–172.</span>
+fibrations](https://doi.org/10.1016/j.jsc.2018.08.001), Journal of
+Symbolic Computation. 94 (2019) 149–172.</span>
 
 </div>
 
@@ -249,89 +268,224 @@ fields](https://www-fourier.ujf-grenoble.fr/~sergerar/Papers/EZ-submitted.pdf),
 
 <span class="csl-left-margin">\[5\] </span><span
 class="csl-right-inline">F. Sergeraert, [The homological hexagonal
-lemma](https://doi.org/10.1515/gmj-2018-0055), Georgian Math. J. 25
-(2018) 603–622.</span>
+lemma](https://doi.org/10.1515/gmj-2018-0055), Georgian Mathematical
+Journal. 25 (2018) 603–622.</span>
+
+</div>
+
+<div id="ref-vj:ainfty-algorithms" class="csl-entry">
+
+<span class="csl-left-margin">\[6\] </span><span
+class="csl-right-inline">M. Vejdemo-Johansson, [Algorithms in
+*A*<sup>∞</sup>-algebras](https://doi.org/10.1515/gmj-2018-0057),
+Georgian Mathematical Journal. 25 (2018) 629–635.</span>
 
 </div>
 
 <div id="ref-rs:bousfield-kan" class="csl-entry">
 
-<span class="csl-left-margin">\[6\] </span><span
+<span class="csl-left-margin">\[7\] </span><span
 class="csl-right-inline">A. Romero, F. Sergeraert, [A Bousfield-Kan
 algorithm for computing the *effective* homotopy of a
-space](https://doi.org/10.1007/s10208-016-9322-z), Found. Comput. Math.
-17 (2017) 1335–1366.</span>
+space](https://doi.org/10.1007/s10208-016-9322-z), Foundations of
+Computational Mathematics. 17 (2017) 1335–1366.</span>
 
 </div>
 
 <div id="ref-rs:iterated-loop" class="csl-entry">
 
-<span class="csl-left-margin">\[7\] </span><span
+<span class="csl-left-margin">\[8\] </span><span
 class="csl-right-inline">A. Romero, F. Sergeraert, [A combinatorial tool
 for computing the effective homotopy of iterated loop
-spaces](https://doi.org/10.1007/s00454-014-9650-1), Discrete Comput.
-Geom. 53 (2015) 1–15.</span>
+spaces](https://doi.org/10.1007/s00454-014-9650-1), Discrete &
+Computational Geometry. 53 (2015) 1–15.</span>
+
+</div>
+
+<div id="ref-ckmsvw:maps-into-sphere" class="csl-entry">
+
+<span class="csl-left-margin">\[9\] </span><span
+class="csl-right-inline">M. Čadek, M. Krčál, J. Matoušek, F. Sergeraert,
+L. Vokřínek, U. Wagner, [Computing all maps into a
+sphere](https://doi.org/10.1145/2597629), Journal of the ACM. 61 (2014)
+Art. 17, 44.</span>
+
+</div>
+
+<div id="ref-ckmvw:poly-homotopy-groups" class="csl-entry">
+
+<span class="csl-left-margin">\[10\] </span><span
+class="csl-right-inline">M. Čadek, M. Krčál, J. Matoušek, L. Vokřínek,
+U. Wagner, [Polynomial-time computation of homotopy groups and Postnikov
+systems in fixed dimension](https://doi.org/10.1137/120899029), SIAM
+Journal on Computing. 43 (2014) 1728–1780.</span>
+
+</div>
+
+<div id="ref-filakovsky:hocolim" class="csl-entry">
+
+<span class="csl-left-margin">\[11\] </span><span
+class="csl-right-inline">M. Filakovský, [Effective homology for homotopy
+colimit and cofibrant
+replacement](https://doi.org/10.5817/AM2014-5-273), Universitatis
+Masarykianae Brunensis. Facultas Scientiarum Naturalium. Archivum
+Mathematicum. 50 (2014) 273–286.</span>
+
+</div>
+
+<div id="ref-sergeraert:dvf-slides" class="csl-entry">
+
+<span class="csl-left-margin">\[12\] </span><span
+class="csl-right-inline">F. Sergeraert, [Discrete vector fields and
+fundamental algebraic
+topology](https://www-fourier.ujf-grenoble.fr/~sergerar/Talks/13-04-Tokyo.pdf),
+(2013).</span>
+
+</div>
+
+<div id="ref-kms:poly-em-spaces" class="csl-entry">
+
+<span class="csl-left-margin">\[13\] </span><span
+class="csl-right-inline">M. Krčál, J. Matoušek, F. Sergeraert,
+[Polynomial-time homology for simplicial Eilenberg-MacLane
+spaces](https://doi.org/10.1007/s10208-013-9159-7), Foundations of
+Computational Mathematics. The Journal of the Society for the
+Foundations of Computational Mathematics. 13 (2013) 935–963.</span>
+
+</div>
+
+<div id="ref-filakovsky:twisted-products" class="csl-entry">
+
+<span class="csl-left-margin">\[14\] </span><span
+class="csl-right-inline">M. Filakovský, [Effective chain complexes for
+twisted products](https://doi.org/10.5817/AM2012-5-313), Universitatis
+Masarykianae Brunensis. Facultas Scientiarum Naturalium. Archivum
+Mathematicum. 48 (2012) 313–322.</span>
 
 </div>
 
 <div id="ref-rr:homology-of-groups" class="csl-entry">
 
-<span class="csl-left-margin">\[8\] </span><span
+<span class="csl-left-margin">\[15\] </span><span
 class="csl-right-inline">A. Romero, J. Rubio, [Computing the homology of
 groups: The geometric way](https://doi.org/10.1016/j.jsc.2011.12.007),
-J. Symbolic Comput. 47 (2012) 752–770.</span>
+Journal of Symbolic Computation. 47 (2012) 752–770.</span>
+
+</div>
+
+<div id="ref-as:dvf" class="csl-entry">
+
+<span class="csl-left-margin">\[16\] </span><span
+class="csl-right-inline">A. Romero, F. Sergeraert, [Discrete vector
+fields and fundamental algebraic
+topology](https://www-fourier.ujf-grenoble.fr/~sergerar/Papers/Vector-Fields.pdf),
+(2012).</span>
 
 </div>
 
 <div id="ref-rs:homotopy-fibrations" class="csl-entry">
 
-<span class="csl-left-margin">\[9\] </span><span
+<span class="csl-left-margin">\[17\] </span><span
 class="csl-right-inline">A. Romero, F. Sergeraert, [Effective homotopy
-of fibrations](https://doi.org/10.1007/s00200-012-0168-6), Appl. Algebra
-Engrg. Comm. Comput. 23 (2012) 85–100.</span>
+of fibrations](https://doi.org/10.1007/s00200-012-0168-6), Applicable
+Algebra in Engineering, Communication and Computing. 23 (2012)
+85–100.</span>
 
 </div>
 
 <div id="ref-rs:constructive-homology" class="csl-entry">
 
-<span class="csl-left-margin">\[10\] </span><span
+<span class="csl-left-margin">\[18\] </span><span
 class="csl-right-inline">J. Rubio, F. Sergeraert, [Constructive
 homological algebra and applications](https://arxiv.org/abs/1208.3816),
 (2012).</span>
 
 </div>
 
+<div id="ref-stevenson:decalage" class="csl-entry">
+
+<span class="csl-left-margin">\[19\] </span><span
+class="csl-right-inline">D. Stevenson, [Décalage and Kan’s simplicial
+loop group
+functor](http://www.tac.mta.ca/tac/volumes/26/28/26-28abs.html), Theory
+and Applications of Categories. 26 (2012) No. 28, 768–787.</span>
+
+</div>
+
+<div id="ref-heras:pushout" class="csl-entry">
+
+<span class="csl-left-margin">\[20\] </span><span
+class="csl-right-inline">J. Heras, [Pushout construction for the kenzo
+systems](https://www.unirioja.es/cu/joheras/pushout/Doc/pushout.pdf),
+(2010).</span>
+
+</div>
+
+<div id="ref-real:twisted-ez" class="csl-entry">
+
+<span class="csl-left-margin">\[21\] </span><span
+class="csl-right-inline">V. Álvarez, J.A. Armario, M.D. Frau, P. Real,
+[Cartan’s constructions and the twisted Eilenberg-Zilber
+theorem](https://doi.org/10.1515/gmj.2010.006), Georgian Mathematical
+Journal. 17 (2010) 13–23.</span>
+
+</div>
+
 <div id="ref-brs:a-infty" class="csl-entry">
 
-<span class="csl-left-margin">\[11\] </span><span
+<span class="csl-left-margin">\[22\] </span><span
 class="csl-right-inline">A. Berciano Alcaraz, J. Rubio, F. Sergeraert, A
-case study of *A*<sub>∞</sub>-structure, Georgian Math. J. 17 (2010)
-57–77.</span>
+case study of *A*<sub>∞</sub>-structure, Georgian Mathematical Journal.
+17 (2010) 57–77.</span>
+
+</div>
+
+<div id="ref-heras:pushout-conf" class="csl-entry">
+
+<span class="csl-left-margin">\[23\] </span><span
+class="csl-right-inline">J. Heras, [Effective homology of the pushout of
+simplicial sets](https://arxiv.org/abs/1410.3651), in: Proceedings of
+the XII Encuentros de Álgebra Computacional y Aplicaciones, 2010: pp.
+152–156.</span>
+
+</div>
+
+<div id="ref-hprr:integrating-sources" class="csl-entry">
+
+<span class="csl-left-margin">\[24\] </span><span
+class="csl-right-inline">J. Heras, V. Pascual, A. Romero, J. Rubio,
+[Integrating multiple sources to answer questions in algebraic
+topology](https://arxiv.org/abs/1005.0749), in: Proceedings of the 10th
+ASIC and 9th MKM International Conference, and 17th Calculemus
+Conference on Intelligent Computer Mathematics, Springer-Verlag, Paris,
+France, 2010: pp. 331–335.</span>
 
 </div>
 
 <div id="ref-romero:bousfield-kan" class="csl-entry">
 
-<span class="csl-left-margin">\[12\] </span><span
+<span class="csl-left-margin">\[25\] </span><span
 class="csl-right-inline">A. Romero, [Computing the first stages of the
 Bousfield-Kan spectral
-sequence](https://doi.org/10.1007/s00200-010-0123-3), Appl. Algebra
-Engrg. Comm. Comput. 21 (2010) 227–248.</span>
+sequence](https://doi.org/10.1007/s00200-010-0123-3), Applicable Algebra
+in Engineering, Communication and Computing. 21 (2010) 227–248.</span>
 
 </div>
 
-<div id="ref-as:dvf" class="csl-entry">
+<div id="ref-real:algebra-structures" class="csl-entry">
 
-<span class="csl-left-margin">\[13\] </span><span
-class="csl-right-inline">A. Romero, F. Sergeraert, [Discrete vector
-fields and fundamental algebraic
-topology](https://arxiv.org/abs/1005.5685), (2010).</span>
+<span class="csl-left-margin">\[26\] </span><span
+class="csl-right-inline">V. Álvarez, J.A. Armario, M.D. Frau, P. Real,
+[Algebra structures on the comparison of the reduced bar construction
+and the reduced
+*W*-construction](https://doi.org/10.1080/00927870902747662),
+Communications in Algebra. 37 (2009) 3643–3665.</span>
 
 </div>
 
 <div id="ref-rer:classifying-space" class="csl-entry">
 
-<span class="csl-left-margin">\[14\] </span><span
+<span class="csl-left-margin">\[27\] </span><span
 class="csl-right-inline">A. Romero, G. Ellis, J. Rubio, [Interoperating
 between computer algebra systems: Computing homology of groups with
 Kenzo and GAP](https://doi.org/10.1145/1576702.1576744), in: ISSAC
@@ -340,36 +494,95 @@ Algebraic Computation, ACM, New York, 2009: pp. 303–310.</span>
 
 </div>
 
+<div id="ref-thomas:wbar" class="csl-entry">
+
+<span class="csl-left-margin">\[28\] </span><span
+class="csl-right-inline">S. Thomas, [The functors *W̄* and Diag ∘ Nerve
+are simplicially homotopy equivalent](https://arxiv.org/abs/0804.1082),
+Journal of Homotopy and Related Structures. 3 (2008) 359–378.</span>
+
+</div>
+
+<div id="ref-real:reducing-costs" class="csl-entry">
+
+<span class="csl-left-margin">\[29\] </span><span
+class="csl-right-inline">A. Berciano, M.J. Jiménez, P. Real, [Reducing
+computational costs in the basic perturbation
+lemma](https://doi.org/10.1007/11870814_3), in: Computer Algebra in
+Scientific Computing, Springer, Berlin, 2006: pp. 33–48.</span>
+
+</div>
+
 <div id="ref-rrs:computing-spectral-sequences" class="csl-entry">
 
-<span class="csl-left-margin">\[15\] </span><span
+<span class="csl-left-margin">\[30\] </span><span
 class="csl-right-inline">A. Romero, J. Rubio, F. Sergeraert, [Computing
-spectral sequences](https://doi.org/10.1016/j.jsc.2006.06.002), J.
-Symbolic Comput. 41 (2006) 1059–1079.</span>
+spectral sequences](https://doi.org/10.1016/j.jsc.2006.06.002), Journal
+of Symbolic Computation. 41 (2006) 1059–1079.</span>
 
 </div>
 
 <div id="ref-real:hpt" class="csl-entry">
 
-<span class="csl-left-margin">\[16\] </span><span
+<span class="csl-left-margin">\[31\] </span><span
 class="csl-right-inline">P. Real, [Homological perturbation theory and
-associativity](https://doi.org/10.4310/hha.2000.v2.n1.a5), Homology
-Homotopy Appl. 2 (2000) 51–88.</span>
+associativity](https://doi.org/10.4310/hha.2000.v2.n1.a5), Homology,
+Homotopy and Applications. 2 (2000) 51–88.</span>
+
+</div>
+
+<div id="ref-dousson:thesis" class="csl-entry">
+
+<span class="csl-left-margin">\[32\] </span><span
+class="csl-right-inline">X. Dousson, [Homologie effective des
+classifiants et calculs de groupes
+d’homotopie](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/Dousson-Xavier.pdf),
+PhD thesis, l’Université Joseph Fourier, 1999.</span>
+
+</div>
+
+<div id="ref-at-reductions" class="csl-entry">
+
+<span class="csl-left-margin">\[33\] </span><span
+class="csl-right-inline">P.R. Hurado, V. Álvarez, J.A. Armario, R.
+González-Díaz, [Algorithms in algebraic topology and homological
+algebra: The problem of the
+complexity](https://doi.org/10.1023/A:1013544506151), Zapiski Nauchnykh
+Seminarov POMI. 258 (1999) 161–184, 358.</span>
+
+</div>
+
+<div id="ref-kendoc" class="csl-entry">
+
+<span class="csl-left-margin">\[34\] </span><span
+class="csl-right-inline">J. Rubio Garcia, F. Sergeraert, Y. Siret,
+[Kenzo: A symbolic software for effective homology
+computation](https://github.com/miguelmarco/kenzo/tree/master/doc/doc_src),
+Institut Fourier, Grenoble, France, 1999.</span>
 
 </div>
 
 <div id="ref-forman:morse" class="csl-entry">
 
-<span class="csl-left-margin">\[17\] </span><span
+<span class="csl-left-margin">\[35\] </span><span
 class="csl-right-inline">R. Forman, [Morse theory for cell
-complexes](https://doi.org/10.1006/aima.1997.1650), Adv. Math. 134
-(1998) 90–145.</span>
+complexes](https://doi.org/10.1006/aima.1997.1650), Advances in
+Mathematics. 134 (1998) 90–145.</span>
 
 </div>
 
-<div id="ref-morace1994cochaines" class="csl-entry">
+<div id="ref-real:homotopy-groups" class="csl-entry">
 
-<span class="csl-left-margin">\[18\] </span><span
+<span class="csl-left-margin">\[36\] </span><span
+class="csl-right-inline">P. Real, [An algorithm computing homotopy
+groups](https://doi.org/10.1016/S0378-4754(96)00021-3), in: Mathematics
+and Computers in Simulation, 1996: pp. 461–465.</span>
+
+</div>
+
+<div id="ref-morace:thesis" class="csl-entry">
+
+<span class="csl-left-margin">\[37\] </span><span
 class="csl-right-inline">F. Morace, [Cochaînes de brown et
 transformation d’eilenberg-mac lane: Réécriture en dimension deux et
 homologie](http://www.theses.fr/1994PA077273), PhD thesis, Paris 7,
@@ -377,9 +590,20 @@ homologie](http://www.theses.fr/1994PA077273), PhD thesis, Paris 7,
 
 </div>
 
+<div id="ref-real:thesis" class="csl-entry">
+
+<span class="csl-left-margin">\[38\] </span><span
+class="csl-right-inline">P. Real Jurado, [Algoritmos de cálculo de
+homología efectiva de los espacios
+clasificantes](https://idus.us.es/handle/11441/15908), PhD thesis,
+Universidad de Sevilla, Departamento de Geometría y Topología,
+1993.</span>
+
+</div>
+
 <div id="ref-rs:locally-effective" class="csl-entry">
 
-<span class="csl-left-margin">\[19\] </span><span
+<span class="csl-left-margin">\[39\] </span><span
 class="csl-right-inline">J. Rubio, F. Sergeraert, [Locally effective
 objects and algebraic
 topology](https://doi.org/10.1007/978-1-4612-2752-6_17), in:
@@ -388,19 +612,31 @@ Boston, MA, 1993: pp. 235–251.</span>
 
 </div>
 
+<div id="ref-lambe-stasheff:perturbation" class="csl-entry">
+
+<span class="csl-left-margin">\[40\] </span><span
+class="csl-right-inline">L. Lambe, J. Stasheff, [Applications of
+perturbation theory to iterated
+fibrations](https://doi.org/10.1007/BF01165893), Manuscripta
+Mathematica. 58 (1987) 363–376.</span>
+
+</div>
+
 <div id="ref-sergeraert:effective-1" class="csl-entry">
 
-<span class="csl-left-margin">\[20\] </span><span
-class="csl-right-inline">F. Sergeraert, Homologie effective. I, C. R.
-Acad. Sci. Paris Sér. I Math. 304 (1987) 279–282.</span>
+<span class="csl-left-margin">\[41\] </span><span
+class="csl-right-inline">F. Sergeraert, Homologie effective. I, Comptes
+Rendus de l’Académie Des Sciences - Series I - Mathematics. 304 (1987)
+279–282.</span>
 
 </div>
 
 <div id="ref-sergeraert:effective-2" class="csl-entry">
 
-<span class="csl-left-margin">\[21\] </span><span
-class="csl-right-inline">F. Sergeraert, Homologie effective. II, C. R.
-Acad. Sci. Paris Sér. I Math. 304 (1987) 319–321.</span>
+<span class="csl-left-margin">\[42\] </span><span
+class="csl-right-inline">F. Sergeraert, Homologie effective. II, Comptes
+Rendus de l’Académie Des Sciences - Series I - Mathematics. 304 (1987)
+319–321.</span>
 
 </div>
 
