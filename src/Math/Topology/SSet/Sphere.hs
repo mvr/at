@@ -23,7 +23,7 @@ instance SSet Sphere where
   geomFaces (Sphere n) Basepoint = []
   geomFaces (Sphere n) Cell = replicate (n+1) $ constantAt Basepoint (n - 1)
 
-instance LevelwiseFinite Sphere where
+instance FiniteType Sphere where
   geomBasis (Sphere n) i
     | i == 0 = [Basepoint]
     | i == n = [Cell]

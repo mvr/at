@@ -23,7 +23,7 @@ instance (ChainComplex a, ChainComplex b, Eq (Basis a), Eq (Basis b)) => ChainCo
         fmap (,t) (diff a `onBasis` s)
           + (signFor $ degree a s) .* fmap (s,) (diff b `onBasis` t)
 
-instance (LevelwiseFinite a, LevelwiseFinite b, Eq (Basis a), Eq (Basis b)) => LevelwiseFinite (Tensor a b) where
+instance (FiniteType a, FiniteType b, Eq (Basis a), Eq (Basis b)) => FiniteType (Tensor a b) where
   dim (Tensor a b) n = sum [dim a i * dim b (n - i) | i <- [0 .. n]]
   basis (Tensor a b) n =
     [(s, t) | i <- [0 .. n], s <- basis a i, t <- basis b (n - i)]

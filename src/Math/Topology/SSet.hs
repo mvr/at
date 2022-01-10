@@ -108,7 +108,7 @@ frontFace a s = face a s 0
 backFace :: SSet a => a -> Simplex a -> Simplex a
 backFace a s = face a s (simplexDim a s)
 
-class SSet a => LevelwiseFinite a where
+class SSet a => FiniteType a where
   -- * `all isSimplex (geomBasis n)`
   geomBasis :: a -> Int -> [GeomSimplex a]
 

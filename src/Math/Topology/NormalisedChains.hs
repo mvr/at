@@ -5,8 +5,8 @@
 module Math.Topology.NormalisedChains where
 
 import Data.Coerce
-import qualified Math.Algebra.ChainComplex as CC (LevelwiseFinite(..))
-import Math.Algebra.ChainComplex as CC hiding (LevelwiseFinite)
+import qualified Math.Algebra.ChainComplex as CC (FiniteType(..))
+import Math.Algebra.ChainComplex as CC hiding (FiniteType)
 import Math.Algebra.ChainComplex.Coalgebra
 import Math.Topology.SSet
 
@@ -23,7 +23,7 @@ instance (Eq (GeomSimplex a), SSet a) => CC.ChainComplex (NormalisedChains a) wh
       act v = sum [Combination [(c, s)] | (c, NonDegen s) <- zip signs $ geomFaces a v]
       signs = cycle [1, -1]
 
-instance (LevelwiseFinite a, Eq (GeomSimplex a)) => CC.LevelwiseFinite (NormalisedChains a) where
+instance (FiniteType a, Eq (GeomSimplex a)) => CC.FiniteType (NormalisedChains a) where
   dim (NormalisedChains a) i = length (geomBasis a i)
   basis (NormalisedChains a) i = coerce $ geomBasis a i
 

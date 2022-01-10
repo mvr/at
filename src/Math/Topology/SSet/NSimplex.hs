@@ -33,7 +33,7 @@ choose 0 _ = [[]]
 choose i [] = []
 choose i (x:xs) = fmap (x:) (choose (i-1) xs) ++ choose i xs
 
-instance LevelwiseFinite NSimplex where
+instance FiniteType NSimplex where
   geomBasis (NSimplex d) i = NSimplexSimplex <$> choose (i + 1) [0..d]
 
 instance Pointed NSimplex where

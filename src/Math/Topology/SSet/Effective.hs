@@ -23,5 +23,5 @@ class (SSet a, CC.ChainComplex (Model a)) => Effective a where
   default eff :: (Model a ~ NormalisedChains a, Eq (GeomSimplex a)) => Equivalence (NormalisedChains a) (Model a)
   eff = id
 
-homology :: (Effective a, Eq (CC.Basis (Model a)), CC.LevelwiseFinite (Model a)) => a -> [AbGroupPres]
+homology :: (Effective a, Eq (CC.Basis (Model a)), CC.FiniteType (Model a)) => a -> [AbGroupPres]
 homology = CC.homologies . model

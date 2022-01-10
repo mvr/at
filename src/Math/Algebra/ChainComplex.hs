@@ -28,12 +28,12 @@ instance ChainComplex () where
   degree _ _ = 0
   diff _ = 0
 
-class ChainComplex a => LevelwiseFinite a where
+class ChainComplex a => FiniteType a where
   dim :: a -> Int -> Int
   -- * `all isSimplex (basis n)`
   basis :: a -> Int -> [Basis a]
 
-instance LevelwiseFinite () where
+instance FiniteType () where
   dim _ 0 = 1
   dim _ _ = 0
   basis _ 0 = [()]
@@ -119,15 +119,11 @@ instance Constrained.Category ClosedMorphism where
   type Object ClosedMorphism o = Eq (Basis o)
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
-chainGroup :: (LevelwiseFinite a) => a -> Int -> AbGroupPres
+chainGroup :: (FiniteType a) => a -> Int -> AbGroupPres
 chainGroup a n | n < 0 = zero
-chainGroup a n
-  | d == 0 = zero -- Annoying that I have to do this
-  | otherwise = freeAbGroup (fromIntegral d)
-  where
-    d = dim a n
+chainGroup a n = freeAbGroup (fromIntegral (dim a n))
 
-chainDiff :: (Eq (Basis a), LevelwiseFinite a) => a -> Int -> Arrow AbGroupPres
+chainDiff :: (Eq (Basis a), FiniteType a) => a -> Int -> Arrow AbGroupPres
 chainDiff a n | n < 0 = zeroArrow zero zero
 chainDiff a 0 = toZero (chainGroup a 0)
 chainDiff a n
@@ -147,7 +143,7 @@ chainDiff a n
     images = fmap (onBasis (diff a)) dombasis
     findCoef (i, j) = fromIntegral $ coeffOf (images !! (j - 1)) (codbasis !! (i - 1))
 
-homologies :: (Eq (Basis a), LevelwiseFinite a) => a -> [AbGroupPres]
+homologies :: (Eq (Basis a), FiniteType a) => a -> [AbGroupPres]
 homologies a = fmap (uncurry homology) pairs
   where
     diffs = fmap (chainDiff a) [0 ..]
