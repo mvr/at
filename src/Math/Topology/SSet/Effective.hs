@@ -8,7 +8,7 @@ import Prelude hiding (id, (.))
 import Math.Topology.SSet
 import Math.Topology.NormalisedChains
 import qualified Math.Algebra.ChainComplex as CC
-import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.AbGroupPres
 
 class (SSet a, CC.ChainComplex (Model a)) => Effective a where
