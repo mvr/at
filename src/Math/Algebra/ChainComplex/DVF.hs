@@ -7,6 +7,7 @@ module Math.Algebra.ChainComplex.DVF where
 import Data.Coerce
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.ChainComplex.Equivalence
 import Prelude hiding (id, (.), return)
 import Control.Category.Constrained (id, (.), return)
 
@@ -82,3 +83,6 @@ dK a d = proj a . (d - (d . h a d . d)) . incl a
 dvfReduction :: (DVF a, Eq (Basis a)) => a -> Reduction a (CriticalComplex a)
 dvfReduction a = Reduction (f a d) (g a d) (h a d)
   where d = diff a
+
+dvfEquivalence :: (DVF a, Eq (Basis a)) => a -> Equivalence a (CriticalComplex a)
+dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)

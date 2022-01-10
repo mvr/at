@@ -5,18 +5,19 @@
 -- See as:dvf, as:ez-dvf
 module Math.Topology.SSet.Product where
 
+import Control.Category.Constrained (id, return, (.))
 import Data.Coerce
-import Control.Category.Constrained (return)
 import Math.Algebra.ChainComplex hiding (Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.DVF hiding (DVF)
+import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Tensor
 import Math.Topology.NormalisedChains
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.Morphism
-import Prelude hiding (return)
+import Prelude hiding (id, return, (.))
 
 data Product a b = Product a b
 
@@ -117,4 +118,7 @@ instance (Effective a, Effective b, Eq (GeomSimplex a), Eq (GeomSimplex b), Eq (
   type Model (Product a b) = Tensor (Model a) (Model b)
   model (Product a b) = Tensor (model a) (model b)
 
-  eff = undefined -- equivComposeIso
+  eff p@(Product a b) =
+    tensorEquiv (eff a) (eff b)
+      . isoToEquiv (coerce p) (Tensor (NormalisedChains a) (NormalisedChains b)) criticalIso (criticalIsoInv a b)
+      . dvfEquivalence (NormalisedChains p)

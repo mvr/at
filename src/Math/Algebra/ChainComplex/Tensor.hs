@@ -5,8 +5,9 @@ module Math.Algebra.ChainComplex.Tensor where
 
 import Control.Category.Constrained hiding (fmap)
 import Math.Algebra.ChainComplex
+import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
-import Prelude hiding (id, (.), return)
+import Prelude hiding (id, return, (.))
 
 data Tensor a b = Tensor a b
 
@@ -45,9 +46,9 @@ tensorMorphism a1 a2 _ _ (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
     ft (x1, x2) = (signFor (degree a1 x1 * degree a2 x2)) .* tensorCombination (f1 x1) (f2 x2)
 
 tensorAssoc :: a -> b -> c -> Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
-tensorAssoc a b c = Morphism 0 $ \((a,b), c) -> return (a, (b,c))
+tensorAssoc a b c = Morphism 0 $ \((a, b), c) -> return (a, (b, c))
 
-tensorAssocInv :: a -> b -> c -> Morphism (Tensor a (Tensor b c))  (Tensor (Tensor a b) c)
+tensorAssocInv :: a -> b -> c -> Morphism (Tensor a (Tensor b c)) (Tensor (Tensor a b) c)
 tensorAssocInv a b c = Morphism 0 $ \(a, (b, c)) -> return ((a, b), c)
 
 tensorReduction ::
@@ -79,3 +80,11 @@ tensorMorphismArr (ClosedMorphism a1 m1 b1) (ClosedMorphism a2 m2 b2) = ClosedMo
 --   ClosedReduction a2 b2 ->
 --   ClosedReduction (Tensor a1 a2) (Tensor b1 b2)
 -- tensorReductionArr (ClosedReduction a1 m1 b1) (ClosedReduction a2 m2 b2) = ClosedReduction (Tensor a1 a2) (tensorReduction a1 a2 b1 b2 m1 m2) (Tensor b1 b2)
+
+tensorEquiv ::
+  (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2, Eq (Basis a2), Eq (Basis b2), Eq (Basis a1)) =>
+  Equivalence a1 b1 ->
+  Equivalence a2 b2 ->
+  Equivalence (Tensor a1 a2) (Tensor b1 b2)
+tensorEquiv (Equivalence a1 l1 x1 r1 b1) (Equivalence a2 l2 x2 r2 b2) =
+  Equivalence (Tensor a1 a2) (tensorReduction x1 x2 a1 a2 l1 l2) (Tensor x1 x2) (tensorReduction x1 x2 b1 b2 r1 r2) (Tensor b1 b2)
