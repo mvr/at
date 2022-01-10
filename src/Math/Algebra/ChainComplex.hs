@@ -15,7 +15,7 @@ import Math.ValueCategory.Additive
 import Prelude hiding (id, (.))
 
 class ChainComplex a where
-  type Basis a
+  type Basis a  = s | s -> a
 
   isBasis :: a -> Basis a -> Bool
   isBasis _ _ = True

@@ -4,6 +4,7 @@
 -- Following as:ez-dvf
 module Math.Algebra.ChainComplex.DVF where
 
+import Data.Coerce
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Reduction
 import Prelude hiding (id, (.), return)
@@ -31,22 +32,24 @@ isCritical a b
   | otherwise = False
 
 newtype CriticalComplex a = CriticalComplex a
+newtype CriticalBasis a = CriticalBasis a
+  deriving (Eq)
 
 -- Could be done as a use of the perturbation lemma, but I think these
 -- direct definitions might end up being more efficient
 instance (DVF a, Eq (Basis a)) => ChainComplex (CriticalComplex a) where
-  type Basis (CriticalComplex a) = Basis a
-  isBasis (CriticalComplex a) s = isBasis a s && isCritical a s
-  degree (CriticalComplex a) b = degree a b
+  type Basis (CriticalComplex a) = CriticalBasis (Basis a)
+  isBasis (CriticalComplex a) (CriticalBasis s) = isBasis a s && isCritical a s
+  degree (CriticalComplex a) (CriticalBasis b) = degree a b
   diff (CriticalComplex a) = dK a (diff a)
 
 proj :: (DVF a, Eq (Basis a)) => a -> Morphism a (CriticalComplex a)
-proj a = Morphism 0 $ \b -> case vf a b of
+proj a = Morphism 0 $ coerce $ \b -> case vf a b of
   Critical -> return b
   _ -> Combination []
 
 incl :: (DVF a, Eq (Basis a)) => a -> Morphism (CriticalComplex a) a
-incl a = Morphism 0 return
+incl a = Morphism 0 (return . coerce)
 
 -- Called d_V
 nullDiff :: DVF a => a -> Morphism a a
@@ -68,7 +71,7 @@ h a d = Morphism 1 $ \b -> case vf a b of
   _ -> Combination []
 
 f :: forall a. (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism a (CriticalComplex a)
-f a d = proj a . ((id :: Morphism a a) - (d . h a d))
+f a d = proj a . (id - (d . h a d))
 
 g :: (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism (CriticalComplex a) a
 g a d = (id - (h a d . d)) . incl a

@@ -5,6 +5,7 @@
 -- See as:dvf, as:ez-dvf
 module Math.Topology.SSet.Product where
 
+import Data.Coerce
 import Control.Category.Constrained (return)
 import Math.Algebra.ChainComplex hiding (Morphism)
 import qualified Math.Algebra.ChainComplex as CC
@@ -97,7 +98,7 @@ criticalIso ::
   CC.Morphism
     (CriticalComplex (NormalisedChains (Product a b)))
     (Tensor (NormalisedChains a) (NormalisedChains b))
-criticalIso = CC.Morphism 0 $ \(s, t) -> return (underlyingGeom s, underlyingGeom t)
+criticalIso = CC.Morphism 0 $ \(CriticalBasis (BasisSimplex (s, t))) -> return $ coerce (underlyingGeom s, underlyingGeom t)
 
 criticalIsoInv ::
   (SSet a, SSet b) =>
@@ -107,10 +108,10 @@ criticalIsoInv ::
     (Tensor (NormalisedChains a) (NormalisedChains b))
     (CriticalComplex (NormalisedChains (Product a b)))
 criticalIsoInv a b =
-  CC.Morphism 0 $ \(s, t) ->
+  CC.Morphism 0 $ \(BasisSimplex s, BasisSimplex t) ->
     let n = geomSimplexDim a s
         m = geomSimplexDim b t
-     in return (downshiftN n (constantAt s m), constantAt t n)
+     in return $ coerce (downshiftN n (constantAt s m), constantAt t n)
 
 instance (Effective a, Effective b, Eq (GeomSimplex a), Eq (GeomSimplex b), Eq (Basis (Model a)), Eq (Basis (Model b))) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
