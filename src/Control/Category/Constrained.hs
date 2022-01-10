@@ -5,13 +5,14 @@ module Control.Category.Constrained where
 
 import Data.Kind (Type)
 import GHC.Exts (Constraint)
-import Prelude hiding (Functor, Monad, id, (.))
+import Prelude hiding (Functor, Monad, id, (.), fmap, (<$>))
 import qualified Prelude
+import qualified Control.Monad
 
 infixr 9 .
 
-class Category (cat :: k -> k -> Type) where
-  type Object cat (o :: k) :: Constraint
+class Category (cat :: Type -> Type -> Type) where
+  type Object cat (o :: Type) :: Constraint
   type Object cat o = ()
 
   id :: Object cat a => cat a a
@@ -33,15 +34,31 @@ instance Category (->) where
 --   id = With id
 --   (With f) . (With g) = With (f . g)
 
-class Functor (dom :: k -> k -> Type) (cod :: k -> k -> Type) f where
-  -- For convenience, to avoid extra newtypes
-  type CodObj f (o :: k) :: Constraint
+class Functor dom cod f where
+  -- For convenience, to avoid some unpleasant newtypes in practice.
+  -- This would really be equivalent to something like
+  -- `Functor dom (cod `With` CodObj f) f`
+  type CodObj f (o :: Type) :: Constraint
   type CodObj f o = ()
 
   fmap :: (Object dom a, Object dom b, Object cod (f a), Object cod (f a), CodObj f b) => dom a b -> cod (f a) (f b)
+  default fmap :: (dom ~ (->), cod ~ (->), Prelude.Functor f) => dom a b -> cod (f a) (f b)
+  fmap = Prelude.fmap
+
+-- (<$>) :: (Functor dom cod f, Object dom a, Object dom b, Object cod (f a), Object cod (f a), CodObj f b) => dom a b -> cod (f a) (f b)
+-- (<$>) = fmap
+-- infixl 4 <$>
 
 -- I don't care to factor this through Applicative. Only makes sense
 -- for Cartesian categories anyway.
-class (Functor cat cat m) => Monad (cat :: k -> k -> Type) m where
+class (Functor cat cat m) => Monad (cat :: Type -> Type -> Type) m where
   return :: (Object cat a) => cat a (m a)
   join :: (Object cat a, CodObj m a) => cat (m (m a)) (m a)
+
+  default return :: (cat ~ (->), Prelude.Monad m) => cat a (m a)
+  return = Prelude.return
+  default join :: (cat ~ (->), Prelude.Monad m) => cat (m (m a)) (m a)
+  join = Control.Monad.join
+
+(>>=) :: (Monad (->) m, CodObj m b, CodObj m (m b)) => m a -> (a -> m b) -> m b
+a >>= f = join (fmap f a)

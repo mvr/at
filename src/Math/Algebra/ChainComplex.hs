@@ -117,6 +117,7 @@ data ClosedMorphism a b = ClosedMorphism a (Morphism a b) b
 -- For convenience, not really legal.
 instance Constrained.Category ClosedMorphism where
   type Object ClosedMorphism o = Eq (Basis o)
+  id = error "ClosedMorphism: id"
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
 chainGroup :: (FiniteType a) => a -> Int -> AbGroupPres
