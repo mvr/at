@@ -1,27 +1,35 @@
 {-# LANGUAGE UndecidableInstances #-}
--- sue me
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 -- | Simplicial Group
 module Math.Topology.SGrp where
 
+import Control.Category.Constrained
+import qualified Math.Algebra.ChainComplex as CC (UMorphism (..))
 import Math.Algebra.ChainComplex.Algebra
+import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Group
 import Math.Topology.NormalisedChains
 import Math.Topology.SSet
 import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
+import Prelude hiding (return, (.))
 
 class (SSet a, Pointed a) => SGrp a where
-  prodMor :: a -> Morphism (Product a a) a
   -- The identity map is always just picking out a 0-simplex, so we
   -- can assume a is pointed.
-
+  prodMor :: a -> Morphism (Product a a) a
   invMor :: a -> Morphism a a
+
+class SGrp a => SAb a
 
 isUnit :: (Pointed g, Eq (GeomSimplex g)) => g -> Simplex g -> Bool
 isUnit g (NonDegen s) = s == basepoint g
 isUnit g (Degen _ s) = isUnit g s
+
+instance (SGrp g, (Eq (GeomSimplex g))) => Algebra (NormalisedChains g) where
+  unitMor (NormalisedChains g) = CC.Morphism 0 (const (return (BasisSimplex (basepoint g))))
+  muMor (NormalisedChains g) = cfmap (prodMor g) . reductionG (ezReduction (Product g g))
 
 -- The set of n-simplices in a simplicial group forms a group.
 data NSimplicesOf a = NSimplicesOf Int a
@@ -32,11 +40,4 @@ instance (SGrp a) => Group (NSimplicesOf a) where
   unit (NSimplicesOf n a) = constantAt (basepoint a) n
   inv (NSimplicesOf n a) s = invMor a `mapSimplex` s
 
-class SGrp a => SAb a
-
 instance (SAb a) => Abelian (NSimplicesOf a)
-
-instance (SGrp g, (Eq (GeomSimplex g))) => Algebra (NormalisedChains g) where
-
-
--- TODO
