@@ -29,6 +29,7 @@ isoToReduction f g = Reduction f g 0
 data Perturbed a = Perturbed a (Morphism a a)
 
 newtype PerturbedBasis a = PerturbedBasis a
+  deriving (Eq)
 
 instance (ChainComplex a, Eq (Basis a)) => ChainComplex (Perturbed a) where
   type Basis (Perturbed a) = PerturbedBasis (Basis a)

@@ -1,16 +1,21 @@
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -Wno-unused-local-binds #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
--- | Cartesian product of simplicial sets
--- See as:dvf, as:ez-dvf
+-- | Cartesian product of simplicial sets See as:dvf, as:ez-dvf
+--
+-- WARNING: You can define a DVF on the product by searching the path
+-- (0,0) to (p,q) forwards or backwards. Some resources use forwards,
+-- some backwards, we follow Kenzo by going backwards.
 module Math.Topology.SSet.Product where
 
-import Control.Category.Constrained (id, return, (.))
+import Control.Category.Constrained (cfmap, id, return, (.))
 import Data.Coerce
 import Math.Algebra.ChainComplex hiding (Morphism)
 import qualified Math.Algebra.ChainComplex as CC
+import Math.Algebra.ChainComplex.Coalgebra
 import Math.Algebra.ChainComplex.DVF hiding (DVF)
 import Math.Algebra.ChainComplex.Equivalence
+import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
 import Math.Topology.NormalisedChains
 import Math.Topology.SSet
@@ -43,9 +48,6 @@ instance (SSet a, SSet b) => SSet (Product a b) where
   geomSimplexDim (Product a _) (s, _) = simplexDim a s
 
   geomFace (Product a b) (s, t) i = prodNormalise (face a s i, face b t i)
-
-diagMor :: Morphism a (Product a a)
-diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
 
 instance (SSet a, SSet b, Eq (GeomSimplex a), Eq (GeomSimplex b)) => DVF (Product a b) where
   vf = status
@@ -114,11 +116,42 @@ criticalIsoInv a b =
         m = geomSimplexDim b t
      in return $ coerce (downshiftN n (constantAt s m), constantAt t n)
 
-instance (Effective a, Effective b, Eq (GeomSimplex a), Eq (GeomSimplex b), Eq (Basis (Model a)), Eq (Basis (Model b))) => Effective (Product a b) where
+ezReduction ::
+  (Eq (GeomSimplex a), Eq (GeomSimplex b), SSet a, SSet b) =>
+  Product a b ->
+  Reduction
+    (NormalisedChains (Product a b))
+    (Tensor (NormalisedChains a) (NormalisedChains b))
+ezReduction p@(Product a b) =
+  isoToReduction criticalIso (criticalIsoInv a b)
+    . dvfReduction (NormalisedChains p)
+
+ezEquiv ::
+  (Eq (GeomSimplex a), Eq (GeomSimplex b), SSet a, SSet b) =>
+  Product a b ->
+  Equivalence
+    (NormalisedChains (Product a b))
+    (Tensor (NormalisedChains a) (NormalisedChains b))
+ezEquiv p@(Product a b) = Equivalence (NormalisedChains p) id (NormalisedChains p) (ezReduction p) (Tensor (NormalisedChains a) (NormalisedChains b))
+
+diagMor :: Morphism a (Product a a)
+diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
+
+instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NormalisedChains a) where
+  counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then return () else 0
+  delMor (NormalisedChains a) = reductionF (ezReduction (Product a a)) . cfmap diagMor
+
+instance
+  ( Effective a,
+    Effective b,
+    Eq (GeomSimplex a),
+    Eq (GeomSimplex b),
+    Eq (Basis (Model a)),
+    Eq (Basis (Model b))
+  ) =>
+  Effective (Product a b)
+  where
   type Model (Product a b) = Tensor (Model a) (Model b)
   model (Product a b) = Tensor (model a) (model b)
 
-  eff p@(Product a b) =
-    tensorEquiv (eff a) (eff b)
-      . isoToEquiv (coerce p) (Tensor (NormalisedChains a) (NormalisedChains b)) criticalIso (criticalIsoInv a b)
-      . dvfEquivalence (NormalisedChains p)
+  eff p@(Product a b) = tensorEquiv (eff a) (eff b) . ezEquiv p

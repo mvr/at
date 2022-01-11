@@ -18,6 +18,7 @@ import Prelude hiding (id, (.))
 
 -- | The twisting cochain tau has degree -1
 data TwistedTensor a b = TwistedTensor a b (Morphism a b)
+
 newtype TwistedBasis a = TwistedBasis a
 
 instance (Coalgebra a, Algebra b, Eq (Basis b), Eq (Basis a)) => ChainComplex (TwistedTensor a b) where
@@ -29,6 +30,7 @@ instance (Coalgebra a, Algebra b, Eq (Basis b), Eq (Basis a)) => ChainComplex (T
   diff (TwistedTensor a b tauMor) = coerce $ diff (Perturbed (Tensor a b) delta)
     where
       (ClosedMorphism _ delta _) = (idA ⊗ mu) . assoc . ((idA ⊗ tau) ⊗ idB) . (del ⊗ idB)
+
       mu = ClosedMorphism (Tensor b b) (muMor b) b
       del = ClosedMorphism a (delMor a) (Tensor a a)
       tau = ClosedMorphism a tauMor b

@@ -3,11 +3,11 @@
 -- Tried to keep it minimal, no crazy tricks
 module Control.Category.Constrained where
 
+import qualified Control.Monad
 import Data.Kind (Type)
 import GHC.Exts (Constraint)
-import Prelude hiding (Functor, Monad, id, (.), fmap, (<$>))
+import Prelude hiding (Functor, Monad, fmap, id, (.), (<$>))
 import qualified Prelude
-import qualified Control.Monad
 
 infixr 9 .
 
@@ -44,6 +44,17 @@ class Functor dom cod f where
   fmap :: (Object dom a, Object dom b, Object cod (f a), Object cod (f a), CodObj f b) => dom a b -> cod (f a) (f b)
   default fmap :: (dom ~ (->), cod ~ (->), Prelude.Functor f) => dom a b -> cod (f a) (f b)
   fmap = Prelude.fmap
+
+cfmap ::
+  ( Object dom a,
+    Object dom b,
+    Object cod (f a),
+    CodObj f b,
+    Functor dom cod f
+  ) =>
+  dom a b ->
+  cod (f a) (f b)
+cfmap = fmap
 
 -- (<$>) :: (Functor dom cod f, Object dom a, Object dom b, Object cod (f a), Object cod (f a), CodObj f b) => dom a b -> cod (f a) (f b)
 -- (<$>) = fmap
