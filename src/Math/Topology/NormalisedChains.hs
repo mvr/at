@@ -31,6 +31,6 @@ instance (FiniteType a, Eq (GeomSimplex a)) => CC.FiniteType (NormalisedChains a
   basis (NormalisedChains a) i = coerce $ geomBasis a i
 
 instance Functor UMorphism CC.UMorphism BasisSimplex where
-  fmap m = CC.Morphism 0 $ \(BasisSimplex s) -> case mapGeomSimplex m s of
+  fmap m = CC.Morphism 0 $ \(BasisSimplex s) -> case m `onGeomSimplex` s of
     NonDegen t -> return $ BasisSimplex t
     Degen _ _ -> Combination []

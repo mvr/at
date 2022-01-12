@@ -36,8 +36,8 @@ data NSimplicesOf a = NSimplicesOf Int a
 
 instance (SGrp a) => Group (NSimplicesOf a) where
   type Element (NSimplicesOf a) = Simplex a
-  prod (NSimplicesOf n a) s t = prodMor a `mapSimplex` prodNormalise (s, t)
+  prod (NSimplicesOf n a) s t = prodMor a `onSimplex` prodNormalise (s, t)
   unit (NSimplicesOf n a) = constantAt (basepoint a) n
-  inv (NSimplicesOf n a) s = invMor a `mapSimplex` s
+  inv (NSimplicesOf n a) s = invMor a `onSimplex` s
 
 instance (SAb a) => Abelian (NSimplicesOf a)

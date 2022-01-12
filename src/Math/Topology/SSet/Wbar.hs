@@ -7,10 +7,9 @@
 -- classifying-spaces.lisp, cl-space-efhm.lisp and anromero/resolutions.lisp
 module Math.Topology.SSet.Wbar where
 
--- import Math.Topology.SSet.Effective
-
 import Data.List (intersect)
 import Math.Algebra.ChainComplex.DVF
+import Math.Algebra.Group
 import Math.Topology.NormalisedChains
 import Math.Topology.SGrp
 import Math.Topology.SSet
@@ -19,7 +18,14 @@ import Math.Topology.SSet.Product
 
 newtype Wbar g = Wbar g
 
--- TODO: inefficient
+newtype WbarSimplex g = WbarSimplex [Simplex g]
+
+deriving instance (Eq (GeomSimplex g)) => Eq (WbarSimplex g)
+
+-- TODO: there are probably efficient algorithms for this in terms of bit fields.
+-- 1. Create a bit field marking which positions are the unit
+-- 2. Intersect this with the shifted degeneracy operators for each entry
+-- 3. Delete all the surviving units and bit-extract every degeneracy operator appropriately
 filterCandidates :: (Pointed g, Eq (GeomSimplex g)) => g -> [Simplex g] -> [Int] -> Int -> [Int]
 filterCandidates g ss [] j = []
 filterCandidates g [] cs@(ct : crest) j = undefined -- can't happen
@@ -51,6 +57,15 @@ normalise g (s : ss)
         successes = filterCandidates g ss candidates 1
      in foldl degen (NonDegen $ extractDegens g (s : ss) successes) successes
 
+insertUnit :: (Pointed g) => g -> Int -> Int -> [Simplex g] -> [Simplex g]
+insertUnit g j 0 ss = constantAt (basepoint g) (length ss) : ss
+insertUnit g j i (s : ss) = degen s j : insertUnit g j (i -1) ss
+insertUnit g j i _ = error "insertUnit: impossible"
+
+unnormalise :: (Pointed g, Eq (GeomSimplex g)) => g -> Simplex (Wbar g) -> [Simplex g]
+unnormalise g (NonDegen gs) = gs
+unnormalise g (Degen i s) = insertUnit g i i (unnormalise g s)
+
 instance (SGrp g, Eq (GeomSimplex g)) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
   -- (Wbar G)_n = G_n-1 x G_n-1 x ... x G_0
@@ -63,6 +78,7 @@ instance (SGrp g, Eq (GeomSimplex g)) => SSet (Wbar g) where
   geomSimplexDim _ ss = length ss
 
   geomFace _ [] _ = undefined
+  -- TODO: need to make sure this matches with Kenzo's conventions, multiplying on which side
   geomFace (Wbar g) ss i = normalise g (underlying ss i)
     where
       underlying ss i
@@ -70,19 +86,17 @@ instance (SGrp g, Eq (GeomSimplex g)) => SSet (Wbar g) where
         | i == 1 && length ss == 1 = []
         | i == 1 =
           let (s : s' : rest) = ss
-           in (prodMor g `mapSimplex` prodNormalise (face g s 0, s')) : rest
+           in (prodMor g `onSimplex` prodNormalise (face g s 0, s')) : rest
         | otherwise =
           let (s : rest) = ss
-           in (face g s (i -1)) : underlying rest (i -1)
+           in (face g s (i - 1)) : underlying rest (i - 1)
 
 instance SGrp g => Pointed (Wbar g) where
   basepoint (Wbar g) = []
 
--- Eventually:
--- instance (SGrp g, Effective g) => Effective (Wbar g)
---   type Model (Wbar g) = Bar (Model g)
-
-instance (SAb g, Eq (GeomSimplex g)) => SGrp (Wbar g)
+instance (SAb g, Eq (GeomSimplex g)) => SGrp (Wbar g) where
+  prodMor (Wbar g) = Morphism $ \(gs1, gs2) -> normalise g $ fmap (onSimplex (prodMor g) . prodNormalise) (zip (unnormalise g gs1) (unnormalise g gs2))
+  invMor (Wbar g) = Morphism $ \gs -> normalise g $ fmap (onSimplex (invMor g)) gs
 
 instance (SAb g, Eq (GeomSimplex g)) => SAb (Wbar g)
 
@@ -97,3 +111,6 @@ instance (SAb g, Eq (GeomSimplex g)) => SAb (Wbar g)
 -- described in serre.lisp and cl-space-efhm.lisp
 instance (SGrp g, OneReduced g, Eq (GeomSimplex g)) => DVF (NormalisedChains (Wbar g)) where
   vf = undefined
+
+-- instance (SGrp g, Effective g) => Effective (Wbar g)
+--   type Model (Wbar g) = Bar (Model g)
