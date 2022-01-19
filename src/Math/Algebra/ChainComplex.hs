@@ -15,7 +15,7 @@ import Math.ValueCategory.Additive
 import Prelude hiding (id, (.))
 
 class ChainComplex a where
-  type Basis a  = s | s -> a
+  type Basis a = s | s -> a
 
   isBasis :: a -> Basis a -> Bool
   isBasis _ _ = True
@@ -39,10 +39,13 @@ instance FiniteType () where
   basis _ 0 = [()]
   basis _ _ = []
 
--- TODO: obviously make this a hashmap, possibly with special cases
--- for very small combinations? Unless hashmap alreayd does this.
+
+-- | Z-linear combinations
 newtype Combination b = Combination {coeffs :: [(Int, b)]}
   deriving (Show, Functor, Eq)
+
+-- TODO: obviously make this a hashmap, possibly with special cases
+-- for very small combinations? Unless hashmap alreayd does this.
 
 coeffOf :: (Eq b) => Combination b -> b -> Int
 coeffOf (Combination l) b = fst $ fromJust $ find (\(c, b') -> b == b') l
@@ -57,14 +60,17 @@ merge cs cs' = foldl (flip insert) cs cs'
 
 -- Whatever
 normalise :: (Eq b, Num a) => [(a, b)] -> [(a, b)]
-normalise = foldr (\ c -> merge [c]) []
+normalise = foldr (\c -> merge [c]) []
+
+(.*) :: Int -> Combination b -> Combination b
+n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
+
+kozulRule :: Eq b => Int -> Combination b -> Combination b
+kozulRule n c = if even n then c else negate c
 
 instance Constrained.Functor (->) (->) Combination where
   type CodObj Combination a = Eq a
   fmap f (Combination cs) = Combination $ normalise $ fmap (fmap f) cs
-
-(.*) :: Int -> Combination b -> Combination b
-n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
 
 instance Constrained.Monad (->) Combination where
   return a = Combination [(1, a)]
@@ -72,9 +78,14 @@ instance Constrained.Monad (->) Combination where
 
 instance (Eq b) => Num (Combination b) where
   fromInteger 0 = Combination []
-  fromInteger _ = undefined
+  fromInteger _ = error "Combination: fromInteger"
 
   (Combination cs) + (Combination cs') = Combination $ merge cs cs'
+  negate (Combination cs) = Combination $ fmap (\(n, c) -> (negate n, c)) cs
+
+  (*) = error "Combination: (*)"
+  abs = error "Combination: abs"
+  signum = error "Combination: signum"
 
 -- NOTE: I don't think we ever use a variable morphism degree, so the
 -- degree could be lifted to the type level. Then again I think
@@ -110,7 +121,7 @@ instance Eq b => Num (UMorphism a b) where
 
   (*) = error "Morphism: (*)"
   abs = error "Morphism: abs"
-  signum = error "Morphism: signumx"
+  signum = error "Morphism: signum"
 
 data ClosedMorphism a b = ClosedMorphism a (Morphism a b) b
 
