@@ -49,6 +49,12 @@ instance (SSet a, SSet b) => SSet (Product a b) where
 
   geomFace (Product a b) (s, t) i = prodNormalise (face a s i, face b t i)
 
+instance (Pointed a, Pointed b) => Pointed (Product a b) where
+  basepoint (Product a b) = (NonDegen $ basepoint a, NonDegen $ basepoint b)
+
+instance (ZeroReduced a, ZeroReduced b) => ZeroReduced (Product a b)
+instance (OneReduced a, OneReduced b) => OneReduced (Product a b)
+
 instance (SSet a, SSet b, Eq (GeomSimplex a), Eq (GeomSimplex b)) => DVF (Product a b) where
   vf = status
 

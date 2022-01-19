@@ -32,4 +32,9 @@ instance FiniteType Sphere where
 instance Pointed Sphere where
   basepoint _ = Basepoint
 
+instance ZeroReduced Sphere
+
+-- err, as long as d > 1
+instance OneReduced Sphere
+
 instance Effective Sphere

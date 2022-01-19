@@ -115,6 +115,12 @@ class SSet a => FiniteType a where
 class Pointed a where
   basepoint :: a -> GeomSimplex a
 
+-- | SSet has unique 0-simplex.
+class Pointed a => ZeroReduced a
+
+-- | SSet has no non-degenerate 1-simplices.
+class ZeroReduced a => OneReduced a
+
 -- Reid Barton:
 -- https://categorytheory.zulipchat.com/#narrow/stream/241590-theory.3A-
 -- algebraic.20topology.20.26.20homological.20algebra/topic/describing.

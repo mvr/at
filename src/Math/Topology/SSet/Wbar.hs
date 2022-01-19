@@ -94,6 +94,9 @@ instance (SGrp g, Eq (GeomSimplex g)) => SSet (Wbar g) where
 instance SGrp g => Pointed (Wbar g) where
   basepoint (Wbar g) = []
 
+instance (SGrp g, ZeroReduced g) => ZeroReduced (Wbar g)
+instance (SGrp g, ZeroReduced g) => OneReduced (Wbar g) -- Not a typo!
+
 instance (SAb g, Eq (GeomSimplex g)) => SGrp (Wbar g) where
   prodMor (Wbar g) = Morphism $ \(gs1, gs2) -> normalise g $ fmap (onSimplex (prodMor g) . prodNormalise) (zip (unnormalise g gs1) (unnormalise g gs2))
   invMor (Wbar g) = Morphism $ \gs -> normalise g $ fmap (onSimplex (invMor g)) gs
