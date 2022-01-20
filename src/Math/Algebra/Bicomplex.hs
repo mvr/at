@@ -6,7 +6,7 @@ module Math.Algebra.Bicomplex where
 
 import Math.Algebra.ChainComplex
 
-class Bicomplex a where
+class Eq (Bibasis a) => Bicomplex a where
   type Bibasis a = s | s -> a
 
   bidegree :: a -> Bibasis a -> (Int, Int)
@@ -23,6 +23,7 @@ type Bimorphism a b = UBimorphism (Bibasis a) (Bibasis b)
 newtype Tot a = Tot a
 
 newtype TotBasis a = TotBasis a
+  deriving (Eq)
 
 instance (Bicomplex a, Eq (Bibasis a)) => ChainComplex (Tot a) where
   type Basis (Tot a) = TotBasis (Bibasis a)

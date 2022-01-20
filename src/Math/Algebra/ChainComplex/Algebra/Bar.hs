@@ -40,7 +40,7 @@ newtype BarBibasis a = BarBibasis a
 newtype BarBasis a = BarBasis a
   deriving (Eq)
 
-instance (Algebra a, Eq (Basis a)) => Bicomplex (Bar a) where
+instance Algebra a => Bicomplex (Bar a) where
   type Bibasis (Bar a) = BarBibasis [Basis a]
   bidegree (Bar a) (BarBibasis bs) = (length bs, sum (degree a <$> bs))
 
@@ -61,7 +61,7 @@ instance (Algebra a, Eq (Basis a)) => Bicomplex (Bar a) where
       go (b1 : b2 : bs) = fmap (: bs) (muMor a `onBasis` (b1, b2)) + kozulRule (degree a b1) (go (b2 : bs))
 
 -- Can this be done using DerivingVia?
-instance (Algebra a, Eq (Basis a)) => ChainComplex (Bar a) where
+instance Algebra a => ChainComplex (Bar a) where
   type Basis (Bar a) = BarBasis (Basis (Tot (Bar a))) -- Reuse the same carrier Bar
   degree (Bar a) = coerce (degree (Tot (Bar a)))
   diff (Bar a) = coerce (diff (Tot (Bar a)))

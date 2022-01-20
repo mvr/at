@@ -62,7 +62,7 @@ unDegen (Degen i s) (j : js)
 
 type Simplex a = FormalDegen (GeomSimplex a)
 
-class SSet a where
+class Eq (GeomSimplex a) => SSet a where
   -- NOTE: Maybe this shouldn't be an associated type, instead just
   -- another parameter to the typeclass
 
@@ -112,7 +112,7 @@ class SSet a => FiniteType a where
   -- * `all isSimplex (geomBasis n)`
   geomBasis :: a -> Int -> [GeomSimplex a]
 
-class Pointed a where
+class SSet a => Pointed a where
   basepoint :: a -> GeomSimplex a
 
 -- | SSet has unique 0-simplex.

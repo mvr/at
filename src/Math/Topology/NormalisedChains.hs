@@ -18,7 +18,7 @@ newtype NormalisedChains a = NormalisedChains a
 newtype BasisSimplex a = BasisSimplex a
   deriving (Show, Eq)
 
-instance (Eq (GeomSimplex a), SSet a) => CC.ChainComplex (NormalisedChains a) where
+instance SSet a => CC.ChainComplex (NormalisedChains a) where
   type Basis (NormalisedChains a) = BasisSimplex (GeomSimplex a)
   degree (NormalisedChains a) = coerce $ geomSimplexDim a
   diff (NormalisedChains a) = coerce $ CC.Morphism (-1) act
@@ -26,7 +26,7 @@ instance (Eq (GeomSimplex a), SSet a) => CC.ChainComplex (NormalisedChains a) wh
       act v = sum [Combination [(c, s)] | (c, NonDegen s) <- zip signs $ geomFaces a v]
       signs = cycle [1, -1]
 
-instance (FiniteType a, Eq (GeomSimplex a)) => CC.FiniteType (NormalisedChains a) where
+instance FiniteType a => CC.FiniteType (NormalisedChains a) where
   dim (NormalisedChains a) i = length (geomBasis a i)
   basis (NormalisedChains a) i = coerce $ geomBasis a i
 

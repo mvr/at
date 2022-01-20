@@ -23,11 +23,11 @@ class (SSet a, Pointed a) => SGrp a where
 
 class SGrp a => SAb a
 
-isUnit :: (Pointed g, Eq (GeomSimplex g)) => g -> Simplex g -> Bool
+isUnit :: Pointed g => g -> Simplex g -> Bool
 isUnit g (NonDegen s) = s == basepoint g
 isUnit g (Degen _ s) = isUnit g s
 
-instance (SGrp g, (Eq (GeomSimplex g))) => Algebra (NormalisedChains g) where
+instance SGrp g => Algebra (NormalisedChains g) where
   unitMor (NormalisedChains g) = CC.Morphism 0 (const (return (BasisSimplex (basepoint g))))
   muMor (NormalisedChains g) = cfmap (prodMor g) . reductionG (ezReduction (Product g g))
 

@@ -26,7 +26,7 @@ deriving instance (Eq (GeomSimplex g)) => Eq (WbarSimplex g)
 -- 1. Create a bit field marking which positions are the unit
 -- 2. Intersect this with the shifted degeneracy operators for each entry
 -- 3. Delete all the surviving units and bit-extract every degeneracy operator appropriately
-filterCandidates :: (Pointed g, Eq (GeomSimplex g)) => g -> [Simplex g] -> [Int] -> Int -> [Int]
+filterCandidates :: (Pointed g) => g -> [Simplex g] -> [Int] -> Int -> [Int]
 filterCandidates g ss [] j = []
 filterCandidates g [] cs@(ct : crest) j = undefined -- can't happen
 filterCandidates g ss@(st : srest) cs@(ct : crest) j
@@ -48,7 +48,7 @@ extractDegens g (s : ss) cs
   | last cs == 0 = extractDegens g ss (downshiftList cs)
   | otherwise = unDegen s cs : extractDegens g ss (downshiftList cs)
 
-normalise :: (Pointed g, Eq (GeomSimplex g)) => g -> [Simplex g] -> Simplex (Wbar g)
+normalise :: (Pointed g) => g -> [Simplex g] -> Simplex (Wbar g)
 normalise g [] = NonDegen []
 normalise g (s : ss)
   | isUnit g s = degen (normalise g ss) 0
@@ -62,11 +62,11 @@ insertUnit g j 0 ss = constantAt (basepoint g) (length ss) : ss
 insertUnit g j i (s : ss) = degen s j : insertUnit g j (i -1) ss
 insertUnit g j i _ = error "insertUnit: impossible"
 
-unnormalise :: (Pointed g, Eq (GeomSimplex g)) => g -> Simplex (Wbar g) -> [Simplex g]
+unnormalise :: (Pointed g) => g -> Simplex (Wbar g) -> [Simplex g]
 unnormalise g (NonDegen gs) = gs
 unnormalise g (Degen i s) = insertUnit g i i (unnormalise g s)
 
-instance (SGrp g, Eq (GeomSimplex g)) => SSet (Wbar g) where
+instance (SGrp g) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
   -- (Wbar G)_n = G_n-1 x G_n-1 x ... x G_0
   -- meeting a slightly complicated condition on whether the list
@@ -97,11 +97,11 @@ instance SGrp g => Pointed (Wbar g) where
 instance (SGrp g, ZeroReduced g) => ZeroReduced (Wbar g)
 instance (SGrp g, ZeroReduced g) => OneReduced (Wbar g) -- Not a typo!
 
-instance (SAb g, Eq (GeomSimplex g)) => SGrp (Wbar g) where
+instance (SAb g) => SGrp (Wbar g) where
   prodMor (Wbar g) = Morphism $ \(gs1, gs2) -> normalise g $ fmap (onSimplex (prodMor g) . prodNormalise) (zip (unnormalise g gs1) (unnormalise g gs2))
   invMor (Wbar g) = Morphism $ \gs -> normalise g $ fmap (onSimplex (invMor g)) gs
 
-instance (SAb g, Eq (GeomSimplex g)) => SAb (Wbar g)
+instance (SAb g) => SAb (Wbar g)
 
 -- instance (SGrp g) => Kan (Wbar g)
 
@@ -112,7 +112,7 @@ instance (SAb g, Eq (GeomSimplex g)) => SAb (Wbar g)
 
 -- Other simplicial groups will need the more complicated method
 -- described in serre.lisp and cl-space-efhm.lisp
-instance (SGrp g, OneReduced g, Eq (GeomSimplex g)) => DVF (NormalisedChains (Wbar g)) where
+instance (SGrp g, OneReduced g) => DVF (NormalisedChains (Wbar g)) where
   vf = undefined
 
 -- instance (SGrp g, Effective g) => Effective (Wbar g)

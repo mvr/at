@@ -53,9 +53,10 @@ instance (Pointed a, Pointed b) => Pointed (Product a b) where
   basepoint (Product a b) = (NonDegen $ basepoint a, NonDegen $ basepoint b)
 
 instance (ZeroReduced a, ZeroReduced b) => ZeroReduced (Product a b)
+
 instance (OneReduced a, OneReduced b) => OneReduced (Product a b)
 
-instance (SSet a, SSet b, Eq (GeomSimplex a), Eq (GeomSimplex b)) => DVF (Product a b) where
+instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status
 
 -- TODO: in bit-field form this could be done by some efficient
@@ -123,7 +124,7 @@ criticalIsoInv a b =
      in return $ coerce (downshiftN n (constantAt s m), constantAt t n)
 
 ezReduction ::
-  (Eq (GeomSimplex a), Eq (GeomSimplex b), SSet a, SSet b) =>
+  (SSet a, SSet b) =>
   Product a b ->
   Reduction
     (NormalisedChains (Product a b))
@@ -133,7 +134,7 @@ ezReduction p@(Product a b) =
     . dvfReduction (NormalisedChains p)
 
 ezEquiv ::
-  (Eq (GeomSimplex a), Eq (GeomSimplex b), SSet a, SSet b) =>
+  (SSet a, SSet b) =>
   Product a b ->
   Equivalence
     (NormalisedChains (Product a b))
@@ -149,11 +150,7 @@ instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NormalisedChains a) where
 
 instance
   ( Effective a,
-    Effective b,
-    Eq (GeomSimplex a),
-    Eq (GeomSimplex b),
-    Eq (Basis (Model a)),
-    Eq (Basis (Model b))
+    Effective b
   ) =>
   Effective (Product a b)
   where

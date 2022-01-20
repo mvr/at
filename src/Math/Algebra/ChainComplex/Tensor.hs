@@ -49,7 +49,7 @@ tensorAssocInv :: a -> b -> c -> Morphism (Tensor a (Tensor b c)) (Tensor (Tenso
 tensorAssocInv a b c = Morphism 0 $ \(a, (b, c)) -> return ((a, b), c)
 
 tensorReduction ::
-  (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2, Eq (Basis a2), Eq (Basis b2), Eq (Basis a1), Eq (Basis b1)) =>
+  (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2) =>
   a1 ->
   a2 ->
   b1 ->
@@ -79,7 +79,7 @@ tensorMorphismArr (ClosedMorphism a1 m1 b1) (ClosedMorphism a2 m2 b2) = ClosedMo
 -- tensorReductionArr (ClosedReduction a1 m1 b1) (ClosedReduction a2 m2 b2) = ClosedReduction (Tensor a1 a2) (tensorReduction a1 a2 b1 b2 m1 m2) (Tensor b1 b2)
 
 tensorEquiv ::
-  (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2, Eq (Basis a2), Eq (Basis b2), Eq (Basis a1), Eq (Basis b1)) =>
+  (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2) =>
   Equivalence a1 b1 ->
   Equivalence a2 b2 ->
   Equivalence (Tensor a1 a2) (Tensor b1 b2)

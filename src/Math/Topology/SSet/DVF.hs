@@ -14,5 +14,5 @@ class SSet a => DVF a where
   -- TODO: Name??
   vf :: a -> GeomSimplex a -> CC.Status (GeomSimplex a)
 
-instance (DVF a, Eq (GeomSimplex a)) => CC.DVF (NormalisedChains a) where
+instance DVF a => CC.DVF (NormalisedChains a) where
   vf (NormalisedChains a) (BasisSimplex b) = coerce $ vf a b

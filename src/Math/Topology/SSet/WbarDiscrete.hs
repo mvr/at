@@ -38,7 +38,7 @@ instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
           underlying (s : ss) i = s : underlying ss (i - 1)
           underlying _ _ = undefined -- can't happen
 
-instance Group a => Pointed (WbarDiscrete a) where
+instance (Group a, Eq (Element a)) => Pointed (WbarDiscrete a) where
   basepoint (WbarDiscrete a) = []
 
 -- Eventually:

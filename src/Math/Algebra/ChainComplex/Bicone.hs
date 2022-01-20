@@ -16,7 +16,7 @@ data Bicone b c d = Bicone b c d (Morphism b c) (Morphism d c)
 data BiconeBasis b c d = FromB b | FromC c | FromD d
   deriving (Eq)
 
-instance (ChainComplex b, ChainComplex c, ChainComplex d, Eq (Basis b), Eq (Basis c), Eq (Basis d)) => ChainComplex (Bicone b c d) where
+instance (ChainComplex b, ChainComplex c, ChainComplex d) => ChainComplex (Bicone b c d) where
   type Basis (Bicone b c d) = BiconeBasis (Basis b) (Basis c) (Basis d)
 
   isBasis (Bicone b _ _ _ _) (FromB s) = isBasis b s
@@ -33,7 +33,7 @@ instance (ChainComplex b, ChainComplex c, ChainComplex d, Eq (Basis b), Eq (Basi
       go (FromC s) = - (FromC <$> diff c `onBasis` s)
       go (FromD s) = (FromD <$> diff d `onBasis` s) + (FromC <$> g `onBasis` s)
 
-instance (FiniteType b, FiniteType c, FiniteType d, Eq (Basis b), Eq (Basis c), Eq (Basis d)) => FiniteType (Bicone b c d) where
+instance (FiniteType b, FiniteType c, FiniteType d) => FiniteType (Bicone b c d) where
   dim (Bicone b c d _ _) n = dim b n + dim c (n + 1) + dim d n
   basis (Bicone b c d _ _) n = (FromB <$> basis b n) ++ (FromC <$> basis c (n + 1)) ++ (FromD <$> basis d n)
 

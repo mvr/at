@@ -29,10 +29,10 @@ instance Category Equivalence where
       (r1 . redRight r2 l1)
       c1
 
-idEquiv :: (ChainComplex a, Eq (Basis a)) => a -> Equivalence a a
+idEquiv :: (ChainComplex a) => a -> Equivalence a a
 idEquiv a = Equivalence a id a id a
 
-isoToEquiv :: (ChainComplex a, Eq (Basis a)) => a -> b -> Morphism a b -> Morphism b a -> Equivalence a b
+isoToEquiv :: (ChainComplex a) => a -> b -> Morphism a b -> Morphism b a -> Equivalence a b
 isoToEquiv a b f g = Equivalence a id a (isoToReduction f g) b
 
 -- equivComposeIso :: (Eq (Basis b), Eq (Basis c)) => (Morphism b c, Morphism c b) -> Equivalence a b -> Equivalence a c

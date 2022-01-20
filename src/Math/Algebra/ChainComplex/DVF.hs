@@ -38,18 +38,18 @@ newtype CriticalBasis a = CriticalBasis a
 
 -- Could be done as a use of the perturbation lemma, but I think these
 -- direct definitions might end up being more efficient
-instance (DVF a, Eq (Basis a)) => ChainComplex (CriticalComplex a) where
+instance DVF a => ChainComplex (CriticalComplex a) where
   type Basis (CriticalComplex a) = CriticalBasis (Basis a)
   isBasis (CriticalComplex a) (CriticalBasis s) = isBasis a s && isCritical a s
   degree (CriticalComplex a) (CriticalBasis b) = degree a b
   diff (CriticalComplex a) = dK a (diff a)
 
-proj :: (DVF a, Eq (Basis a)) => a -> Morphism a (CriticalComplex a)
+proj :: DVF a => a -> Morphism a (CriticalComplex a)
 proj a = Morphism 0 $ coerce $ \b -> case vf a b of
   Critical -> return b
   _ -> Combination []
 
-incl :: (DVF a, Eq (Basis a)) => a -> Morphism (CriticalComplex a) a
+incl :: DVF a => a -> Morphism (CriticalComplex a) a
 incl a = Morphism 0 (return . coerce)
 
 -- Called d_V
@@ -71,18 +71,18 @@ h a d = Morphism 1 $ \b -> case vf a b of
       d'_vb = Combination [(incidenceCoef i, tau)]
   _ -> Combination []
 
-f :: forall a. (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism a (CriticalComplex a)
+f :: forall a. DVF a => a -> Morphism a a -> Morphism a (CriticalComplex a)
 f a d = proj a . (id - (d . h a d))
 
-g :: (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism (CriticalComplex a) a
+g :: DVF a => a -> Morphism a a -> Morphism (CriticalComplex a) a
 g a d = (id - (h a d . d)) . incl a
 
-dK :: (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism (CriticalComplex a) (CriticalComplex a)
+dK :: DVF a => a -> Morphism a a -> Morphism (CriticalComplex a) (CriticalComplex a)
 dK a d = proj a . (d - (d . h a d . d)) . incl a
 
-dvfReduction :: (DVF a, Eq (Basis a)) => a -> Reduction a (CriticalComplex a)
+dvfReduction :: DVF a => a -> Reduction a (CriticalComplex a)
 dvfReduction a = Reduction (f a d) (g a d) (h a d)
   where d = diff a
 
-dvfEquivalence :: (DVF a, Eq (Basis a)) => a -> Equivalence a (CriticalComplex a)
+dvfEquivalence :: DVF a => a -> Equivalence a (CriticalComplex a)
 dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)
