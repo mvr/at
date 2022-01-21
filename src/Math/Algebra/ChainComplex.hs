@@ -39,7 +39,6 @@ instance FiniteType () where
   basis _ 0 = [()]
   basis _ _ = []
 
-
 -- | Z-linear combinations
 newtype Combination b = Combination {coeffs :: [(Int, b)]}
   deriving (Show, Functor, Eq)
@@ -67,6 +66,9 @@ n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
 
 kozulRule :: Eq b => Int -> Combination b -> Combination b
 kozulRule n c = if even n then c else negate c
+
+singleComb :: b -> Combination b
+singleComb a = Combination [(1, a)]
 
 instance Constrained.Functor (->) (->) Combination where
   type CodObj Combination a = Eq a

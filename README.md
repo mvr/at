@@ -92,7 +92,7 @@ Plan
   - [x] Simplicial Group
   - [ ] Kan Structure
   - [x] SSet With Effective Homology
-  - [ ] Principal Fibrations
+  - [x] Principal Fibrations
   - [x] Discrete Vector Fields
 - Simplicial Constructions
   - General Simplicial Sets
@@ -105,7 +105,7 @@ Plan
   - [x] Moore Spaces
   - [ ] Projective Spaces
   - [x] Products
-  - [ ] Total Space of Principal Fibration
+  - [x] Total Space of Principal Fibration
   - [ ] Loop Space
     - [ ] Of 1-reduced
     - [ ] Of 0-reduced
@@ -115,7 +115,7 @@ Plan
     - [x] For 0-reduced group
     - [x] For non-reduced group
     - [x] Special case for discrete groups
-    - [ ] Group Structure
+    - [x] Group Structure
   - [ ] Efficient Eilenberg-MacLane Spaces
     - [ ] [`K(Z,1)`](#ref-kendoc)
     - [ ] `K(Z/2,1)` (Can be made particularly efficient)
@@ -133,7 +133,7 @@ Plan
     - [ ] Use specialised contraction maps for efficiency
   - Fibrations
     - Total Space from Base and Fibre ('Serre' problem)
-      - [ ] [1-reduced Fibre](#ref-as%3Advf)
+      - [x] [1-reduced Fibre](#ref-as%3Advf)
       - [ ] [0-reduced Fibre](#ref-filakovsky%3Atwisted-products)
     - [ ] Fibre from Base and Total Space ('Eilenberg-Moore' problem)
   - Loop Space
@@ -146,7 +146,7 @@ Plan
 - Discrete Vector Fields
   - [x] Induced Reduction
   - [x] Products
-  - [ ] Fibrations
+  - [x] Fibrations
   - [ ] `K(Z,1)`
     - [ ] [Naive but easy](#ref-kms:poly-em-spaces)
     - [ ] [Polynomial time but complicated](#ref-kms:poly-em-spaces)

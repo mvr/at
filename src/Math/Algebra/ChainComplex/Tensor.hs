@@ -33,20 +33,30 @@ tensorMorphism ::
   (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
   a1 ->
   a2 ->
-  b1 ->
-  b2 ->
   Morphism a1 b1 ->
   Morphism a2 b2 ->
   Morphism (Tensor a1 a2) (Tensor b1 b2)
-tensorMorphism a1 a2 _ _ (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
+tensorMorphism a1 a2 (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
   where
     ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
 
-tensorAssoc :: a -> b -> c -> Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
-tensorAssoc a b c = Morphism 0 $ \((a, b), c) -> return (a, (b, c))
+tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
+tensorAssoc = Morphism 0 $ \((a, b), c) -> return (a, (b, c))
 
-tensorAssocInv :: a -> b -> c -> Morphism (Tensor a (Tensor b c)) (Tensor (Tensor a b) c)
-tensorAssocInv a b c = Morphism 0 $ \(a, (b, c)) -> return ((a, b), c)
+tensorAssocInv :: Morphism (Tensor a (Tensor b c)) (Tensor (Tensor a b) c)
+tensorAssocInv = Morphism 0 $ \(a, (b, c)) -> return ((a, b), c)
+
+tensorUnitL :: Morphism (Tensor () a) a
+tensorUnitL = Morphism 0 $ \(_, a) -> return a
+
+tensorUnitLInv :: Morphism a (Tensor () a)
+tensorUnitLInv = Morphism 0 $ \a -> return ((), a)
+
+tensorUnitR :: Morphism (Tensor a ()) a
+tensorUnitR = Morphism 0 $ \(a, _) -> return a
+
+tensorUnitRInv :: Morphism a (Tensor a ())
+tensorUnitRInv = Morphism 0 $ \a -> return (a, ())
 
 tensorReduction ::
   (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2) =>
@@ -59,9 +69,9 @@ tensorReduction ::
   Reduction (Tensor a1 a2) (Tensor b1 b2)
 tensorReduction a1 a2 b1 b2 (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction f' g' h'
   where
-    f' = tensorMorphism a1 a2 b1 b2 f1 f2
-    g' = tensorMorphism b1 b2 a1 a2 g1 g2
-    h' = (tensorMorphism a1 a2 a1 a2 h1 (g2 . f2)) + (tensorMorphism a1 a2 a1 a2 id h2)
+    f' = tensorMorphism a1 a2 f1 f2
+    g' = tensorMorphism b1 b2 g1 g2
+    h' = (tensorMorphism a1 a2 h1 (g2 . f2)) + (tensorMorphism a1 a2 id h2)
 
 -- Convenience:
 tensorMorphismArr ::
@@ -69,7 +79,7 @@ tensorMorphismArr ::
   ClosedMorphism a1 b1 ->
   ClosedMorphism a2 b2 ->
   ClosedMorphism (Tensor a1 a2) (Tensor b1 b2)
-tensorMorphismArr (ClosedMorphism a1 m1 b1) (ClosedMorphism a2 m2 b2) = ClosedMorphism (Tensor a1 a2) (tensorMorphism a1 a2 b1 b2 m1 m2) (Tensor b1 b2)
+tensorMorphismArr (ClosedMorphism a1 m1 b1) (ClosedMorphism a2 m2 b2) = ClosedMorphism (Tensor a1 a2) (tensorMorphism a1 a2 m1 m2) (Tensor b1 b2)
 
 -- tensorReductionArr ::
 --   (ChainComplex a1, ChainComplex a2) =>

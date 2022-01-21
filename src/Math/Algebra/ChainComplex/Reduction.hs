@@ -55,6 +55,18 @@ perturb a b (Reduction f g h) deltahat =
     h' = sigma . h
     delta = f . deltahat . g'
 
+-- | Use the BPL to set the differential of `a` to a particular
+-- morphism. (Again, the nilpotence condition of the BPL must be
+-- satisfied.)
+perturbTo ::
+  (Eq (Basis a), Eq (Basis b), ChainComplex a) =>
+  a ->
+  b ->
+  Reduction a b ->
+  Morphism a a ->
+  (Perturbed a, Perturbed b, Reduction (Perturbed a) (Perturbed b))
+perturbTo a b r d = perturb a b r (d - diff a)
+
 -- | The Easy Perturbation Lemma
 perturbBottom ::
   (Eq (Basis a), Eq (Basis b)) =>
@@ -67,3 +79,14 @@ perturbBottom a b (Reduction f g h) delta =
   (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f) (coerce g) (coerce h))
   where
     deltahat = g . delta . f
+
+-- | Use the EPL to set the differential of `b` to a particular
+-- morphism.
+perturbBottomTo ::
+  (Eq (Basis a), Eq (Basis b), ChainComplex b) =>
+  a ->
+  b ->
+  Reduction a b ->
+  Morphism b b ->
+  (Perturbed a, Perturbed b, Reduction (Perturbed a) (Perturbed b))
+perturbBottomTo a b r d = perturbBottom a b r (d - diff b)

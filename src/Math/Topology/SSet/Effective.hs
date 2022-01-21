@@ -1,4 +1,4 @@
--- | A SSet with attached Effective Homology
+-- | A SSet with Effective Homology
 
 module Math.Topology.SSet.Effective where
 
@@ -16,12 +16,11 @@ class (SSet a, CC.ChainComplex (Model a)) => Effective a where
   type Model a = NormalisedChains a
 
   model :: a -> Model a
-  eff :: a -> Equivalence (NormalisedChains a) (Model a)
+  model = equivRight . eff
 
-  default model :: (Model a ~ NormalisedChains a) => a -> Model a
-  model = NormalisedChains
+  eff :: a -> Equivalence (NormalisedChains a) (Model a)
   default eff :: (Model a ~ NormalisedChains a) => a -> Equivalence (NormalisedChains a) (Model a)
-  eff _ = id
+  eff = idEquiv . NormalisedChains
 
 homology :: (Effective a, CC.FiniteType (Model a)) => a -> [AbGroupPres]
 homology = CC.homologies . model

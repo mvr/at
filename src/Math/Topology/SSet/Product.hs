@@ -118,10 +118,11 @@ criticalIsoInv ::
     (Tensor (NormalisedChains a) (NormalisedChains b))
     (CriticalComplex (NormalisedChains (Product a b)))
 criticalIsoInv a b =
-  CC.Morphism 0 $ \(BasisSimplex s, BasisSimplex t) ->
-    let n = geomSimplexDim a s
-        m = geomSimplexDim b t
-     in return $ coerce (downshiftN n (constantAt s m), constantAt t n)
+  CC.Morphism 0 $
+    coerce $ \(s, t) ->
+      let n = geomSimplexDim a s
+          m = geomSimplexDim b t
+       in singleComb (downshiftN n (constantAt s m), constantAt t n)
 
 ezReduction ::
   (SSet a, SSet b) =>
@@ -148,13 +149,7 @@ instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NormalisedChains a) where
   counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then return () else 0
   delMor (NormalisedChains a) = reductionF (ezReduction (Product a a)) . cfmap diagMor
 
-instance
-  ( Effective a,
-    Effective b
-  ) =>
-  Effective (Product a b)
-  where
+instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
-  model (Product a b) = Tensor (model a) (model b)
 
   eff p@(Product a b) = tensorEquiv (eff a) (eff b) . ezEquiv p
