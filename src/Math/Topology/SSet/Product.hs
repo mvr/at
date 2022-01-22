@@ -105,10 +105,11 @@ status (Product a b) (s, t) =
       )
 
 criticalIso ::
+  forall a b.
   CC.Morphism
     (CriticalComplex (NormalisedChains (Product a b)))
     (Tensor (NormalisedChains a) (NormalisedChains b))
-criticalIso = CC.Morphism 0 $ \(CriticalBasis (BasisSimplex (s, t))) -> return $ coerce (underlyingGeom s, underlyingGeom t)
+criticalIso = fmapBasis $ coerce @((Simplex a, Simplex b) -> _) $ \(s, t) -> (underlyingGeom s, underlyingGeom t)
 
 criticalIsoInv ::
   (SSet a, SSet b) =>
@@ -117,12 +118,12 @@ criticalIsoInv ::
   CC.Morphism
     (Tensor (NormalisedChains a) (NormalisedChains b))
     (CriticalComplex (NormalisedChains (Product a b)))
-criticalIsoInv a b =
-  CC.Morphism 0 $
-    coerce $ \(s, t) ->
+criticalIsoInv a b = fmapBasis $
+  coerce $
+    \(s, t) ->
       let n = geomSimplexDim a s
           m = geomSimplexDim b t
-       in singleComb (downshiftN n (constantAt s m), constantAt t n)
+       in (downshiftN n (constantAt s m), constantAt t n)
 
 ezReduction ::
   (SSet a, SSet b) =>
@@ -134,14 +135,6 @@ ezReduction p@(Product a b) =
   isoToReduction criticalIso (criticalIsoInv a b)
     . dvfReduction (NormalisedChains p)
 
-ezEquiv ::
-  (SSet a, SSet b) =>
-  Product a b ->
-  Equivalence
-    (NormalisedChains (Product a b))
-    (Tensor (NormalisedChains a) (NormalisedChains b))
-ezEquiv p@(Product a b) = Equivalence (NormalisedChains p) id (NormalisedChains p) (ezReduction p) (Tensor (NormalisedChains a) (NormalisedChains b))
-
 diagMor :: Morphism a (Product a a)
 diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
 
@@ -152,4 +145,9 @@ instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NormalisedChains a) where
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
 
-  eff p@(Product a b) = tensorEquiv (eff a) (eff b) . ezEquiv p
+  eff p@(Product a b) =
+    tensorEquiv (eff a) (eff b)
+      . fromRedLeft
+        (NormalisedChains (Product a b))
+        (Tensor (NormalisedChains a) (NormalisedChains b))
+        (ezReduction p)

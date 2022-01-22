@@ -11,7 +11,7 @@ import Prelude hiding (id, return, (.))
 
 data Tensor a b = Tensor a b
 
-instance (ChainComplex a, ChainComplex b, Eq (Basis a), Eq (Basis b)) => ChainComplex (Tensor a b) where
+instance (ChainComplex a, ChainComplex b) => ChainComplex (Tensor a b) where
   type Basis (Tensor a b) = (Basis a, Basis b)
   isBasis (Tensor a b) (s, t) = isBasis a s && isBasis b t
   degree (Tensor a b) (s, t) = degree a s + degree b t
@@ -21,7 +21,7 @@ instance (ChainComplex a, ChainComplex b, Eq (Basis a), Eq (Basis b)) => ChainCo
         fmap (,t) (diff a `onBasis` s)
           + kozulRule (degree a s) (fmap (s,) (diff b `onBasis` t))
 
-instance (FiniteType a, FiniteType b, Eq (Basis a), Eq (Basis b)) => FiniteType (Tensor a b) where
+instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
   dim (Tensor a b) n = sum [dim a i * dim b (n - i) | i <- [0 .. n]]
   basis (Tensor a b) n =
     [(s, t) | i <- [0 .. n], s <- basis a i, t <- basis b (n - i)]
@@ -41,22 +41,22 @@ tensorMorphism a1 a2 (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
     ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
 
 tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
-tensorAssoc = Morphism 0 $ \((a, b), c) -> return (a, (b, c))
+tensorAssoc = fmapBasis $ \((a, b), c) -> (a, (b, c))
 
 tensorAssocInv :: Morphism (Tensor a (Tensor b c)) (Tensor (Tensor a b) c)
-tensorAssocInv = Morphism 0 $ \(a, (b, c)) -> return ((a, b), c)
+tensorAssocInv = fmapBasis $ \(a, (b, c)) -> ((a, b), c)
 
 tensorUnitL :: Morphism (Tensor () a) a
-tensorUnitL = Morphism 0 $ \(_, a) -> return a
+tensorUnitL = fmapBasis snd
 
 tensorUnitLInv :: Morphism a (Tensor () a)
-tensorUnitLInv = Morphism 0 $ \a -> return ((), a)
+tensorUnitLInv = fmapBasis $ \a -> ((), a)
 
 tensorUnitR :: Morphism (Tensor a ()) a
-tensorUnitR = Morphism 0 $ \(a, _) -> return a
+tensorUnitR = fmapBasis fst
 
 tensorUnitRInv :: Morphism a (Tensor a ())
-tensorUnitRInv = Morphism 0 $ \a -> return (a, ())
+tensorUnitRInv = fmapBasis $ \a -> (a, ())
 
 tensorReduction ::
   (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2) =>

@@ -108,6 +108,9 @@ morphismZeroOfDeg d = Morphism d (const (Combination []))
 morphismZero :: UMorphism a b
 morphismZero = morphismZeroOfDeg 0
 
+fmapBasis :: (a -> b) -> UMorphism a b
+fmapBasis f = Morphism 0 (singleComb . f)
+
 instance Constrained.Category UMorphism where
   type Object UMorphism a = Eq a
 

@@ -11,6 +11,7 @@ import Math.Algebra.ChainComplex.Equivalence
 import Prelude hiding (id, (.), return)
 import Control.Category.Constrained (id, (.), return)
 
+-- Units of Z
 data Incidence = Pos | Neg
 
 incidenceCoef :: Num p => Incidence -> p
@@ -50,7 +51,7 @@ proj a = Morphism 0 $ coerce $ \b -> case vf a b of
   _ -> Combination []
 
 incl :: DVF a => a -> Morphism (CriticalComplex a) a
-incl a = Morphism 0 (return . coerce)
+incl a = fmapBasis coerce
 
 -- Called d_V
 nullDiff :: DVF a => a -> Morphism a a

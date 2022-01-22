@@ -57,7 +57,7 @@ fromTwisted :: (Coalgebra a, Algebra b, Eq (Basis a), Eq (Basis b)) => TwistedTe
 fromTwisted (TwistedTensor a b tau) = Perturbed (Tensor a b) (perturbationForCochain a b tau)
 
 isoPerturbed :: forall a b. Morphism (Perturbed (Tensor a b)) (TwistedTensor a b)
-isoPerturbed = Morphism 0 (coerce @((Basis a, Basis b) -> Combination _) return)
+isoPerturbed = fmapBasis coerce
 
 isoPerturbedInv :: forall a b. Morphism (TwistedTensor a b) (Perturbed (Tensor a b))
-isoPerturbedInv = Morphism 0 (coerce @((Basis a, Basis b) -> Combination _) return)
+isoPerturbedInv = fmapBasis coerce
