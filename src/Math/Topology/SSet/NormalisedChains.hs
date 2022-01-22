@@ -2,7 +2,7 @@
 
 -- | Normalised chain complex of a SSet
 -- https://kerodon.net/tag/00QH
-module Math.Topology.NormalisedChains where
+module Math.Topology.SSet.NormalisedChains where
 
 import Control.Category.Constrained
 import Data.Coerce

@@ -32,7 +32,7 @@ import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Group
-import Math.Topology.NormalisedChains
+import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF

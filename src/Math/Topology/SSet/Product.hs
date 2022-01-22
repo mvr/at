@@ -17,11 +17,11 @@ import Math.Algebra.ChainComplex.DVF hiding (DVF)
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
-import Math.Topology.NormalisedChains
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.Morphism
+import Math.Topology.SSet.NormalisedChains
 import Prelude hiding (id, return, (.))
 
 data Product a b = Product a b

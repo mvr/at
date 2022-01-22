@@ -1,14 +1,15 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE UndecidableInstances #-}
--- | Discrete Vector Field on a sSet
+{-# OPTIONS_GHC -Wno-orphans #-}
+
+-- | Discrete Vector Field on a \(sSet\). Also called an 'acyclic
+-- matching':
+-- <http://nlab-pages.s3.us-east-2.amazonaws.com/nlab/show/discrete+Morse+theory>
 module Math.Topology.SSet.DVF where
 
 import Data.Coerce
 import qualified Math.Algebra.ChainComplex.DVF as CC
+import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SSet
-import Math.Topology.NormalisedChains
-
--- Units of Z
 
 class SSet a => DVF a where
   -- TODO: Name??

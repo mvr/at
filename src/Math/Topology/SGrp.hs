@@ -9,7 +9,7 @@ import qualified Math.Algebra.ChainComplex as CC (UMorphism (..))
 import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Group
-import Math.Topology.NormalisedChains
+import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SSet
 import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
