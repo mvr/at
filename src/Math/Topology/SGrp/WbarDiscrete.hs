@@ -4,7 +4,7 @@
 -- Wbar : Grp -> 0-reduced sSet_*
 -- Much easier than the case of general simplicial groups
 -- See also https://dl.acm.org/doi/10.1145/1576702.1576744
-module Math.Topology.SSet.WbarDiscrete where
+module Math.Topology.SGrp.WbarDiscrete where
 
 -- import Math.Topology.SSet.Effective
 
@@ -26,7 +26,7 @@ instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
   -- of `a`
   type GeomSimplex (WbarDiscrete a) = [Element a]
 
-  isGeomSimplex (WbarDiscrete a) ss = undefined -- not (any (isUnit a) ss)
+  isGeomSimplex (WbarDiscrete a) ss = unit a `notElem` ss
 
   geomSimplexDim _ ss = length ss
 
@@ -40,10 +40,6 @@ instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
 
 instance (Group a, Eq (Element a)) => Pointed (WbarDiscrete a) where
   basepoint (WbarDiscrete a) = []
-
--- Eventually:
--- instance (SGrp g, Effective a) => Effective (WbarDiscrete a)
---   type Model (WbarDiscrete a) = Bar (Model a)
 
 instance (Abelian a, Eq (Element a)) => S.SGrp (WbarDiscrete a) where
 

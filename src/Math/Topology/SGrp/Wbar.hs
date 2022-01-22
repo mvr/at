@@ -5,12 +5,12 @@
 -- See https://ncatlab.org/nlab/show/simplicial+classifying+space
 -- In the Kenzo source, this is spread over
 -- classifying-spaces.lisp, cl-space-efhm.lisp and anromero/resolutions.lisp
-module Math.Topology.SSet.Wbar where
+module Math.Topology.SGrp.Wbar where
 
 import Data.List (intersect)
 import Math.Algebra.ChainComplex.DVF
 import Math.Algebra.Group
-import Math.Topology.NormalisedChains
+import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.Morphism
@@ -95,24 +95,30 @@ instance SGrp g => Pointed (Wbar g) where
   basepoint (Wbar g) = []
 
 instance (SGrp g, ZeroReduced g) => ZeroReduced (Wbar g)
+
 instance (SGrp g, ZeroReduced g) => OneReduced (Wbar g) -- Not a typo!
 
 instance (SAb g) => SGrp (Wbar g) where
-  prodMor (Wbar g) = Morphism $ \(gs1, gs2) -> normalise g $ fmap (onSimplex (prodMor g) . prodNormalise) (zip (unnormalise g gs1) (unnormalise g gs2))
+  -- TODO: is it necessary to normalise these? Or is the image of a
+  -- geometric simplex always non-degenerate?
+  prodMor (Wbar g) = Morphism $ \(gs1, gs2) ->
+    normalise g $
+      (onSimplex (prodMor g) . prodNormalise)
+        <$> zip (unnormalise g gs1) (unnormalise g gs2)
   invMor (Wbar g) = Morphism $ \gs -> normalise g $ fmap (onSimplex (invMor g)) gs
 
 instance (SAb g) => SAb (Wbar g)
 
 -- instance (SGrp g) => Kan (Wbar g)
 
--- Kenzo implements this via DVF when `g` is a 1-reduced simplicial
+-- Kenzo implements this via DVF when `g` is a 0-reduced simplicial
 -- abelian group. This should be enough to compute homotopy groups of
 -- 1-reduced simplicial sets, as the K(G,n)s involved should all be of
 -- that type.
 
 -- Other simplicial groups will need the more complicated method
 -- described in serre.lisp and cl-space-efhm.lisp
-instance (SGrp g, OneReduced g) => DVF (NormalisedChains (Wbar g)) where
+instance (SGrp g, ZeroReduced g) => DVF (NormalisedChains (Wbar g)) where
   vf = undefined
 
 -- instance (SGrp g, Effective g) => Effective (Wbar g)
