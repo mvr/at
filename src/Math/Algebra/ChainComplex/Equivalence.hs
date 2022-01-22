@@ -35,6 +35,9 @@ idEquiv a = Equivalence a id a id a
 isoToEquiv :: (ChainComplex a) => a -> b -> Morphism a b -> Morphism b a -> Equivalence a b
 isoToEquiv a b f g = Equivalence a id a (isoToReduction f g) b
 
+fromRedLeft :: ChainComplex a => a -> b -> Reduction a b -> Equivalence a b
+fromRedLeft a b r = Equivalence a id a r b
+
 composeLeft :: (Eq (Basis a), Eq (Basis a')) => a' -> Reduction a a' -> Equivalence a b -> Equivalence a' b
 composeLeft a' l' (Equivalence a l x r b) = Equivalence a' (l' . l) x r b
 

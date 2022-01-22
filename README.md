@@ -117,7 +117,7 @@ Plan
     - [x] Special case for discrete groups
     - [x] Group Structure
   - [ ] Efficient Eilenberg-MacLane Spaces
-    - [ ] [`K(Z,1)`](#ref-kendoc)
+    - [x] [`K(Z,1)`](#ref-kendoc)
     - [ ] `K(Z/2,1)` (Can be made particularly efficient)
     - [ ] `K(Z/p,1)`
   - Colimits
@@ -126,8 +126,8 @@ Plan
     - [ ] Finite Homotopy Colimits
 - Effective Homology
   - [ ] Classifying Spaces
-    - [ ] Direct Reduction of `K(Z,1)` to `S^1`
-    - [ ] [Of 1-Reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
+    - [x] Direct Reduction of `K(Z,1)` to `S^1`
+    - [ ] [Of 0-reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
     - [ ] Of General sGrps
   - [x] Products
     - [ ] Use specialised contraction maps for efficiency
@@ -147,10 +147,10 @@ Plan
   - [x] Induced Reduction
   - [x] Products
   - [x] Fibrations
-  - [ ] `K(Z,1)`
-    - [ ] [Naive but easy](#ref-kms:poly-em-spaces)
+  - [x] `K(Z,1)`
+    - [x] [Naive but easy](#ref-kms:poly-em-spaces)
     - [ ] [Polynomial time but complicated](#ref-kms:poly-em-spaces)
-  - [ ] Classifying Spaces for 1-reduced sAb
+  - [ ] Classifying Spaces for 0-reduced sAb
 - [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
 - [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
 - [ ] Steenrod Operations?
