@@ -11,11 +11,9 @@ import qualified Prelude
 
 infixr 9 .
 
-class Category (cat :: Type -> Type -> Type) where
+class Semigroupoid (cat :: Type -> Type -> Type) where
   type Object cat (o :: Type) :: Constraint
   type Object cat o = ()
-
-  id :: Object cat a => cat a a
 
   (.) ::
     (Object cat a, Object cat b, Object cat c) =>
@@ -23,9 +21,14 @@ class Category (cat :: Type -> Type -> Type) where
     cat a b ->
     cat a c
 
+class (Semigroupoid cat) => Category (cat :: Type -> Type -> Type) where
+  id :: Object cat a => cat a a
+
+instance Semigroupoid (->) where
+  (.) = (Prelude..)
+
 instance Category (->) where
   id = Prelude.id
-  (.) = (Prelude..)
 
 -- newtype With (cat :: Type -> Type -> Type) (c :: Type -> Constraint) (a :: Type) (b :: Type) = With (cat a b)
 

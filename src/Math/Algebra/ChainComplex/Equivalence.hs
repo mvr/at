@@ -17,10 +17,9 @@ data Equivalence a b = forall c.
     equivRight :: b
   }
 
-instance Category Equivalence where
+instance Semigroupoid Equivalence where
   type Object Equivalence a = (ChainComplex a, Eq (Basis a))
 
-  id = error "Equivalence: id"
   (Equivalence b1 l1 x1 r1 c1) . (Equivalence a2 l2 x2 r2 b2) =
     Equivalence
       a2

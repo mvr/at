@@ -18,10 +18,12 @@ data UReduction a b = Reduction
 
 type Reduction a b = UReduction (Basis a) (Basis b)
 
-instance Category UReduction where
+instance Semigroupoid UReduction where
   type Object UReduction a = Eq a
-  id = Reduction id id (morphismZeroOfDeg 1)
   (Reduction f1 g1 h1) . (Reduction f2 g2 h2) = Reduction (f1 . f2) (g2 . g1) (h2 + (g2 . h1 . f2))
+
+instance Category UReduction where
+  id = Reduction id id (morphismZeroOfDeg 1)
 
 isoToReduction :: (Eq a) => UMorphism a b -> UMorphism b a -> UReduction a b
 isoToReduction f g = Reduction f g 0

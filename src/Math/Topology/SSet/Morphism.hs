@@ -14,6 +14,8 @@ onSimplex :: UMorphism a b -> FormalDegen a -> FormalDegen b
 onSimplex (Morphism f) (NonDegen s) = f s
 onSimplex m (Degen i s) = Degen i (onSimplex m s)
 
+instance Semigroupoid UMorphism where
+  f2 . (Morphism f1) = Morphism $ \s -> f2 `onSimplex` f1 s
+
 instance Category UMorphism where
   id = Morphism $ \s -> NonDegen s
-  f2 . (Morphism f1) = Morphism $ \s -> f2 `onSimplex` f1 s

@@ -8,7 +8,7 @@
 -- some backwards, we follow Kenzo by going backwards.
 module Math.Topology.SSet.Product where
 
-import Control.Category.Constrained (cfmap, id, return, (.))
+import Control.Category.Constrained (cfmap, return, (.))
 import Data.Coerce
 import Math.Algebra.ChainComplex hiding (Morphism)
 import qualified Math.Algebra.ChainComplex as CC

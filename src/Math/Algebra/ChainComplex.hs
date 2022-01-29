@@ -3,7 +3,7 @@
 -- | Chain complex of free Z-modules
 module Math.Algebra.ChainComplex where
 
-import Control.Category.Constrained (id, join, (.))
+import Control.Category.Constrained (id, join, (.), return)
 import qualified Control.Category.Constrained as Constrained
 import Data.List (find)
 import qualified Data.Matrix as M
@@ -12,7 +12,7 @@ import Math.Algebra.AbGroupPres
 import Math.ValueCategory (Arrow)
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
-import Prelude hiding (id, (.))
+import Prelude hiding (id, (.), return)
 
 class (Eq (Basis a)) => ChainComplex a where
   type Basis a = s | s -> a
@@ -111,11 +111,13 @@ morphismZero = morphismZeroOfDeg 0
 fmapBasis :: (a -> b) -> UMorphism a b
 fmapBasis f = Morphism 0 (singleComb . f)
 
-instance Constrained.Category UMorphism where
+instance Constrained.Semigroupoid UMorphism where
   type Object UMorphism a = Eq a
 
-  id = Morphism 0 (\x -> Combination [(1, x)])
   (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (join . fmap f2 . f1)
+
+instance Constrained.Category UMorphism where
+  id = Morphism 0 (\x -> Combination [(1, x)])
 
 instance Eq b => Num (UMorphism a b) where
   fromInteger 0 = morphismZero
@@ -128,12 +130,13 @@ instance Eq b => Num (UMorphism a b) where
   abs = error "Morphism: abs"
   signum = error "Morphism: signum"
 
+-- | A `ClosedMorphism` is a morphism that includes the data of its
+-- endpoints. (Closed as in a closed interval.) We cannot define id,
+-- because we would need the data of `a`.
 data ClosedMorphism a b = ClosedMorphism a (Morphism a b) b
 
--- For convenience, not really legal.
-instance Constrained.Category ClosedMorphism where
+instance Constrained.Semigroupoid ClosedMorphism where
   type Object ClosedMorphism o = Eq (Basis o)
-  id = error "ClosedMorphism: id"
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
 chainGroup :: FiniteType a => a -> Int -> AbGroupPres
