@@ -98,8 +98,8 @@ simplexDim a (Degen i s) = 1 + simplexDim a s
 face :: SSet a => a -> Simplex a -> Int -> Simplex a
 face a (NonDegen s) i = geomFace a s i
 face a (Degen j s) i
-  | i < j = Degen (j -1) (face a s i)
-  | i > j + 1 = Degen j (face a s (i -1))
+  | i < j = degen (face a s i) (j - 1)
+  | i > j + 1 = degen (face a s (i - 1)) j
   | otherwise = s
 
 frontFace :: SSet a => a -> Simplex a ->  Simplex a
@@ -112,6 +112,11 @@ class SSet a => FiniteType a where
   -- * `all isSimplex (geomBasis n)`
   geomBasis :: a -> Int -> [GeomSimplex a]
 
+allSimplices :: (FiniteType a) => a -> Int -> [Simplex a]
+allSimplices a n | n < 0 = []
+allSimplices a n = fmap NonDegen (geomBasis a n) ++ (degensOf =<< allSimplices a (n-1))
+  where degensOf s@(NonDegen g) = fmap (\i -> Degen i s) [0..simplexDim a s]
+        degensOf s@(Degen j _) = fmap (\i -> Degen i s) [(j+1) .. simplexDim a s]
 class SSet a => Pointed a where
   basepoint :: a -> GeomSimplex a
 

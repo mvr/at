@@ -10,7 +10,7 @@ module Math.Topology.SSet.Product where
 
 import Control.Category.Constrained (cfmap, return, (.))
 import Data.Coerce
-import Math.Algebra.ChainComplex hiding (Morphism)
+import Math.Algebra.ChainComplex hiding (Morphism, FiniteType)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Coalgebra
 import Math.Algebra.ChainComplex.DVF hiding (DVF)
@@ -32,8 +32,10 @@ data Product a b = Product a b
 prodNormalise :: (Simplex a, Simplex b) -> Simplex (Product a b)
 prodNormalise (Degen i s, Degen j t)
   | i == j = degen (prodNormalise (s, t)) i
-  | i > j = fmap (\(s', t') -> (Degen i s', t')) (prodNormalise (s, Degen j t))
-  | i < j = fmap (\(s', t') -> (s', Degen j t')) (prodNormalise (Degen i s, t))
+  | i > j = let p = prodNormalise (s, Degen j t)
+            in fmap (\(s', t') -> (Degen (i - degenCount p) s', t')) p
+  | i < j = let p = prodNormalise (Degen i s, t)
+            in fmap (\(s', t') -> (s', Degen (j - degenCount p) t')) p
 prodNormalise s = NonDegen s
 
 jointlyNonDegen :: (Simplex a, Simplex b) -> Bool
@@ -55,6 +57,9 @@ instance (Pointed a, Pointed b) => Pointed (Product a b) where
 instance (ZeroReduced a, ZeroReduced b) => ZeroReduced (Product a b)
 
 instance (OneReduced a, OneReduced b) => OneReduced (Product a b)
+
+instance (FiniteType a, FiniteType b) => FiniteType (Product a b) where
+  geomBasis (Product a b) n = [ (s, t) | s <- allSimplices a n, t <- allSimplices b n, isGeomSimplex (Product a b) (s, t)]
 
 instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status
