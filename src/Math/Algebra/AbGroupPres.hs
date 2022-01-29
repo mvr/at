@@ -157,7 +157,7 @@ morphismFromReducedMatrix :: AbGroupPres -> AbGroupPres -> Matrix Integer -> Arr
 morphismFromReducedMatrix a b f = Arrow a (AbMorphism (fromReduced b * f * toReduced a) f) b
 
 instance Semigroup (Arrow AbGroupPres) where
-  (Arrow d (AbMorphism f r) _) <> (Arrow _ (AbMorphism f' r') c) = Arrow d (AbMorphism (f * f') (r * r')) c
+  (Arrow _ (AbMorphism f r) c) <> (Arrow d (AbMorphism f' r') _) = Arrow d (AbMorphism (f * f') (r * r')) c
 
 instance ValueCategory AbGroupPres where
   type LooseMorphism AbGroupPres = AbMorphism
