@@ -69,12 +69,21 @@ library:
     - -O2
 
 tests:
-  at-test:
-    main:  test/Spec.hs
+  spec:
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
-    - -O2
+      - -Wall
+      # - -Wno-missing-signatures
+      - -Wno-name-shadowing
+      # - -Wno-unused-do-bind
+      - -Wno-unused-matches
+      # - -Wno-partial-type-signatures
+      # - -O2
     dependencies:
     - at
+    - vector
+    - matrix
     - hspec
     - QuickCheck
     - random

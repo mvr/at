@@ -1,19 +1,15 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 module MatrixOpsTest where
 
 import Test.Hspec
 import Test.QuickCheck
-import Debug.Trace
 
-import Data.List (sort, dropWhileEnd)
-import Data.Matrix (Matrix)
 import qualified Data.Matrix as M
-import qualified Data.Vector as V
 
-import Math.Algebra.AbGroup
+import Math.Algebra.AbGroupPres
 
 import ArbitraryInstances
 
+spec :: Spec
 spec = do
   describe "divideDiag" $ do
     it "divides correctly" $ property $ do

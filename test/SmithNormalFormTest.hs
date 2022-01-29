@@ -2,7 +2,6 @@ module SmithNormalFormTest where
 
 import Test.Hspec
 import Test.QuickCheck
-import Debug.Trace
 
 import Data.List (sort, dropWhileEnd)
 import Data.Matrix (Matrix)
@@ -14,10 +13,11 @@ import Math.Algebra.SmithNormalForm
 import ArbitraryInstances ()
 
 isDiagonal :: (Eq a, Num a) => Matrix a -> Bool
-isDiagonal m = m == (M.extendTo 0 r c $ M.diagonal 0 (M.getDiag m))
+isDiagonal m = m == M.extendTo 0 r c (M.diagonal 0 (M.getDiag m))
   where r = M.nrows m
         c = M.ncols m
 
+spec :: Spec
 spec = do
   describe "Smith Normal Form" $ do
     it "multiplies to the original matrix" $ property $

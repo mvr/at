@@ -1,29 +1,25 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-module AbGroupTest where
+module AbGroupPresTest where
 
 import Test.Hspec
 import Test.QuickCheck
-import Debug.Trace
 
-import Data.List (sort, dropWhileEnd)
-import Data.Matrix (Matrix)
 import qualified Data.Matrix as M
-import qualified Data.Vector as V
 
-import Math.Algebra.AbGroup
-import Math.Algebra.AbGroup.IsoClass
-import Math.ValueCategory
+import Math.Algebra.AbGroupPres
+import Math.Algebra.AbGroupPres.IsoClass
+import Math.ValueCategory.Additive
 import Math.ValueCategory.Abelian
 
 import ArbitraryInstances ()
 
+spec :: Spec
 spec = do
   describe "AbGroup" $ do
     describe "isoClass" $ do
       it "survives class -> group -> class" $ property $  do
         \(a :: IsoClass) -> isoClass (fromIsoClass a) == a
       it "survives group -> class -> group" $ property $ do
-        \(a :: AbGroup) -> fromIsoClass (isoClass a) == a
+        \(a :: AbGroupPres) -> fromIsoClass (isoClass a) == a
 
     describe "homology" $ do
       it "of test 1 is correct" $ do

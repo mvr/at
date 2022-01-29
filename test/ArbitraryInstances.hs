@@ -1,20 +1,17 @@
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module ArbitraryInstances where
 
 import Data.List (sort)
-import System.Random
-
 import Data.Matrix
-import Test.QuickCheck
-import Debug.Trace
-
-import Math.Algebra.AbGroup
-import Math.Algebra.AbGroup.IsoClass
-
 import Math.ValueCategory
-import Math.ValueCategory.Abelian
-import Math.ValueCategory.Abelian.Cached
+import Math.Algebra.AbGroupPres
+import Math.Algebra.AbGroupPres.IsoClass
+import System.Random
+import Test.QuickCheck
+
+-- import Math.ValueCategory.Abelian.Cached
 
 instance Arbitrary a => Arbitrary (Matrix a) where
   arbitrary = arbitraryMatrix
@@ -60,15 +57,15 @@ instance Arbitrary IsoClass where
     rank <- choose (0, fromIntegral s)
     torsionSize <- choose (0, s)
     torsion <- vectorOf torsionSize $ do
-      prime <- oneof $ fmap return [2,3,5,7,11]
+      prime <- oneof $ fmap return [2, 3, 5, 7, 11]
       power <- choose (1, fromIntegral s)
       return (prime, power)
     return $ IsoClass rank (sort torsion)
 
-instance Arbitrary AbGroup where
+instance Arbitrary AbGroupPres where
   arbitrary = fromPresentation <$> arbitraryMatrix
 
-instance Arbitrary AbMorphism where
+instance Arbitrary (Arrow AbGroupPres) where
   arbitrary = sized $ \i -> do
     let s = max 2 (min i 10)
     domr <- choose (1, s)
@@ -77,8 +74,8 @@ instance Arbitrary AbMorphism where
     m <- arbitraryMatrixOfSize codr domr
     return $ morphismFromReducedMatrix (freeAbGroup $ fromIntegral domr) (freeAbGroup $ fromIntegral codr) m
 
-instance (AbelianCategory a, Eq a, Arbitrary a) => Arbitrary (Cached a) where
-  arbitrary = fmap toCached arbitrary
+-- instance (AbelianCategory a, Eq a, Arbitrary a) => Arbitrary (Cached a) where
+--   arbitrary = fmap toCached arbitrary
 
-instance (AbelianCategory a, Eq a, Eq (Morphism a), Arbitrary (Morphism a)) => Arbitrary (CachedMorphism a) where
-  arbitrary = fmap toCachedMorphism arbitrary
+-- instance (AbelianCategory a, Eq a, Eq (Morphism a), Arbitrary (Morphism a)) => Arbitrary (CachedMorphism a) where
+--   arbitrary = fmap toCachedMorphism arbitrary
