@@ -70,7 +70,7 @@ nullCodiff a = Morphism 1 $ \b -> case vf a b of
 
 h :: (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism a a
 h a d = Morphism 1 $ \b -> case vf a b of
-  Source tau i -> d'_vb - h a d `onComb` ((d `onComb` d'_vb) - d'_vb)
+  Source tau i -> d'_vb - h a d `onComb` ((d `onComb` d'_vb) - singleComb b)
     where
       d'_vb = Combination [(incidenceCoef i, tau)]
   _ -> Combination []
