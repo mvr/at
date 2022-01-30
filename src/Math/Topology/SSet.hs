@@ -1,4 +1,5 @@
 module Math.Topology.SSet where
+import Data.Maybe (isJust)
 
 -- NOTE: This should be made much more efficient. First, it could be
 -- flattened so that in a degenerate simplex you have immediate access
@@ -48,7 +49,7 @@ constantAt a n = Degen (n - 1) $ constantAt a (n -1)
 -- The following are dangerous and only make sense in certain situations.
 downshiftN :: Int -> FormalDegen a -> FormalDegen a
 downshiftN n (NonDegen s) = NonDegen s
-downshiftN n (Degen i s) = Degen (i + n) (downshift s)
+downshiftN n (Degen i s) = Degen (i + n) (downshiftN n s)
 
 downshift :: FormalDegen a -> FormalDegen a
 downshift = downshiftN 1
@@ -87,9 +88,17 @@ class Eq (GeomSimplex a) => SSet a where
   -- TODO: for efficiency
   -- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
 
+isSimplex' :: SSet a => a -> Simplex a -> Maybe Int
+isSimplex' a (NonDegen s) = if isGeomSimplex a s then Just (geomSimplexDim a s) else Nothing
+isSimplex' a (Degen i s) = do
+  nextdim <- isSimplex' a s
+  if i <= nextdim then
+    Just (nextdim + 1)
+  else
+    Nothing
+
 isSimplex :: SSet a => a -> Simplex a -> Bool
-isSimplex a (NonDegen s) = isGeomSimplex a s
-isSimplex a (Degen _ s) = isSimplex a s
+isSimplex a s = isJust (isSimplex' a s)
 
 simplexDim :: SSet a => a -> Simplex a -> Int
 simplexDim a (NonDegen s) = geomSimplexDim a s
@@ -101,6 +110,9 @@ face a (Degen j s) i
   | i < j = degen (face a s i) (j - 1)
   | i > j + 1 = degen (face a s (i - 1)) j
   | otherwise = s
+
+hasFace :: SSet a => a -> GeomSimplex a -> GeomSimplex a -> Bool
+hasFace a t s = NonDegen s `elem` geomFaces a t
 
 frontFace :: SSet a => a -> Simplex a ->  Simplex a
 frontFace a s = face a s 0
