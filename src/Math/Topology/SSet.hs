@@ -16,7 +16,11 @@ import Data.Maybe (isJust)
 data FormalDegen a
   = NonDegen a
   | Degen Int (FormalDegen a)
-  deriving (Eq, Show, Functor)
+  deriving (Eq, Functor)
+
+instance Show a => Show (FormalDegen a) where
+  show (NonDegen a) = show a
+  show (Degen i a) = "s_" ++ show i ++ " " ++ show a
 
 isDegen :: FormalDegen a -> Bool
 isDegen (NonDegen _) = False

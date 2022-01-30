@@ -16,7 +16,10 @@ newtype NormalisedChains a = NormalisedChains a
   deriving (Show)
 
 newtype BasisSimplex a = BasisSimplex a
-  deriving (Show, Eq)
+  deriving (Eq)
+
+instance Show a => Show (BasisSimplex a) where
+  show (BasisSimplex a) = show a
 
 instance SSet a => CC.ChainComplex (NormalisedChains a) where
   type Basis (NormalisedChains a) = BasisSimplex (GeomSimplex a)
