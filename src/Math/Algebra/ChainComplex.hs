@@ -41,7 +41,10 @@ instance FiniteType () where
 
 -- | Z-linear combinations
 newtype Combination b = Combination {coeffs :: [(Int, b)]}
-  deriving (Show, Functor, Eq)
+  deriving (Functor)
+
+instance Eq b => Eq (Combination b) where
+  c == c' = null (coeffs (c - c'))
 
 -- TODO: obviously make this a hashmap, possibly with special cases
 -- for very small combinations? Unless hashmap alreayd does this.
