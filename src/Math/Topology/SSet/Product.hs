@@ -71,14 +71,14 @@ data Direction = X | Y | Diag | End
 -- Walking backwards from (p,q) to (0,0)
 spathStep :: (Int, Simplex a, Simplex b) -> (Direction, (Int, Simplex a, Simplex b))
 spathStep (0, _, _) = (End, undefined)
-spathStep (q, Degen i s, t) | i == q = (X, (q-1, s, t))
-spathStep (q, s, Degen j t) | j == q = (Y, (q-1, s, t))
+spathStep (q, Degen i s, t) | i+1 == q = (X, (q - 1, s, t))
+spathStep (q, s, Degen j t) | j+1 == q = (Y, (q - 1, s, t))
 spathStep (q, s, t) = (Diag, (q - 1, s, t))
 
 spathUnstep :: Direction -> (Int, Simplex a, Simplex b) -> (Int, Simplex a, Simplex b)
 spathUnstep Diag (q, s, t) = (q + 1, s, t)
-spathUnstep X (q, s, t) = (q + 1, Degen (q + 1) s, t)
-spathUnstep Y (q, s, t) = (q + 1, s, Degen (q + 1) t)
+spathUnstep X (q, s, t) = (q + 1, Degen q s, t)
+spathUnstep Y (q, s, t) = (q + 1, s, Degen q t)
 spathUnstep End (q, s, t) = undefined
 
 incidenceFor :: Int -> Incidence
@@ -87,15 +87,15 @@ incidenceFor x = if even x then Pos else Neg
 -- Little worried about signs in here, likely off by 1
 statusStep :: (SSet a, SSet b) => Product a b -> (Int, Simplex a, Simplex b) -> Status (Int, Simplex a, Simplex b)
 statusStep prd qst = case spathStep qst of
-  -- Simplex is a source
-  (X, qst')
-    | (Y, (q'', s'', t'')) <- spathStep qst' ->
-      Target (spathUnstep Diag (q'', s'', t'')) (incidenceFor $ geomSimplexDim prd (s'', t''))
   -- Simplex is a target
+  (Y, qst')
+    | (X, (q'', s'', t'')) <- spathStep qst' ->
+      Target (spathUnstep Diag (q'', s'', t'')) (incidenceFor (q'' + 1))
+  -- Simplex is a source
   (Diag, (q', s', t')) ->
     Source
-      (spathUnstep X $ spathUnstep Y (q', s', t'))
-      (incidenceFor $ geomSimplexDim prd (s', t'))
+      (spathUnstep Y $ spathUnstep X (q', s', t'))
+      (incidenceFor (q' + 1))
   -- Simplex is critical
   (End, _) -> Critical
   -- Keep searching
@@ -106,7 +106,7 @@ status (Product a b) (s, t) =
   fmap (\(_, s, t) -> (s, t)) $
     statusStep
       (Product a b)
-      ( simplexDim a s - degenCount s + degenCount t,
+      ( simplexDim a s,
         s,
         t
       )
