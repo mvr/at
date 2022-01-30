@@ -7,7 +7,7 @@ import Control.Category.Constrained (id, join, (.), return)
 import qualified Control.Category.Constrained as Constrained
 import Data.List (find)
 import qualified Data.Matrix as M
-import Data.Maybe (fromJust)
+import Data.Maybe (fromMaybe)
 import Math.Algebra.AbGroupPres
 import Math.ValueCategory (Arrow)
 import Math.ValueCategory.Abelian
@@ -47,21 +47,24 @@ newtype Combination b = Combination {coeffs :: [(Int, b)]}
 -- for very small combinations? Unless hashmap alreayd does this.
 
 coeffOf :: (Eq b) => Combination b -> b -> Int
-coeffOf (Combination l) b = fst $ fromJust $ find (\(c, b') -> b == b') l
+coeffOf (Combination l) b = fromMaybe 0 $ fst <$> find (\(c, b') -> b == b') l
 
-merge :: (Foldable t, Eq b, Num a) => [(a, b)] -> t (a, b) -> [(a, b)]
+merge :: (Foldable t, Eq b, Num a, Eq a) => [(a, b)] -> t (a, b) -> [(a, b)]
 merge cs cs' = foldl (flip insert) cs cs'
   where
+    insert (0, b) cs' = cs'
     insert (i, b) [] = [(i, b)]
     insert (i, b) ((j, b') : cs')
+      | b == b' && i + j == 0 = cs'
       | b == b' = (i + j, b) : cs'
       | otherwise = (j, b') : insert (i, b) cs'
 
 -- Whatever
-normalise :: (Eq b, Num a) => [(a, b)] -> [(a, b)]
+normalise :: (Eq b, Num a, Eq a) => [(a, b)] -> [(a, b)]
 normalise = foldr (\c -> merge [c]) []
 
 (.*) :: Int -> Combination b -> Combination b
+0 .* (Combination bs) = Combination []
 n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
 
 kozulRule :: Eq b => Int -> Combination b -> Combination b
