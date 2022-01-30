@@ -45,6 +45,9 @@ instance DVF a => ChainComplex (CriticalComplex a) where
   degree (CriticalComplex a) (CriticalBasis b) = degree a b
   diff (CriticalComplex a) = dK a (diff a)
 
+instance (DVF a, FiniteType a) => FiniteType (CriticalComplex a) where
+  basis (CriticalComplex a) n = coerce $ filter (isCritical a) (basis a n)
+
 proj :: DVF a => a -> Morphism a (CriticalComplex a)
 proj a = Morphism 0 $ coerce $ \b -> case vf a b of
   Critical -> return b
