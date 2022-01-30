@@ -49,7 +49,7 @@ constantAt a n = Degen (n - 1) $ constantAt a (n -1)
 -- The following are dangerous and only make sense in certain situations.
 downshiftN :: Int -> FormalDegen a -> FormalDegen a
 downshiftN n (NonDegen s) = NonDegen s
-downshiftN n (Degen i s) = Degen (i + n) (downshift s)
+downshiftN n (Degen i s) = Degen (i + n) (downshiftN n s)
 
 downshift :: FormalDegen a -> FormalDegen a
 downshift = downshiftN 1
@@ -110,6 +110,9 @@ face a (Degen j s) i
   | i < j = degen (face a s i) (j - 1)
   | i > j + 1 = degen (face a s (i - 1)) j
   | otherwise = s
+
+hasFace :: SSet a => a -> GeomSimplex a -> GeomSimplex a -> Bool
+hasFace a t s = NonDegen s `elem` geomFaces a t
 
 frontFace :: SSet a => a -> Simplex a ->  Simplex a
 frontFace a s = face a s 0
