@@ -59,7 +59,7 @@ instance (ZeroReduced a, ZeroReduced b) => ZeroReduced (Product a b)
 instance (OneReduced a, OneReduced b) => OneReduced (Product a b)
 
 instance (FiniteType a, FiniteType b) => FiniteType (Product a b) where
-  geomBasis (Product a b) n = [ (s, t) | s <- allSimplices a n, t <- allSimplices b n, isGeomSimplex (Product a b) (s, t)]
+  geomBasis (Product a b) n = [(s, t) | s <- allSimplices a n, t <- allSimplices b n, isGeomSimplex (Product a b) (s, t)]
 
 instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status
@@ -69,42 +69,44 @@ instance (SSet a, SSet b) => DVF (Product a b) where
 data Direction = X | Y | Diag | End
 
 -- Walking backwards from (p,q) to (0,0)
-spathStep :: (Int, Int, Simplex a, Simplex b) -> (Direction, (Int, Int, Simplex a, Simplex b))
-spathStep (0, 0, NonDegen s, NonDegen t) = (End, undefined)
-spathStep (p, q, Degen i s, t) | i == p = (X, (p - 1, q, s, t))
-spathStep (p, q, s, Degen j t) | j == q = (Y, (p, q - 1, s, t))
-spathStep (p, q, s, t) = (Diag, (p - 1, q - 1, s, t))
+spathStep :: (Int, Simplex a, Simplex b) -> (Direction, (Int, Simplex a, Simplex b))
+spathStep (0, _, _) = (End, undefined)
+spathStep (q, Degen i s, t) | i == q = (X, (q-1, s, t))
+spathStep (q, s, Degen j t) | j == q = (Y, (q-1, s, t))
+spathStep (q, s, t) = (Diag, (q - 1, s, t))
 
-spathUnstep :: Direction -> (Int, Int, Simplex a, Simplex b) -> (Int, Int, Simplex a, Simplex b)
-spathUnstep Diag (p, q, s, t) = (p + 1, q + 1, s, t)
-spathUnstep X (p, q, s, t) = (p + 1, q, Degen (p + 1) s, t)
-spathUnstep Y (p, q, s, t) = (p, q + 1, s, Degen (p + 1) t)
-spathUnstep End (p, q, s, t) = undefined
+spathUnstep :: Direction -> (Int, Simplex a, Simplex b) -> (Int, Simplex a, Simplex b)
+spathUnstep Diag (q, s, t) = (q + 1, s, t)
+spathUnstep X (q, s, t) = (q + 1, Degen (q + 1) s, t)
+spathUnstep Y (q, s, t) = (q + 1, s, Degen (q + 1) t)
+spathUnstep End (q, s, t) = undefined
 
 incidenceFor :: Int -> Incidence
 incidenceFor x = if even x then Pos else Neg
 
 -- Little worried about signs in here, likely off by 1
-statusStep :: (SSet a, SSet b) => Product a b -> (Int, Int, Simplex a, Simplex b) -> Status (Int, Int, Simplex a, Simplex b)
-statusStep prd pqst = case spathStep pqst of
+statusStep :: (SSet a, SSet b) => Product a b -> (Int, Simplex a, Simplex b) -> Status (Int, Simplex a, Simplex b)
+statusStep prd qst = case spathStep qst of
   -- Simplex is a source
-  (X, pqst')
-    | (Y, (p'', q'', s'', t'')) <- spathStep pqst' ->
-      Target (spathUnstep Diag (p'', q'', s'', t'')) (incidenceFor $ geomSimplexDim prd (s'', t''))
+  (X, qst')
+    | (Y, (q'', s'', t'')) <- spathStep qst' ->
+      Target (spathUnstep Diag (q'', s'', t'')) (incidenceFor $ geomSimplexDim prd (s'', t''))
   -- Simplex is a target
-  (Diag, (p', q', s', t')) -> Source (spathUnstep X $ spathUnstep Y (p', q', s', t')) (incidenceFor $ geomSimplexDim prd (s', t'))
+  (Diag, (q', s', t')) ->
+    Source
+      (spathUnstep X $ spathUnstep Y (q', s', t'))
+      (incidenceFor $ geomSimplexDim prd (s', t'))
   -- Simplex is critical
   (End, _) -> Critical
   -- Keep searching
-  (d, pqst') -> fmap (spathUnstep d) (statusStep prd pqst')
+  (d, qst') -> fmap (spathUnstep d) (statusStep prd qst')
 
 status :: (SSet a, SSet b) => Product a b -> (Simplex a, Simplex b) -> Status (Simplex a, Simplex b)
 status (Product a b) (s, t) =
-  fmap (\(_, _, s, t) -> (s, t)) $
+  fmap (\(_, s, t) -> (s, t)) $
     statusStep
       (Product a b)
-      ( simplexDim a s - degenCount s,
-        simplexDim b t - degenCount t,
+      ( simplexDim a s - degenCount s + degenCount t,
         s,
         t
       )
