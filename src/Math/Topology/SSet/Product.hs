@@ -45,7 +45,11 @@ jointlyNonDegen ss = case prodNormalise ss of
 
 instance (SSet a, SSet b) => SSet (Product a b) where
   type GeomSimplex (Product a b) = (Simplex a, Simplex b)
-  isGeomSimplex (Product a b) (s, t) = jointlyNonDegen (s, t) && simplexDim a s == simplexDim b t
+  isGeomSimplex (Product a b) (s, t) =
+    simplexDim a s == simplexDim b t
+      && jointlyNonDegen (s, t)
+      && isSimplex a s
+      && isSimplex b t
 
   geomSimplexDim (Product a _) (s, _) = simplexDim a s
 
