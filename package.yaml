@@ -21,24 +21,25 @@ default-extensions:
 - DeriveFoldable
 - DeriveFunctor
 - DeriveTraversable
-- EmptyCase
+- DerivingVia
+# - EmptyCase
 - FlexibleContexts
 - FlexibleInstances
 - FunctionalDependencies
 - GADTs
 - GeneralizedNewtypeDeriving
-- KindSignatures
+# - KindSignatures
 - LambdaCase
-- MultiParamTypeClasses
+# - MultiParamTypeClasses
 - NoMonomorphismRestriction
 # - OverloadedStrings
 # - PartialTypeSignatures
-- PatternGuards
-- PatternSynonyms
+# - PatternGuards
+# - PatternSynonyms
 - PolyKinds
 - RankNTypes
 # - RecordWildCards
-- RoleAnnotations
+# - RoleAnnotations
 - ScopedTypeVariables
 - StandaloneDeriving
 # - TemplateHaskell
@@ -61,12 +62,12 @@ library:
     - mtl
   ghc-options:
     - -Wall
-    - -Wno-missing-signatures
+    # - -Wno-missing-signatures
     - -Wno-name-shadowing
-    - -Wno-unused-do-bind
+    # - -Wno-unused-do-bind
     - -Wno-unused-matches
-    - -Wno-partial-type-signatures
-    - -O2
+    # - -Wno-partial-type-signatures
+    # - -O2
 
 tests:
   spec:

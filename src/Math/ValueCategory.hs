@@ -1,20 +1,19 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 -- | A value-level category with a type of objects and a type of
 --   'loose' morphisms. An `Arrow` is a `LooseMorphism` together with
 --   its domain and codomain.
-
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeFamilyDependencies #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Math.ValueCategory where
 
 class (Semigroup (Arrow ob)) => ValueCategory ob where
   type LooseMorphism ob = (mor :: *) | mor -> ob
 
-  looseid  :: ob -> LooseMorphism ob
+  looseid :: ob -> LooseMorphism ob
   -- domain :: Morphism ob -> ob
   -- codomain :: Morphism ob -> ob
 
-data Arrow a = Arrow { domain :: a, mor :: LooseMorphism a, codomain :: a }
+data Arrow a = Arrow {domain :: a, mor :: LooseMorphism a, codomain :: a}
+
 deriving instance (Show a, Show (LooseMorphism a)) => Show (Arrow a)
 
 data CompArrows a = CompArrows a (LooseMorphism a) a (LooseMorphism a) a
@@ -38,7 +37,8 @@ instance (ValueCategory ob) => ValueCategory (Arrow ob) where
   -- codomain = Arrow . squareCodomain
 
 instance (Semigroup (Arrow ob)) => Semigroup (Arrow (Arrow ob)) where
-  (Arrow _ (Square tf bf) c@(Arrow cd _ cc)) <> (Arrow d@(Arrow dd _ dc) (Square tg bg) (Arrow md _ mc))
-    = Arrow d (Square tfg bfg ) c
-      where Arrow _ tfg _ = Arrow md tf cd <> Arrow dd tg md
-            Arrow _ bfg _ = Arrow mc bf cc <> Arrow dc bg mc
+  (Arrow _ (Square tf bf) c@(Arrow cd _ cc)) <> (Arrow d@(Arrow dd _ dc) (Square tg bg) (Arrow md _ mc)) =
+    Arrow d (Square tfg bfg) c
+    where
+      Arrow _ tfg _ = Arrow md tf cd <> Arrow dd tg md
+      Arrow _ bfg _ = Arrow mc bf cc <> Arrow dc bg mc

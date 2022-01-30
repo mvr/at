@@ -7,3 +7,5 @@ import Math.Algebra.ChainComplex.Tensor
 class ChainComplex a => Algebra a where
   unitMor :: a -> Morphism () a -- This is just an element
   muMor :: a -> Morphism (Tensor a a) a
+
+-- Can transfer algebra structure across reductions

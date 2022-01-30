@@ -77,18 +77,16 @@ instance (SSet a, SGrp g) => DVF (TotalSpace a g) where
   vf (TotalSpace a g _) (TotalSpaceSimplex s) = coerce $ status (Product a g) s
 
 totalSpaceChainsIso ::
-  forall a b.
   CC.Morphism
     (Perturbed (NormalisedChains (Product a b)))
     (NormalisedChains (TotalSpace a b))
-totalSpaceChainsIso = CC.Morphism 0 (coerce @((Simplex a, Simplex b) -> _) singleComb)
+totalSpaceChainsIso = fmapBasis coerce
 
 totalSpaceChainsIsoInv ::
-  forall a b.
   CC.Morphism
     (NormalisedChains (TotalSpace a b))
     (Perturbed (NormalisedChains (Product a b)))
-totalSpaceChainsIsoInv = CC.Morphism 0 (coerce @((Simplex a, Simplex b) -> _) singleComb)
+totalSpaceChainsIsoInv = fmapBasis coerce
 
 instance
   ( Effective a,

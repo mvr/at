@@ -10,7 +10,7 @@ module Math.Topology.SSet.Product where
 
 import Control.Category.Constrained (cfmap, return, (.))
 import Data.Coerce
-import Math.Algebra.ChainComplex hiding (Morphism, FiniteType)
+import Math.Algebra.ChainComplex hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Coalgebra
 import Math.Algebra.ChainComplex.DVF hiding (DVF)
@@ -32,10 +32,12 @@ data Product a b = Product a b
 prodNormalise :: (Simplex a, Simplex b) -> Simplex (Product a b)
 prodNormalise (Degen i s, Degen j t)
   | i == j = degen (prodNormalise (s, t)) i
-  | i > j = let p = prodNormalise (s, Degen j t)
-            in fmap (\(s', t') -> (Degen (i - degenCount p) s', t')) p
-  | i < j = let p = prodNormalise (Degen i s, t)
-            in fmap (\(s', t') -> (s', Degen (j - degenCount p) t')) p
+  | i > j =
+    let p = prodNormalise (s, Degen j t)
+     in fmap (\(s', t') -> (Degen (i - degenCount p) s', t')) p
+  | i < j =
+    let p = prodNormalise (Degen i s, t)
+     in fmap (\(s', t') -> (s', Degen (j - degenCount p) t')) p
 prodNormalise s = NonDegen s
 
 jointlyNonDegen :: (Simplex a, Simplex b) -> Bool

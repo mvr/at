@@ -114,6 +114,10 @@ morphismZero = morphismZeroOfDeg 0
 fmapBasis :: (a -> b) -> UMorphism a b
 fmapBasis f = Morphism 0 (singleComb . f)
 
+instance Show (UMorphism a b) where
+  -- TODO
+  show (Morphism d f) = "Morphism " ++ show d
+
 instance Constrained.Semigroupoid UMorphism where
   type Object UMorphism a = Eq a
 

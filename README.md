@@ -157,11 +157,16 @@ Plan
 - Misc
   - [ ] Pretty-printing for everything
   - [ ] Docs for everything
+  - [ ] Move this list to Github issues
+  - [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex,
+        Morphism into SSet
   - [ ] Short-circuits: e.g. composing with zero/id for
         morphism/reduction/equivalence
   - [ ] Make sure things are being aggressively inlined
   - [ ] Improve Smith Normal Form code, probably call out to the
-        Integer Matrix Library
+        Integer Matrix Library instead
+  - [ ] Try to use sparse matrices, it is possible most maps are
+        sparse.
 
 Notes
 -----

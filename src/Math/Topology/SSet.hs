@@ -8,6 +8,11 @@ import Data.Maybe (isJust)
 -- is done in Kenzo.  Can use pattern synonyms to make this
 -- indistinguishable from what is used currently, but a lot of the
 -- algorithms could then be done using bit operations.
+
+-- NOTE: Another idea for efficiency: the degeneracy operator should
+-- be strict, but there should be a shortcut to determine whether a
+-- simplex is degenerate or not without calculating the entire degeneracy
+-- operator.
 data FormalDegen a
   = NonDegen a
   | Degen Int (FormalDegen a)
@@ -85,7 +90,7 @@ class Eq (GeomSimplex a) => SSet a where
     let d = geomSimplexDim a s
      in if d == 0 then [] else fmap (geomFace a s) [0 .. d]
 
-  -- TODO: for efficiency
+  -- TODO: for efficiency?
   -- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
 
 isSimplex' :: SSet a => a -> Simplex a -> Maybe Int
@@ -129,8 +134,11 @@ allSimplices a n | n < 0 = []
 allSimplices a n = fmap NonDegen (geomBasis a n) ++ (degensOf =<< allSimplices a (n-1))
   where degensOf s@(NonDegen g) = fmap (\i -> Degen i s) [0..simplexDim a s]
         degensOf s@(Degen j _) = fmap (\i -> Degen i s) [(j+1) .. simplexDim a s]
+
 class SSet a => Pointed a where
   basepoint :: a -> GeomSimplex a
+  -- TODO: move Pointed to its own file to import Morphism
+  -- basepointMor :: a -> Morphism () a
 
 -- | SSet has unique 0-simplex.
 class Pointed a => ZeroReduced a

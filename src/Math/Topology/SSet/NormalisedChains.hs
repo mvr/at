@@ -20,8 +20,11 @@ newtype BasisSimplex a = BasisSimplex a
 
 instance SSet a => CC.ChainComplex (NormalisedChains a) where
   type Basis (NormalisedChains a) = BasisSimplex (GeomSimplex a)
+
   isBasis (NormalisedChains a) (BasisSimplex s) = isGeomSimplex a s
+
   degree (NormalisedChains a) = coerce $ geomSimplexDim a
+
   diff (NormalisedChains a) = coerce $ CC.Morphism (-1) act
     where
       act v = sum [Combination [(c, s)] | (c, NonDegen s) <- zip signs $ geomFaces a v]

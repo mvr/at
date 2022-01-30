@@ -8,11 +8,9 @@
 module Math.Topology.SGrp.Wbar where
 
 import Data.List (intersect)
-import Math.Algebra.ChainComplex.DVF
-import Math.Algebra.Group
-import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SGrp
 import Math.Topology.SSet
+import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
 
@@ -68,7 +66,7 @@ unnormalise g (Degen i s) = insertUnit g i i (unnormalise g s)
 
 instance (SGrp g) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
-  -- (Wbar G)_n = G_n-1 x G_n-1 x ... x G_0
+  -- (Wbar G)_n = G_n-1 x G_n-2 x ... x G_0
   -- meeting a slightly complicated condition on whether the list
   -- contains a unit, and the things proceding it are all degeneracies
   type GeomSimplex (Wbar g) = [Simplex g]
@@ -118,7 +116,7 @@ instance (SAb g) => SAb (Wbar g)
 
 -- Other simplicial groups will need the more complicated method
 -- described in serre.lisp and cl-space-efhm.lisp
-instance (SGrp g, ZeroReduced g) => DVF (NormalisedChains (Wbar g)) where
+instance (SGrp g, ZeroReduced g) => DVF (Wbar g) where
   vf = undefined
 
 -- instance (SGrp g, Effective g) => Effective (Wbar g)
