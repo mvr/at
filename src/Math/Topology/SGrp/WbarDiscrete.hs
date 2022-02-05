@@ -41,6 +41,13 @@ instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
 instance (Group a, Eq (Element a)) => Pointed (WbarDiscrete a) where
   basepoint (WbarDiscrete a) = []
 
-instance (Abelian a, Eq (Element a)) => S.SGrp (WbarDiscrete a) where
+instance (Group a, Eq (Element a)) => ZeroReduced (WbarDiscrete a)
+
+instance (FiniteGroup a, Eq (Element a)) => FiniteType (WbarDiscrete a) where
+  geomBasis (WbarDiscrete a) i = sequence (replicate i nonident)
+    where
+      nonident = filter (\x -> x /= unit a) (elements a)
+
+instance (Abelian a, Eq (Element a)) => S.SGrp (WbarDiscrete a)
 
 instance (Abelian a, Eq (Element a)) => S.SAb (WbarDiscrete a)

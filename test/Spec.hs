@@ -1,25 +1,30 @@
-import Test.Hspec
-import Data.Proxy
 -- import Data.Coerce
 
-import Math.Algebra.AbGroupPres
-import Math.Algebra.ChainComplex.Tensor
-
-import Math.Topology.SSet
-import Math.Topology.SSet.NormalisedChains
-import Math.Topology.SSet.Sphere
-import Math.Topology.SSet.Product
 -- import Math.Topology.SSet.DVF
-import Math.Algebra.ChainComplex.DVF
 
-import qualified SmithNormalFormTest
-import qualified MatrixOpsTest
 import qualified AbGroupPresTest
 import qualified AbelianCategoryProperties
+import Control.Monad (forM_)
+import qualified DVFProperties
+import Data.Proxy
+import Math.Algebra.AbGroupPres
+import Math.Algebra.ChainComplex.DVF
+import Math.Algebra.ChainComplex.Shift
+import Math.Algebra.ChainComplex.Sum
+import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.Group
+import Math.Topology.SGrp.KZ1 as KZ1
+import Math.Topology.SGrp.KZmod2_1
+import Math.Topology.SGrp.WbarDiscrete
+import Math.Topology.SSet
+import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.Product as Product
+import Math.Topology.SSet.Sphere
+import qualified MatrixOpsTest
 import qualified ReductionProperties
 import qualified SSetProperties
-import qualified DVFProperties
-
+import qualified SmithNormalFormTest
+import Test.Hspec
 
 main :: IO ()
 main = hspec spec
@@ -38,8 +43,8 @@ testProduct n a b = do
       n
       (CriticalComplex (NormalisedChains (Product a b)))
       (Tensor (NormalisedChains a) (NormalisedChains b))
-      criticalIso
-      (criticalIsoInv a b)
+      Product.criticalIso
+      (Product.criticalIsoInv a b)
 
   describe "dvfReduction" $
     ReductionProperties.check n (NormalisedChains p) (CriticalComplex (NormalisedChains p)) (dvfReduction (NormalisedChains p))
@@ -55,5 +60,41 @@ spec = do
   -- describe "Abelian category problems for Cached AbGroup" $ AbelianCategoryProperties.spec (Proxy @AbGroupPres)
   AbGroupPresTest.spec
 
-  describe "S³ × S²" $
-    testProduct 6 (Sphere 3) (Sphere 2)
+  describe "products" $
+    describe "S³ × S²" $ testProduct 7 (Sphere 3) (Sphere 2)
+
+  describe "efficient K(ℤ/2,1)" $ do
+    let p = KZmod2_1
+    describe "SSet" $
+      SSetProperties.check 4 p
+
+  describe "K(ℤ,1)" $ do
+    let p = WbarDiscrete Z
+        ns = [-3 .. -1] ++ [1 .. 3]
+        gs = [0 .. 3] >>= (\d -> sequence (replicate d ns))
+
+        criticalBasis = [[], [1]]
+        -- circlebasis = [Left (), Right (ShiftBasis ())]
+
+    describe "SSet" $
+      SSetProperties.checkOn p gs
+
+    describe "DVF" $
+      DVFProperties.checkOn (NormalisedChains p)  (BasisSimplex <$> gs)
+
+    describe "dvfReduction" $
+      ReductionProperties.checkOn
+        (NormalisedChains p)
+        (CriticalComplex (NormalisedChains p))
+        (BasisSimplex <$> gs)
+        (CriticalBasis <$> BasisSimplex <$> criticalBasis)
+        (dvfReduction (NormalisedChains p))
+
+  describe "K(ℤ/n,1)s" $ do
+    forM_ [2, 3, 4, 5] $ \i -> do
+      describe ("K(ℤ/" ++ show i ++ ",1)") $ do
+        let p = WbarDiscrete (Zmod i)
+        describe "SSet" $
+          SSetProperties.check 4 p
+        describe "DVF" $
+          DVFProperties.check 4 (NormalisedChains p)

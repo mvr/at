@@ -118,7 +118,7 @@ Plan
     - [x] Group Structure
   - [ ] Efficient Eilenberg-MacLane Spaces
     - [x] [`K(Z,1)`](#ref-kendoc)
-    - [ ] `K(Z/2,1)` (Can be made particularly efficient)
+    - [x] `K(Z/2,1)` (Can be made particularly efficient)
     - [ ] `K(Z/p,1)`
   - Colimits
     - [ ] Suspension
