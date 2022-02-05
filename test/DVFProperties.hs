@@ -24,16 +24,23 @@ checkSourceTarget :: (DVF a, Show (Basis a)) => a -> Basis a -> Expectation
 checkSourceTarget a b = case vf a b of
   Source t _ -> case vf a t of
     Source b' _ -> expectationFailure $ "Target of " ++ show b ++ " ~> " ++ show t ++ " is also source of " ++ show t ++ " ~> " ++ show b'
-    Target b' _ -> b `shouldBe` b'
+    Target b' _ -> unless (b == b') $ expectationFailure $ "Was not inverse: " ++ show b ++ " ~> " ++ show t ++ " <~ " ++ show b'
     Critical    -> expectationFailure $ "Target of " ++ show b ++ " ~> " ++ show t ++ " is critical"
   Target s _ -> case vf a s of
-    Source b' _ -> b `shouldBe` b'
+    Source b' _ -> unless (b == b') $ expectationFailure $ "Was not inverse: " ++ show b ++ " <~ " ++ show s ++ " ~> " ++ show b'
     Target b' _ -> expectationFailure $ "Source of " ++ show s ++ " ~> " ++ show b ++ " is also target"
     Critical    -> expectationFailure $ "Source of " ++ show s ++ " ~> " ++ show b ++ " is critical"
   Critical -> return ()
 
--- check it's an actual face
--- TODO: check incidence is correct: this may be where the loop is coming in now.
+
+checkOn :: (ChainComplex a, DVF a, Show (Basis a)) => a -> [Basis a] -> Spec
+checkOn a bs = do
+  it "should yield valid partners" $
+    forM_ bs (checkValidResult a)
+  it "should give regular faces" $
+    forM_ bs (checkIsFace a)
+  it "should be a bijection" $
+    forM_ bs (checkSourceTarget a)
 
 check :: (FiniteType a, DVF a, Show (Basis a)) => Int -> a -> Spec
 check n a = do

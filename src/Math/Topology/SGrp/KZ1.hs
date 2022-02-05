@@ -13,7 +13,7 @@ module Math.Topology.SGrp.KZ1 where
 import Control.Category.Constrained ((.))
 import Data.Coerce
 import Math.Algebra.ChainComplex as CC
-import Math.Algebra.ChainComplex.DVF hiding (DVF)
+import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Shift
