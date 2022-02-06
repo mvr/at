@@ -11,14 +11,17 @@ import Data.List (intersect)
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
+import Math.Topology.SSet.Effective
 import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
 
 newtype Wbar g = Wbar g
+  deriving (Show)
 
-newtype WbarSimplex g = WbarSimplex [Simplex g]
+newtype WbarSimplex a = WbarSimplex a
+  deriving (Show) via a
 
-deriving instance (Eq (GeomSimplex g)) => Eq (WbarSimplex g)
+deriving instance (Eq g) => Eq (WbarSimplex g)
 
 -- TODO: there are probably efficient algorithms for this in terms of bit fields.
 -- 1. Create a bit field marking which positions are the unit
@@ -38,22 +41,24 @@ filterCandidates g ss@(st : srest) cs@(ct : crest) j
 downshiftList :: [Int] -> [Int]
 downshiftList [] = []
 downshiftList [0] = []
-downshiftList (i : is) = (i -1) : downshiftList is
+downshiftList (i : is) = (i - 1) : downshiftList is
 
 extractDegens :: g -> [Simplex g] -> [Int] -> [Simplex g]
+extractDegens g s [] = s
 extractDegens g [] cs = []
+extractDegens g (s : u : ss) cs
+  | last cs == 0 = unDegen s cs : extractDegens g ss (downshiftList cs)
 extractDegens g (s : ss) cs
-  | last cs == 0 = extractDegens g ss (downshiftList cs)
   | otherwise = unDegen s cs : extractDegens g ss (downshiftList cs)
 
 normalise :: (Pointed g) => g -> [Simplex g] -> Simplex (Wbar g)
-normalise g [] = NonDegen []
+normalise g [] = NonDegen $ WbarSimplex []
 normalise g (s : ss)
   | isUnit g s = degen (normalise g ss) 0
   | otherwise =
     let candidates = degenList s
-        successes = filterCandidates g ss candidates 1
-     in foldl degen (NonDegen $ extractDegens g (s : ss) successes) successes
+        successes = filterCandidates g ss candidates 0
+     in foldl degen (NonDegen $ WbarSimplex $ extractDegens g (s : ss) successes) (fmap (1 +) successes)
 
 insertUnit :: (Pointed g) => g -> Int -> Int -> [Simplex g] -> [Simplex g]
 insertUnit g j 0 ss = constantAt (basepoint g) (length ss) : ss
@@ -61,23 +66,23 @@ insertUnit g j i (s : ss) = degen s j : insertUnit g j (i -1) ss
 insertUnit g j i _ = error "insertUnit: impossible"
 
 unnormalise :: (Pointed g) => g -> Simplex (Wbar g) -> [Simplex g]
-unnormalise g (NonDegen gs) = gs
+unnormalise g (NonDegen (WbarSimplex gs)) = gs
 unnormalise g (Degen i s) = insertUnit g i i (unnormalise g s)
 
 instance (SGrp g) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
-  -- (Wbar G)_n = G_n-1 x G_n-2 x ... x G_0
+  -- (Wbar G)_n = G_n-1 x xG_n-2 x ... x G_0
   -- meeting a slightly complicated condition on whether the list
   -- contains a unit, and the things proceding it are all degeneracies
-  type GeomSimplex (Wbar g) = [Simplex g]
+  type GeomSimplex (Wbar g) = WbarSimplex [Simplex g]
 
-  isGeomSimplex (Wbar g) ss = undefined -- not (any (isUnit g) ss)
+  isGeomSimplex (Wbar g) (WbarSimplex ss) = normalise g ss == NonDegen (WbarSimplex ss) && all (isSimplex g) ss
 
-  geomSimplexDim _ ss = length ss
+  geomSimplexDim _ (WbarSimplex ss) = length ss
 
-  geomFace _ [] _ = undefined
+  geomFace _ (WbarSimplex []) _ = undefined
   -- TODO: need to make sure this matches with Kenzo's conventions, multiplying on which side
-  geomFace (Wbar g) ss i = normalise g (underlying ss i)
+  geomFace (Wbar g) (WbarSimplex ss) i = normalise g (underlying ss i)
     where
       underlying ss i
         | i == 0 = tail ss
@@ -90,20 +95,28 @@ instance (SGrp g) => SSet (Wbar g) where
            in (face g s (i - 1)) : underlying rest (i - 1)
 
 instance SGrp g => Pointed (Wbar g) where
-  basepoint (Wbar g) = []
+  basepoint (Wbar g) = WbarSimplex []
 
-instance (SGrp g, ZeroReduced g) => ZeroReduced (Wbar g)
+instance (SGrp g) => ZeroReduced (Wbar g)
 
 instance (SGrp g, ZeroReduced g) => OneReduced (Wbar g) -- Not a typo!
 
+instance (SGrp g, ZeroReduced g, FiniteType g) => FiniteType (Wbar g) where
+  geomBasis (Wbar g) n =
+    filter (isGeomSimplex (Wbar g)) $ fmap WbarSimplex $ sequence $ allSimplices g <$> reverse [0 .. (n - 1)]
+
+
 instance (SAb g) => SGrp (Wbar g) where
-  -- TODO: is it necessary to normalise these? Or is the image of a
-  -- geometric simplex always non-degenerate?
+  -- TODO: can be more efficient, everywhere there is a degeneracy
+  -- there is no need to actually compute the product.
   prodMor (Wbar g) = Morphism $ \(gs1, gs2) ->
     normalise g $
       (onSimplex (prodMor g) . prodNormalise)
         <$> zip (unnormalise g gs1) (unnormalise g gs2)
-  invMor (Wbar g) = Morphism $ \gs -> normalise g $ fmap (onSimplex (invMor g)) gs
+
+  -- TODO: is it necessary to normalise these? Or is the image of a
+  -- geometric simplex always non-degenerate?
+  invMor (Wbar g) = Morphism $ \(WbarSimplex gs) -> normalise g $ fmap ((invMor g) `onSimplex`) gs
 
 instance (SAb g) => SAb (Wbar g)
 
@@ -119,5 +132,6 @@ instance (SAb g) => SAb (Wbar g)
 instance (SGrp g, ZeroReduced g) => DVF (Wbar g) where
   vf = undefined
 
--- instance (SGrp g, Effective g) => Effective (Wbar g)
+instance (SGrp g, ZeroReduced g, FiniteType g) => Effective (Wbar g)
+
 --   type Model (Wbar g) = Bar (Model g)
