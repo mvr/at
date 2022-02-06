@@ -35,8 +35,24 @@ instance FiniteType KZmod2_1 where
 
 instance Effective KZmod2_1
 
+mergeSorted :: Ord a => [a] -> [a] -> [a]
+mergeSorted is [] = is
+mergeSorted [] js = js
+mergeSorted (i : is) (j : js)
+  | i > j = i : mergeSorted is (j : js)
+  | otherwise = j : mergeSorted (i:is) js
+
+complement :: Int -> [Int] -> [Int]
+complement (-1) [] = []
+complement n [] = n : complement (n - 1) []
+complement n (i : is)
+  | n == i = complement (n-1) is
+  | otherwise = n : complement (n - 1) (i:is)
+
 instance SGrp KZmod2_1 where
-  prodMor _ = undefined -- TODO: unnormalise?
+  prodMor _ = Morphism $ \(s, t) ->
+    let m = mergeSorted (degenList s) (degenList t) in
+      foldr (flip degen) (NonDegen $ length m) (complement (simplexDim KZmod2_1 s - 1) m)
   invMor _ = Morphism NonDegen
 
 instance SAb KZmod2_1

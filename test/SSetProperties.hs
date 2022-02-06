@@ -1,11 +1,12 @@
 -- |
 module SSetProperties where
 
-import Control.Monad (forM_, when)
+import Control.Monad (forM_, when, unless)
 import Test.Hspec
 import Prelude hiding (id, (.))
 
 import Math.Topology.SSet
+import Math.Topology.SSet.Morphism
 
 checkIdentities :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkIdentities a g = do
@@ -16,7 +17,8 @@ checkIdentities a g = do
   when (d > 1) $ sequence_ $ do
     j <- [1 .. d]
     i <- [0 .. (j - 1)]
-    return $ face a (face a s j) i `shouldBe` face a (face a s i) (j - 1)
+    return $ unless (face a (face a s j) i == face a (face a s i) (j - 1)) $
+       expectationFailure $ "On simplex " ++ show g ++ ", ∂" ++ show i ++ " ∘ ∂" ++ show j ++ " = " ++ show (face a (face a s j) i) ++ " but " ++ "∂" ++ show (j-1) ++ " ∘ ∂" ++ show i ++ " = " ++ show (face a (face a s i) (j - 1))
 
   -- The rest should follow from the formal degeneracy operations but
   -- may as well do them as a sanity check
@@ -50,7 +52,7 @@ checkIdentities a g = do
 
 checkFaces :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkFaces a g =
-  forM_ (geomFaces a g) (\s -> s `shouldSatisfy` isSimplex a)
+  forM_ (geomFaces a g) (\s -> unless (isSimplex a s) $ expectationFailure $ "Face " ++ show s ++ " of " ++ show g ++ " is not a valid simplex")
 
 checkDims :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkDims a g =
@@ -82,3 +84,29 @@ check n a = do
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkDims a))
   it "should satisfy the simplicial identities " $
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkIdentities a))
+
+checkMorphismFaces :: (SSet a, SSet b, Show (GeomSimplex a), Show (GeomSimplex b)) => a -> b -> Morphism a b -> GeomSimplex a -> Expectation
+checkMorphismFaces a b m g = do
+  let d = geomSimplexDim a g
+      s = NonDegen g
+
+  when (d > 0) $ sequence_ $ do
+    i <- [0 .. d]
+    return $
+      unless (m `onSimplex` (face a s i) == face b (m `onSimplex` s) i) $
+      expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g
+
+  sequence_ $ do
+    i <- [0 .. d]
+
+    return $
+      unless (m `onSimplex` (degen s i) == degen (m `onSimplex` s) i) $
+        expectationFailure $ "Morphism did not commute with degen " ++ show i ++ " of " ++ show g
+
+checkMorphismOn :: (SSet a, SSet b, Show (GeomSimplex a), Show (GeomSimplex b)) => a -> b -> Morphism a b -> [GeomSimplex a] -> Spec
+checkMorphismOn a b m gs = do
+  it "should have valid images" $
+    forM_ gs (\g -> m `onGeomSimplex` g `shouldSatisfy` isSimplex b)
+
+  it "should commute with faces and degeneracies" $
+    forM_ gs (\g -> checkMorphismFaces a b m g)
