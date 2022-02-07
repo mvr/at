@@ -105,6 +105,7 @@ Plan
   - [x] Moore Spaces
   - [ ] Projective Spaces
   - [x] Products
+    - [x] Group structure
   - [x] Total Space of Principal Fibration
   - [ ] Loop Space
     - [ ] Of 1-reduced

@@ -39,6 +39,9 @@ prodNormalise (Degen i s, Degen j t)
      in fmap (\(s', t') -> (s', Degen (j - degenCount p) t')) p
 prodNormalise s = NonDegen s
 
+prodUnnormalise :: Simplex (Product a b) -> (Simplex a, Simplex b)
+prodUnnormalise s = (s >>= fst, s >>= snd) -- nice!
+
 jointlyNonDegen :: (Simplex a, Simplex b) -> Bool
 jointlyNonDegen ss = case prodNormalise ss of
   NonDegen _ -> True
@@ -65,6 +68,22 @@ instance (OneReduced a, OneReduced b) => OneReduced (Product a b)
 
 instance (FiniteType a, FiniteType b) => FiniteType (Product a b) where
   geomBasis (Product a b) n = [(s, t) | s <- allSimplices a n, t <- allSimplices b n, isGeomSimplex (Product a b) (s, t)]
+
+prodSym :: Morphism (Product a b) (Product b a)
+prodSym = Morphism $ \(s, t) -> NonDegen (t, s)
+
+prodAssoc :: Morphism (Product (Product a b) c) (Product a (Product b c))
+prodAssoc = Morphism $ \(st, r) ->
+  let (s, t) = prodUnnormalise st
+  in prodNormalise (s, prodNormalise (t, r))
+
+prodAssocInv :: Morphism (Product a (Product b c))  (Product (Product a b) c)
+prodAssocInv = Morphism $ \(s, tr) ->
+  let (t, r) = prodUnnormalise tr
+   in prodNormalise (prodNormalise (s, t), r)
+
+prodFunc :: Morphism a a' -> Morphism b b' -> Morphism (Product a b) (Product a' b')
+prodFunc m m' = Morphism $ \(s, t) -> prodNormalise (m `onSimplex` s, m' `onSimplex` t)
 
 instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status

@@ -1,5 +1,6 @@
 module Math.Topology.SSet where
 
+import Control.Monad (ap)
 import qualified Control.Category.Constrained as Constrained
 import Data.Maybe (isJust)
 
@@ -23,6 +24,14 @@ data FormalDegen a
 instance Show a => Show (FormalDegen a) where
   show (NonDegen a) = show a
   show (Degen i a) = "s_" ++ show i ++ " " ++ show a
+
+instance Applicative FormalDegen where
+  pure = NonDegen
+  (<*>) = ap
+
+instance Monad FormalDegen where
+  (NonDegen s) >>= f = f s
+  (Degen i s)  >>= f = degen (s >>= f) i
 
 isDegen :: FormalDegen a -> Bool
 isDegen (NonDegen _) = False
