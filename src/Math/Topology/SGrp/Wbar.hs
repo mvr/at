@@ -4,7 +4,8 @@
 -- Wbar : sGrp -> 0-reduced sSet_*
 -- See https://ncatlab.org/nlab/show/simplicial+classifying+space
 -- In the Kenzo source, this is spread over
--- classifying-spaces.lisp, cl-space-efhm.lisp and anromero/resolutions.lisp
+-- classifying-spaces.lisp, classifying-spaces-dvf.lisp, cl-space-efhm.lisp
+-- Also anromero/resolutions.lisp in the fork
 module Math.Topology.SGrp.Wbar where
 
 import Data.List (intersect)
@@ -16,10 +17,11 @@ import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
 
 newtype Wbar g = Wbar g
-  deriving (Show)
+  deriving Show
 
 newtype WbarSimplex a = WbarSimplex a
-  deriving (Show) via a
+  deriving Show via a
+  deriving Functor
 
 deriving instance (Eq g) => Eq (WbarSimplex g)
 
@@ -81,7 +83,9 @@ instance (SGrp g) => SSet (Wbar g) where
   geomSimplexDim _ (WbarSimplex ss) = length ss
 
   geomFace _ (WbarSimplex []) _ = undefined
-  -- TODO: need to make sure this matches with Kenzo's conventions, multiplying on which side
+  -- TODO: need to make sure this matches with Kenzo's conventions,
+  -- multiplying on which side (for abelian groups of course it
+  -- doesn't matter)
   geomFace (Wbar g) (WbarSimplex ss) i = normalise g (underlying ss i)
     where
       underlying ss i
@@ -114,9 +118,7 @@ instance (SAb g) => SGrp (Wbar g) where
       (onSimplex (prodMor g) . prodNormalise)
         <$> zip (unnormalise g gs1) (unnormalise g gs2)
 
-  -- TODO: is it necessary to normalise these? Or is the image of a
-  -- geometric simplex always non-degenerate?
-  invMor (Wbar g) = Morphism $ \(WbarSimplex gs) -> normalise g $ fmap ((invMor g) `onSimplex`) gs
+  invMor (Wbar g) = Morphism $ NonDegen . fmap (fmap (invMor g `onSimplex`))
 
 instance (SAb g) => SAb (Wbar g)
 
@@ -129,7 +131,9 @@ instance (SAb g) => SAb (Wbar g)
 
 -- Other simplicial groups will need the more complicated method
 -- described in serre.lisp and cl-space-efhm.lisp
-instance (SGrp g, ZeroReduced g) => DVF (Wbar g) where
+
+
+instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
   vf = undefined
 
 instance (SGrp g, ZeroReduced g, FiniteType g) => Effective (Wbar g)

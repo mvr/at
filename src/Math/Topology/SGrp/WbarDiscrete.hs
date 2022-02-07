@@ -51,8 +51,7 @@ instance (Group a, Eq (Element a)) => ZeroReduced (WbarDiscrete a)
 
 instance (FiniteGroup a, Eq (Element a)) => FiniteType (WbarDiscrete a) where
   geomBasis (WbarDiscrete a) i = sequence (replicate i nonident)
-    where
-      nonident = filter (\x -> x /= unit a) (elements a)
+    where nonident = filter (\x -> x /= unit a) (elements a)
 
 instance (Abelian a, Eq (Element a)) => S.SGrp (WbarDiscrete a) where
   prodMor (WbarDiscrete a) = Morphism $ \(s, t) -> normalise a $ fmap (uncurry (prod a)) (zip (unnormalise a s) (unnormalise a t))

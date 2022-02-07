@@ -64,11 +64,10 @@ instance Algebra a => Bicomplex (Bar a) where
       go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (fmap (: bs) (muMor a `onBasis` (b1, b2)) + fmap (b1 :) (go (b2 : bs)))
 
 instance (Algebra a, FiniteType a) => Bi.FiniteType (Bar a) where
-  bibasis (Bar a) (hd, vd) = fmap BarBibasis (go vd hd)
+  bibasis (Bar a) (hd, vd) = BarBibasis <$> go vd hd
     where
       go 0 0 = [[]]
-      go 0 d | d < 0 = []
-      go i 0 = []
+      go i d | d <= 0 = []
       go i d = do
         j <- [1 .. d] -- Degree 0 basis elements are deliberately excluded
         b <- basis a j

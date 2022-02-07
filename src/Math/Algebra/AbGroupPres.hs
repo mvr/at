@@ -111,8 +111,6 @@ fromPresentation m = AbGroupPres m d li l
 -- principle all of homological algebra should be implementable in
 -- terms of these.
 
--- TODO: One day us the Integer Matrix Library for these.
-
 -- Z is "coherent": Given M, we compute a L such that
 -- MX = 0   <->   exists Y. X = LY
 -- So the image of L is the kernel of M

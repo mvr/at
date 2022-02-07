@@ -120,7 +120,7 @@ modifyEdging s = do
 moveLeastEdgingToStart :: Int -> State Triple ()
 moveLeastEdgingToStart s = do
   t <- get
-  let (smallest, (smallestR, smallestC)) = findSmallestInEdging s $ middle t
+  let (_smallest, (smallestR, smallestC)) = findSmallestInEdging s $ middle t
   when (smallestR /= s) $ modify $ swapRows smallestR s
   when (smallestC /= s) $ modify $ swapCols smallestC s
 
