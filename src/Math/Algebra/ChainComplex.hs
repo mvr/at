@@ -3,7 +3,7 @@
 -- | Chain complex of free Z-modules
 module Math.Algebra.ChainComplex where
 
-import Control.Category.Constrained (id, join, (.), return)
+import Control.Category.Constrained (id, join, return, (.))
 import qualified Control.Category.Constrained as Constrained
 import Data.List (find)
 import qualified Data.Matrix as M
@@ -12,7 +12,7 @@ import Math.Algebra.AbGroupPres
 import Math.ValueCategory (Arrow)
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
-import Prelude hiding (id, (.), return)
+import Prelude hiding (id, return, (.))
 
 class (Eq (Basis a)) => ChainComplex a where
   type Basis a = s | s -> a
@@ -30,6 +30,7 @@ instance ChainComplex () where
 
 class ChainComplex a => FiniteType a where
   dim :: a -> Int -> Int
+  dim a i = length (basis a i)
   -- * `all isSimplex (basis n)`
   basis :: a -> Int -> [Basis a]
 
@@ -42,6 +43,9 @@ instance FiniteType () where
 -- | Z-linear combinations
 newtype Combination b = Combination {coeffs :: [(Int, b)]}
   deriving (Functor)
+
+validComb :: ChainComplex a => a -> Combination (Basis a) -> Bool
+validComb a (Combination bs) = and $ fmap (\(_, b) -> isBasis a b) bs
 
 instance Eq b => Eq (Combination b) where
   c == c' = null (coeffs (c - c'))
