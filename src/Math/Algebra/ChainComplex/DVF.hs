@@ -6,6 +6,8 @@ module Math.Algebra.ChainComplex.DVF where
 
 import Data.Coerce
 import Math.Algebra.ChainComplex
+import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Equivalence
 import Prelude hiding (id, (.), return)
@@ -90,3 +92,9 @@ dvfReduction a = Reduction (f a d) (g a d) (h a d)
 
 dvfEquivalence :: DVF a => a -> Equivalence a (CriticalComplex a)
 dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)
+
+-- When does this actually work?
+instance (Algebra a, DVF a) => Algebra (CriticalComplex a) where
+  muMor (CriticalComplex a) = proj a . muMor a . (incl a `t` incl a)
+    where t = tensorMorphism (CriticalComplex a) (CriticalComplex a)
+  unitMor (CriticalComplex a) = proj a . unitMor a
