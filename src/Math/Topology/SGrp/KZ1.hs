@@ -27,6 +27,9 @@ import Prelude hiding ((.))
 
 type KZ1 = WbarDiscrete Z
 
+kZ1 :: KZ1
+kZ1 = WbarDiscrete Z
+
 type CircleComplex = () `Sum` Shift ()
 
 instance DVF KZ1 where
@@ -60,3 +63,14 @@ instance Effective KZ1 where
       (NormalisedChains (WbarDiscrete Z))
       (Sum () (Shift ()))
       (isoToReduction criticalIso criticalIsoInv . dvfReduction (NormalisedChains (WbarDiscrete Z)))
+
+-- This seems to work... TODO: give a reduction from this to a chain
+-- complex with one basis element in each dimension, no need to
+-- generate all simplices and filter
+instance DVF (WbarDiscrete Zmod) where
+  vf (WbarDiscrete (Zmod n)) [] = Critical
+  vf (WbarDiscrete (Zmod n)) [1] = Critical
+  vf (WbarDiscrete (Zmod n)) (1 : a1 : as)
+    | a1 == n - 1 = fmap (\x -> 1 : a1 : x) (vf (WbarDiscrete (Zmod n)) as)
+    | otherwise = Target (a1 + 1 : as) Neg
+  vf (WbarDiscrete (Zmod n)) (a1 : as) = Source (1 : a1 - 1 : as) Neg
