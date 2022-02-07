@@ -3,7 +3,10 @@ AT
 
 A Haskell rewrite of
 [Kenzo](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/), a
-collection of algorithms for 'effective algebraic topology'.
+collection of algorithms for 'effective algebraic topology'. The
+algorithms and implementations in Kenzo were created by Francis
+Sergeraert, Julio Rubio Garcia, Xavier Dousson, Ana Romero and many
+collaborators.
 
 Writing it from scratch myself is the only chance I have of
 understanding it!
@@ -11,82 +14,85 @@ understanding it!
 Central Concepts of Kenzo
 -------------------------
 
-A *simplicial set* `X` is described by a type `a`, containing the data
-required to specify `X`, and a type `GeomSimplex a`, whose elements
-correspond to non-degenerate simplices (in Kenzo called 'geometric
-simplices'). Like Kenzo we also allow a predicate on `GeomSimplex a`
-specifying when an element actually describes a simplex and when it is
-'spurious'.
+A *simplicial set* `X` is described by a type `a`, containing whatever
+data is required to specify `X`, and a type `GeomSimplex a`, whose
+elements correspond to non-degenerate simplices (in Kenzo called
+'geometric simplices'). Like Kenzo we also allow a predicate on
+`GeomSimplex a` specifying when an element actually describes a
+geometric simplex and when it is 'spurious'.
 
 An actual simplex of `X` is a geometric simplex together with a
-'formal degeneracy', which is a list of degeneracy operators in normal
-form. Face maps are implemented as functions from geometric simplices
-to (possibly degenerate) simplices, and this function is easily
-extended to all simplices in a manner forced by the simplicial
-identities.
+'formal degeneracy operator', which is a list of degeneracy operators
+in a normal form. Face maps are implemented as functions from
+geometric simplices to (possibly degenerate) simplices, and the
+extension of these face maps to all simplices is forced by the
+simplicial identities.
 
 A simplicial set is *of finite type* if there is a finite number of
-geometric simplices for each dimension, and a function giving a list
-of these simplices for any `n`. It is not required that there are only
-finitely many geometric simplices overall.
+geometric simplices for each dimension, and there is a function giving
+a list of these simplices for any dimension `n`. It is not required
+that there are finitely many geometric simplices overall.
 
-The *normalised chain complex* `N(X;Z)` of `X` has each `N(X;Z)_n`
-given by the free abelian group on the set of nondegenerate
-`n`-simplices of `X`, with the boundary of a simplex `σ` calculated
-similar to usual, but ignoring any degenerate faces.
+The *normalised chain complex* `N(X)` of `X` has each `N(X)_n` given
+by the free abelian group on the set of nondegenerate `n`-simplices of
+`X`, with the boundary of a simplex calculated similar to usual (the
+alternating sum of face maps), but ignoring any degenerate faces.
 
-The quotient map `C(X) -> N(X)` from the ordinary chain complex `C(X)`
-is a quasi-isomorphism, and so if `X` is of finite type, then the
-homology of `X` can be computed by using the finite dimensional
-matrices describing the differentials of `N(X)`.
+If `C(X)` is the ordinary chain complex of simplicial chains of `X`,
+the quotient map `C(X) -> N(X)` is a quasi-isomorphism, and so if `X`
+is of finite type, then the homology of `X` can be computed via
+`N(X)`.
 
-But many constructions on simplicial sets do not preserve the property
-of being finite type, and so we need some other way to calculate
-homology. This is where 'effective homology' comes in.
+But many unavoidable simplicial sets (like `K(ℤ,n)` and loop spaces
+`ΩX`) are not of finite type, and so we need some other way to
+calculate their homology. This is where 'effective homology' comes in.
 
 A *reduction* between chain complexes `C` and `D` is a strong
 deformation retract of chain complexes. The data of a reduction
-unwinds to a triple (`f : C ->D`, `g : D -> C`, `h : C -> C`) where
-`f` and `g` are degree 0 and the homotopy operator `h` is degree 1,
-and certain equations between these maps and the differentials of `C`
-and `D` hold.  A *(strong chain) equivalence* between two chain
-complexes `C` and `D` is a span of reductions `l : E -> C` and `r : E
--> D`.
+unwinds to a triple (`f : C -> D`, `g : D -> C`, `h : C -> C`) where
+`f` and `g` are degree 0, the homotopy operator `h` is degree 1, and
+certain equations involving these hold.  A *(strong chain)
+equivalence* between two chain complexes `C` and `D` is a span of
+reductions `l : E -> C` and `r : E -> D`.
 
 An *effective homology structure* on `C` is an equivalence between `C`
 and a chain complex `F` of finite type.
 
 A *simplicial set with effective homology* is a simplicial set `X`
-equipped with an effective homology structure on `N(X;Z)`.
+equipped with an effective homology structure on `N(X)`.
 
 The point of Kenzo is that although constructions on simplicial sets
-often do not preserve levelwise finiteness, they *do* extend to
+sometimes do not preserve levelwise finiteness, they *do* extend to
 effective homology structures. And so if we begin with a finite
-simplicial complex and perform operations on it, then we can often
-compute the homology of the result, even if the actual simplicial sets
-are now far too complicated to get a handle on.
+simplicial complex and perform some constructions using it, then we
+can often compute the homology of the result even if the actual
+simplicial sets are now far too complicated to get a handle on.
 
 Plan
 ----
-- Algebra
+
+#### Homological Algebra
+- Definitions
   - [x] Chain Complex
-    - [x] Tensor
-      - [x] Functoriality
-    - [x] 'Bicone' (specialised pushout for surjections)
-    - [x] Bicomplex
-      - [x] Tot
-    - [x] Bar
-      - [ ] Functoriality
-    - [ ] Cobar
-      - [ ] Of 1-reduced
-      - [ ] Of 0-reduced
-      - [ ] Functoriality
+  - [x] Bicomplex
   - [x] Reduction
     - [x] Perturbation
   - [x] Strong Equivalence
     - [x] Composition via Span
-  - [ ] Freyd Category?
-- Simplicial Definitions
+- Constructions
+  - [x] Tensor
+    - [x] Functoriality
+  - [x] 'Bicone' (specialised pushout for surjections)
+    - [x] Tot
+  - [x] Bar
+    - [ ] Functoriality
+  - [ ] Cobar
+    - [ ] Of 1-reduced
+    - [ ] Of 0-reduced
+    - [ ] Functoriality
+
+#### Simplicial Sets
+- Definitions
   - [x] Simplicial Set
   - [x] Simplicial Morphism
   - [x] Simplicial Group
@@ -94,16 +100,19 @@ Plan
   - [x] SSet With Effective Homology
   - [x] Principal Fibrations
   - [x] Discrete Vector Fields
-- Simplicial Constructions
-  - General Simplicial Sets
-    - [x] Coalgebra Structure on Chains
-  - General Simplicial Groups
-    - [x] Algebra Structure on Chains
-    - [ ] Kan Structure
+  - [x] Coalgebra Structure on Chains
+  - [x] Algebra Structure on Chains of Groups
+  - [ ] Kan Structure on Chains of Groups
+- Finite Examples
   - [x] Spheres
     - [ ] Treat S^1 separately (not 1-reduced)
   - [x] Moore Spaces
   - [ ] Projective Spaces
+- Eilenberg-MacLane Spaces
+  - [x] [`K(ℤ,1)`](#ref-kendoc)
+  - [x] `K(ℤ/2,1)` (Can be made particularly efficient)
+  - [x] `K(ℤ/p,1)`
+- Constructions
   - [x] Products
     - [x] Group structure
   - [x] Total Space of Principal Fibration
@@ -117,67 +126,77 @@ Plan
     - [x] For non-reduced group
     - [x] Special case for discrete groups
     - [x] Group Structure
-  - [ ] Efficient Eilenberg-MacLane Spaces
-    - [x] [`K(Z,1)`](#ref-kendoc)
-    - [x] `K(Z/2,1)` (Can be made particularly efficient)
-    - [ ] `K(Z/p,1)`
-  - Colimits
-    - [ ] Suspension
-    - [ ] Pushouts (of 1-reduced sSets)
-    - [ ] Finite Homotopy Colimits
-- Effective Homology
-  - [ ] Classifying Spaces
-    - [x] Direct Reduction of `K(Z,1)` to `S^1`
-    - [ ] [Of 0-reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
-    - [ ] Of General sGrps
-  - [x] Products
-    - [ ] Use specialised contraction maps for efficiency
-  - Fibrations
-    - Total Space from Base and Fibre ('Serre' problem)
-      - [x] [1-reduced Fibre](#ref-as%3Advf)
-      - [ ] [0-reduced Fibre](#ref-filakovsky%3Atwisted-products)
-    - [ ] Fibre from Base and Total Space ('Eilenberg-Moore' problem)
-  - Loop Space
-    - [ ] [1-reduced](#ref-kendoc)
-    - [ ] [0-reduced](#ref-hess-tonks%3Aloop-group)
-  - Colimits
-    - [ ] Suspension
-    - [ ] [Pushouts (of 1-reduced sSets)](#ref-heras%3Apushout)
-    - [ ] [Finite Homotopy Colimits](#ref-filakovsky%3Ahocolim)
+  - [ ] Suspension
+    - [ ] 0-reduced
+    - [ ] General [Kan suspension](#ref-goerss-jardine)
+  - [ ] Pushouts (of 1-reduced sSets)
+  - [ ] Other Finite Homotopy Colimits
+
+#### Effective Homology
+- Classifying Spaces
+  - [x] Direct Reduction of `K(ℤ,1)` to `S^1`
+  - [ ] [Of 0-reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
+  - [ ] Of General sGrps
+- Products
+  - [x] Eilenberg-Zilber reduction
+  - [ ] Use specialised contraction maps for efficiency
+- Fibrations
+  - Total Space from Base and Fibre ('Serre' problem)
+    - [x] [1-reduced Fibre](#ref-as%3Advf)
+    - [ ] [0-reduced Fibre](#ref-filakovsky%3Atwisted-products)
+  - [ ] Fibre from Base and Total Space ('Eilenberg-Moore' problem)
+- Loop Space
+  - [ ] [1-reduced](#ref-kendoc)
+  - [ ] [0-reduced](#ref-hess-tonks%3Aloop-group)
+- Colimits
+  - [ ] Suspension
+  - [ ] [Pushouts (of 1-reduced sSets)](#ref-heras%3Apushout)
+  - [ ] [Finite Homotopy Colimits](#ref-filakovsky%3Ahocolim)
 - Discrete Vector Fields
   - [x] Induced Reduction
   - [x] Products
   - [x] Fibrations
-  - [x] `K(Z,1)`
-    - [x] [Naive but easy](#ref-kms:poly-em-spaces)
-    - [ ] [Polynomial time but complicated](#ref-kms:poly-em-spaces)
+  - [x] `K(ℤ,1)`
+    - [x] [Naive but easy](#ref-kms%3Apoly-em-spaces)
+    - [ ] [Polynomial time but complicated](#ref-kms%3Apoly-em-spaces)
+  - [x] `K(ℤ/n,1)`?
   - [ ] Classifying Spaces for 0-reduced sAb
-- [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
-- [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
-- [ ] Steenrod Operations?
-- Misc
-  - [ ] Pretty-printing for everything
-  - [ ] Docs for everything
-  - [ ] Move this list to Github issues
-  - [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex,
-        Morphism into SSet
-  - [ ] Short-circuits: e.g. composing with zero/id for
-        morphism/reduction/equivalence
-  - [ ] Make sure things are being aggressively inlined
-  - [ ] Improve Smith Normal Form code, probably call out to the
-        Integer Matrix Library instead
-  - [ ] Try to use sparse matrices, it is possible most maps are
-        sparse.
+- Homotopy Groups
+  - [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
+  - [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
+- Steenrod Operations?
+
+#### Misc TODOs
+- [ ] Fix space leaks, jeez
+- [ ] Pretty-printing for everything
+- [ ] Docs for everything
+- [ ] Move this list to Github issues
+- [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex,
+      Morphism into SSet
+- [ ] Short-circuits: e.g. composing with zero/id for
+      morphism/reduction/equivalence
+- [ ] Make sure things are being aggressively inlined
+- [ ] Make homology calculation do less work: should just need SNF
+      of one matrix and the rank of another.
+- [ ] Improve Smith normal form code, would be better to call out to
+      some existing library instead of rolling our own. The options
+      appear to be [LinBox](https://linalg.org/) or
+      [FLINT](http://flintlib.org/). The former appears to support
+      sparse matrices better
+- [ ] Check homology of K(G,n) calculations against known results
+      <!-- eg [Clement's thesis](#ref-clement%3Athesis) -->
 
 Notes
 -----
 
 - I have switched a little terminology: I believe Kenzo uses
-  'effective' for finite type things and 'locally effective' for
+  'effective' for finite-type things and 'locally effective' for
   what I am calling effective things, but I find this a bit confusing.
 - In Kenzo, every sSet is conflated with its chain complex of
   normalised chains, here I have kept the two separate.
-- Avoid over-engineering things as much as possible.
+- Avoid over-engineering the Haskell as much as possible.
+- That being said, the use of `Constrained.Category` is a bit of a
+  mess.
 - There may be a way to unify some of the algorithms via bicomplexes
   and the ['generalised Eilenberg-Zilber
   theorem'](https://ncatlab.org/nlab/show/Eilenberg-Zilber+theorem)
@@ -189,7 +208,7 @@ Notes
   total functor on bisimplicial spaces algorithmically, because its
   definition involves the equaliser of certain face maps. So it only
   makes sense to try and implement consider bicomplexes and not
-  general bisimplicial sets.
+  bisimplicial sets.
 - Running Kenzo with SBCL:
   ```
   > rlwrap sbcl
@@ -201,8 +220,8 @@ Notes
   (finite-ss-table '(a b 1 c (b a)))
   ```
   etc.
-- classes.lisp in Kenzo contains the meaning of the inscrutable 4
-  letter abbreviations
+- classes.lisp in Kenzo contains the meaning of some of the 4 letter
+  abbreviations
   * ABSM = ABstract SiMplex
   * GMSM = GeoMetric SiMplex
   * CMBN = CoMBinatioN
@@ -256,7 +275,6 @@ recent in each case. Some material is repeated in different
 references.
 
 <!-- To generate: pandoc kenzo.bib -C --csl=acm-sig-proceedings.csl -t gfm -o out.md -->
-
 <div id="refs" class="references csl-bib-body">
 
 <div id="ref-franz:twisting" class="csl-entry">
