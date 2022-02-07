@@ -16,8 +16,7 @@ import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Group
 import Math.Topology.SGrp ()
 import Math.Topology.SGrp.Wbar
-import Math.Topology.SGrp.KZ1 as KZ1 ()
-import Math.Topology.SGrp.KZmod2_1
+import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
 import Math.Topology.SSet.NormalisedChains
