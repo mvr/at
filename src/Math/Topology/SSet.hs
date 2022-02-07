@@ -1,4 +1,6 @@
 module Math.Topology.SSet where
+
+import qualified Control.Category.Constrained as Constrained
 import Data.Maybe (isJust)
 
 -- NOTE: This should be made much more efficient. First, it could be
@@ -149,6 +151,21 @@ class Pointed a => ZeroReduced a
 
 -- | SSet has no non-degenerate 1-simplices.
 class ZeroReduced a => OneReduced a
+
+-- | Simplicial morphisms
+newtype UMorphism a b = Morphism {onGeomSimplex :: a -> FormalDegen b}
+
+type Morphism a b = UMorphism (GeomSimplex a) (GeomSimplex b)
+
+onSimplex :: UMorphism a b -> FormalDegen a -> FormalDegen b
+onSimplex (Morphism f) (NonDegen s) = f s
+onSimplex m (Degen i s) = degen (onSimplex m s) i
+
+instance Constrained.Semigroupoid UMorphism where
+  f2 . (Morphism f1) = Morphism $ \s -> f2 `onSimplex` f1 s
+
+instance Constrained.Category UMorphism where
+  id = Morphism $ \s -> NonDegen s
 
 -- Reid Barton:
 -- https://categorytheory.zulipchat.com/#narrow/stream/241590-theory.3A-

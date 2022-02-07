@@ -20,7 +20,6 @@ import Math.Algebra.ChainComplex.Tensor
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
-import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.NormalisedChains
 import Prelude hiding (id, return, (.))
 

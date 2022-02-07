@@ -9,7 +9,6 @@ module Math.Topology.SGrp.WbarDiscrete where
 import Math.Algebra.Group
 import qualified Math.Topology.SGrp as S
 import Math.Topology.SSet
-import Math.Topology.SSet.Morphism
 
 -- If a is a discrete group, things get much easier.
 newtype WbarDiscrete a = WbarDiscrete a

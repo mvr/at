@@ -11,7 +11,6 @@ import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Group
 import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SSet
-import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
 import Prelude hiding (return, (.))
 

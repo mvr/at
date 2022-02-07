@@ -6,7 +6,6 @@ import Test.Hspec
 import Prelude hiding (id, (.))
 
 import Math.Topology.SSet
-import Math.Topology.SSet.Morphism
 
 checkIdentities :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkIdentities a g = do

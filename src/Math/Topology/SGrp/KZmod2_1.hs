@@ -9,7 +9,6 @@ module Math.Topology.SGrp.KZmod2_1 where
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
-import Math.Topology.SSet.Morphism
 
 data KZmod2_1 = KZmod2_1
 

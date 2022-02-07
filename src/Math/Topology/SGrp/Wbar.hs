@@ -13,7 +13,6 @@ import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
-import Math.Topology.SSet.Morphism
 import Math.Topology.SSet.Product
 
 newtype Wbar g = Wbar g

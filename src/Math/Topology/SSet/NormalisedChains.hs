@@ -9,7 +9,6 @@ import Data.Coerce
 import Math.Algebra.ChainComplex as CC hiding (FiniteType, UMorphism (..))
 import qualified Math.Algebra.ChainComplex as CC (FiniteType (..), UMorphism (..))
 import Math.Topology.SSet
-import Math.Topology.SSet.Morphism
 import Prelude hiding (Functor, return)
 
 newtype NormalisedChains a = NormalisedChains a
