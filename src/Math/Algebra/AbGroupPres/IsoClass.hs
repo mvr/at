@@ -17,11 +17,11 @@ data IsoClass = IsoClass
 instance Show IsoClass where
   show IsoClass{..} =
     if rank > 0 || length torsion > 0 then
-      intercalate " + " $ (replicate (fromIntegral rank) "Z") ++
+      intercalate " ⊕ " $ (replicate (fromIntegral rank) "ℤ") ++
                           fmap (\(prime, power) -> if power == 1 then
-                                         "Z/" ++ show prime ++ "Z"
+                                         "ℤ/" ++ show prime
                                        else
-                                         "(Z/" ++ show prime ++ "Z)^" ++ show power
+                                         "ℤ/(" ++ show prime ++ "^" ++ show power ++ ")"
                                    ) torsion
     else
       "0"
