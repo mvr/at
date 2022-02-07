@@ -3,11 +3,11 @@
 -- | Tensor product of chain complexes of free Z-modules
 module Math.Algebra.ChainComplex.Tensor where
 
-import Control.Category.Constrained hiding (fmap)
+import Control.Category.Constrained hiding (fmap, return)
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
-import Prelude hiding (id, return, (.))
+import Prelude hiding (id, (.))
 
 data Tensor a b = Tensor a b
 
@@ -27,7 +27,10 @@ instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
     [(s, t) | i <- [0 .. n], s <- basis a i, t <- basis b (n - i)]
 
 tensorCombination :: Combination a -> Combination b -> Combination (a, b)
-tensorCombination = undefined
+tensorCombination (Combination as) (Combination bs) = Combination $ do
+  (c, a) <- as
+  (d, b) <- bs
+  return (c*d, (a,b))
 
 tensorMorphism ::
   (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
