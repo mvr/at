@@ -11,9 +11,9 @@ import Math.Algebra.ChainComplex
 import Prelude hiding (id, (.))
 
 data UReduction a b = Reduction
-  { reductionF :: UMorphism a b, -- degree 0
-    reductionG :: UMorphism b a, -- degree 0
-    reductionH :: UMorphism a a -- degree 1
+  { reductionF :: UMorphism Int a b, -- degree 0
+    reductionG :: UMorphism Int b a, -- degree 0
+    reductionH :: UMorphism Int a a -- degree 1
   }
 
 type Reduction a b = UReduction (Basis a) (Basis b)
@@ -25,7 +25,7 @@ instance Semigroupoid UReduction where
 instance Category UReduction where
   id = Reduction id id (morphismZeroOfDeg 1)
 
-isoToReduction :: (Eq a) => UMorphism a b -> UMorphism b a -> UReduction a b
+isoToReduction :: (Eq a) => UMorphism Int a b -> UMorphism Int b a -> UReduction a b
 isoToReduction f g = Reduction f g 0
 
 data Perturbed a = Perturbed a (Morphism a a)

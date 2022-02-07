@@ -16,10 +16,8 @@ newtype NormalisedChains a = NormalisedChains a
   deriving (Show)
 
 newtype BasisSimplex a = BasisSimplex a
-  deriving (Eq)
-
-instance Show a => Show (BasisSimplex a) where
-  show (BasisSimplex a) = show a
+  deriving Eq via a
+  deriving Show via a
 
 instance SSet a => CC.ChainComplex (NormalisedChains a) where
   type Basis (NormalisedChains a) = BasisSimplex (GeomSimplex a)
@@ -28,7 +26,7 @@ instance SSet a => CC.ChainComplex (NormalisedChains a) where
 
   degree (NormalisedChains a) = coerce $ geomSimplexDim a
 
-  diff (NormalisedChains a) = coerce $ CC.Morphism (-1) act
+  diff (NormalisedChains a) = CC.Morphism (-1) (coerce act)
     where
       act v = sum [Combination [(c, s)] | (c, NonDegen s) <- zip signs $ geomFaces a v]
       signs = cycle [1, -1]
@@ -37,7 +35,7 @@ instance FiniteType a => CC.FiniteType (NormalisedChains a) where
   dim (NormalisedChains a) i = length (geomBasis a i)
   basis (NormalisedChains a) i = coerce $ geomBasis a i
 
-instance Functor UMorphism CC.UMorphism BasisSimplex where
+instance Functor UMorphism (CC.UMorphism Int) BasisSimplex where
   fmap m = CC.Morphism 0 $ \(BasisSimplex s) -> case m `onGeomSimplex` s of
     NonDegen t -> return $ BasisSimplex t
     Degen _ _ -> Combination []

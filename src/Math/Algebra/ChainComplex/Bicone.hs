@@ -39,10 +39,10 @@ instance (FiniteType b, FiniteType c, FiniteType d) => FiniteType (Bicone b c d)
 
 -- Can all be defined without reference to the differentials, so we
 -- use UMorphism.
-projLeft :: (Eq b) => UMorphism (BiconeBasis b c d) b
+projLeft :: (Num deg, Eq b) => UMorphism deg (BiconeBasis b c d) b
 projLeft = Morphism 0 (\case FromB b -> return b; _ -> 0)
 
-projRight :: (Eq d) => UMorphism (BiconeBasis b c d) d
+projRight :: (Num deg, Eq d) => UMorphism deg (BiconeBasis b c d) d
 projRight = Morphism 0 (\case FromD d -> return d; _ -> 0)
 
 projRedLeft :: (Eq b, Eq c, Eq d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) b

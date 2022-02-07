@@ -7,24 +7,24 @@ import Math.Algebra.ChainComplex
 import Test.Hspec
 import Prelude hiding (id, (.))
 
-isEqOn :: (ChainComplex a, Eq (Basis a'), Show (Basis a'), Show (Basis a)) => Basis a -> Morphism a a' -> Morphism a a' -> Expectation
+isEqOn :: (Num d, Eq a', Show a', Show a) => a -> UMorphism d a a' -> UMorphism d a a' -> Expectation
 isEqOn b m m' =
   unless ((m `onBasis` b) == (m' `onBasis` b)) $
     expectationFailure $ "Images of " ++ show b ++ " are the non-equal " ++ show (m `onBasis` b) ++ " and " ++ show (m' `onBasis` b)
 
-isIdOn :: (ChainComplex a, Show (Basis a)) => Basis a -> Morphism a a -> Expectation
+isIdOn :: (Num d, Eq a, Show a) => a -> UMorphism d a a -> Expectation
 isIdOn b m = isEqOn b m id
 
-isZeroOn :: (ChainComplex a, Eq (Basis a'), Show (Basis a'), Show (Basis a)) => Basis a -> Morphism a a' -> Expectation
+isZeroOn :: (Num d, Eq a', Show a', Show a) => a -> UMorphism d a a' -> Expectation
 isZeroOn b m = isEqOn b m 0
 
-isEqOnAll :: (ChainComplex a, Eq (Basis a'), Show (Basis a'), Show (Basis a)) => (Morphism a a', Morphism a a') -> [Basis a] -> Expectation
+isEqOnAll :: (Num d, Eq a', Show a', Show a) => (UMorphism d a a', UMorphism d a a') -> [a] -> Expectation
 isEqOnAll (m, m') bs = forM_ bs (\b -> isEqOn b m m')
 
-isIdOnAll :: (ChainComplex a, Show (Basis a)) => Morphism a a -> [Basis a] -> Expectation
+isIdOnAll :: (Num d, Eq a, Show a) => UMorphism d a a -> [a] -> Expectation
 isIdOnAll m bs = forM_ bs (\b -> isIdOn b m)
 
-isZeroOnAll :: (ChainComplex a, Eq (Basis a'), Show (Basis a'), Show (Basis a)) => Morphism a a' -> [Basis a] -> Expectation
+isZeroOnAll :: (Num d, Eq a', Show a', Show a) => UMorphism d a a' -> [a] -> Expectation
 isZeroOnAll m bs = forM_ bs (\b -> isZeroOn b m)
 
 checkChainCondition :: (ChainComplex a, Show (Basis a)) => a -> String -> [Basis a] -> Spec
@@ -47,8 +47,8 @@ checkIso ::
   Int ->
   a ->
   b ->
-  UMorphism (Basis a) (Basis b) ->
-  UMorphism (Basis b) (Basis a) ->
+  Morphism a b ->
+  Morphism b a ->
   Expectation
 checkIso n a b m m' = do
   let as = [0 .. n] >>= basis a

@@ -50,13 +50,13 @@ instance Algebra a => Bicomplex (Bar a) where
 
   bidegree (Bar a) (BarBibasis bs) = (length bs, sum (degree a <$> bs))
 
-  vdiff (Bar a) = Bimorphism (0, -1) (\(BarBibasis b) -> fmap BarBibasis (go b))
+  vdiff (Bar a) = Morphism (Bidegree (0, -1)) (coerce go)
     where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
       go (b : bs) = fmap (: bs) (diff a `onBasis` b) + kozulRule (degree a b + 1) (fmap (b :) (go bs))
 
-  hdiff (Bar a) = Bimorphism (-1, 0) (\(BarBibasis b) -> fmap BarBibasis (go b))
+  hdiff (Bar a) = Morphism (Bidegree (-1, 0)) (coerce go)
     where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0

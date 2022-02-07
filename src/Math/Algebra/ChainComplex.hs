@@ -113,38 +113,38 @@ instance (Eq b) => Num (Combination b) where
 -- NOTE: I don't think we ever use a variable morphism degree, so the
 -- degree could be lifted to the type level. Then again I think
 -- type-level Ints are rough compared to Nats.
-data UMorphism a b = Morphism
-  { morphismDegree :: Int,
+data UMorphism d a b = Morphism
+  { morphismDegree :: d,
     onBasis :: a -> Combination b
   }
 
-type Morphism a b = UMorphism (Basis a) (Basis b)
+type Morphism a b = UMorphism Int (Basis a) (Basis b)
 
-onComb :: (Eq b) => UMorphism a b -> Combination a -> Combination b
+onComb :: (Eq b) => UMorphism d a b -> Combination a -> Combination b
 onComb m c = join $ fmap (m `onBasis`) c
 
-morphismZeroOfDeg :: Int -> UMorphism a b
+morphismZeroOfDeg :: d -> UMorphism d a b
 morphismZeroOfDeg d = Morphism d (const (Combination []))
 
-morphismZero :: UMorphism a b
+morphismZero :: Num d => UMorphism d a b
 morphismZero = morphismZeroOfDeg 0
 
-fmapBasis :: (a -> b) -> UMorphism a b
+fmapBasis :: Num d => (a -> b) -> UMorphism d a b
 fmapBasis f = Morphism 0 (singleComb . f)
 
-instance Show (UMorphism a b) where
+instance Show d => Show (UMorphism d a b) where
   -- TODO
-  show (Morphism d f) = "Morphism " ++ show d
+  show (Morphism d f) = "Morphism of degree " ++ show d
 
-instance Constrained.Semigroupoid UMorphism where
-  type Object UMorphism a = Eq a
+instance Num d => Constrained.Semigroupoid (UMorphism d) where
+  type Object (UMorphism d) a = Eq a
 
   (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (join . fmap f2 . f1)
 
-instance Constrained.Category UMorphism where
+instance Num d => Constrained.Category (UMorphism d) where
   id = Morphism 0 (\x -> Combination [(1, x)])
 
-instance Eq b => Num (UMorphism a b) where
+instance (Num d, Eq b) => Num (UMorphism d a b) where
   fromInteger 0 = morphismZero
   fromInteger _ = error "Morphism: fromInteger"
 
