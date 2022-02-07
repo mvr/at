@@ -281,18 +281,18 @@ Computational Mathematics*. 21, 4 (2021), 1023–1074.</span>
 <div id="ref-rrss:em-spectral-sequence" class="csl-entry">
 
 <span class="csl-left-margin">\[3\] </span><span
-class="csl-right-inline">Romero, A. et al. 2020. [A new Kenzo module for
-computing the Eilenberg-Moore spectral
-sequence](https://doi.org/10.1145/3427218.3427225). *ACM Communications
-in Computer Algebra*. 54, 2 (2020), 57–60.</span>
+class="csl-right-inline">Romero, A., Rubio, J., Sergeraert, F. and
+Szymik, M. 2020. [A new Kenzo module for computing the Eilenberg-Moore
+spectral sequence](https://doi.org/10.1145/3427218.3427225). *ACM
+Communications in Computer Algebra*. 54, 2 (2020), 57–60.</span>
 
 </div>
 
 <div id="ref-rrs:fibrations-implementation" class="csl-entry">
 
 <span class="csl-left-margin">\[4\] </span><span
-class="csl-right-inline">Romero, A. et al. 2019. [An implementation of
-effective homotopy of
+class="csl-right-inline">Romero, A., Rubio, J. and Sergeraert, F. 2019.
+[An implementation of effective homotopy of
 fibrations](https://doi.org/10.1016/j.jsc.2018.08.001). *Journal of
 Symbolic Computation*. 94, (2019), 149–172.</span>
 
@@ -367,8 +367,9 @@ Computational Geometry*. 53, 1 (2015), 1–15.</span>
 <div id="ref-ckmsvw:maps-into-sphere" class="csl-entry">
 
 <span class="csl-left-margin">\[12\] </span><span
-class="csl-right-inline">Čadek, M. et al. 2014. [Computing all maps into
-a sphere](https://doi.org/10.1145/2597629). *Journal of the ACM*. 61, 3
+class="csl-right-inline">Čadek, M., Krčál, M., Matoušek, J., Sergeraert,
+F., Vokřínek, L. and Wagner, U. 2014. [Computing all maps into a
+sphere](https://doi.org/10.1145/2597629). *Journal of the ACM*. 61, 3
 (2014), Art. 17, 44.</span>
 
 </div>
@@ -376,8 +377,9 @@ a sphere](https://doi.org/10.1145/2597629). *Journal of the ACM*. 61, 3
 <div id="ref-ckmvw:poly-homotopy-groups" class="csl-entry">
 
 <span class="csl-left-margin">\[13\] </span><span
-class="csl-right-inline">Čadek, M. et al. 2014. [Polynomial-time
-computation of homotopy groups and Postnikov systems in fixed
+class="csl-right-inline">Čadek, M., Krčál, M., Matoušek, J., Vokřínek,
+L. and Wagner, U. 2014. [Polynomial-time computation of homotopy groups
+and Postnikov systems in fixed
 dimension](https://doi.org/10.1137/120899029). *SIAM Journal on
 Computing*. 43, 5 (2014), 1728–1780.</span>
 
@@ -406,8 +408,8 @@ topology](https://www-fourier.ujf-grenoble.fr/~sergerar/Talks/13-04-Tokyo.pdf).<
 <div id="ref-kms:poly-em-spaces" class="csl-entry">
 
 <span class="csl-left-margin">\[16\] </span><span
-class="csl-right-inline">Krčál, M. et al. 2013. [Polynomial-time
-homology for simplicial Eilenberg-MacLane
+class="csl-right-inline">Krčál, M., Matoušek, J. and Sergeraert, F.
+2013. [Polynomial-time homology for simplicial Eilenberg-MacLane
 spaces](https://doi.org/10.1007/s10208-013-9159-7). *Foundations of
 Computational Mathematics. The Journal of the Society for the
 Foundations of Computational Mathematics*. 13, 6 (2013), 935–963.</span>
@@ -494,8 +496,8 @@ systems](https://www.unirioja.es/cu/joheras/pushout/Doc/pushout.pdf).</span>
 <div id="ref-real:twisted-ez" class="csl-entry">
 
 <span class="csl-left-margin">\[25\] </span><span
-class="csl-right-inline">Álvarez, V. et al. 2010. [Cartan’s
-constructions and the twisted Eilenberg-Zilber
+class="csl-right-inline">Álvarez, V., Armario, J.A., Frau, M.D. and
+Real, P. 2010. [Cartan’s constructions and the twisted Eilenberg-Zilber
 theorem](https://doi.org/10.1515/gmj.2010.006). *Georgian Mathematical
 Journal*. 17, 1 (2010), 13–23.</span>
 
@@ -504,9 +506,9 @@ Journal*. 17, 1 (2010), 13–23.</span>
 <div id="ref-brs:a-infty" class="csl-entry">
 
 <span class="csl-left-margin">\[26\] </span><span
-class="csl-right-inline">Berciano Alcaraz, A. et al. 2010. A case study
-of *A*<sub>∞</sub>-structure. *Georgian Mathematical Journal*. 17, 1
-(2010), 57–77.</span>
+class="csl-right-inline">Berciano Alcaraz, A., Rubio, J. and Sergeraert,
+F. 2010. A case study of *A*<sub>∞</sub>-structure. *Georgian
+Mathematical Journal*. 17, 1 (2010), 57–77.</span>
 
 </div>
 
@@ -523,8 +525,8 @@ aplicaciones* (2010), 152–156.</span>
 <div id="ref-hprr:integrating-sources" class="csl-entry">
 
 <span class="csl-left-margin">\[28\] </span><span
-class="csl-right-inline">Heras, J. et al. 2010. [Integrating multiple
-sources to answer questions in algebraic
+class="csl-right-inline">Heras, J., Pascual, V., Romero, A. and Rubio,
+J. 2010. [Integrating multiple sources to answer questions in algebraic
 topology](https://arxiv.org/abs/1005.0749). *Proceedings of the 10th
 ASIC and 9th MKM international conference, and 17th calculemus
 conference on intelligent computer mathematics* (Paris, France, 2010),
@@ -557,8 +559,9 @@ Algebra in Engineering, Communication and Computing*. 21, 3 (2010),
 <div id="ref-real:algebra-structures" class="csl-entry">
 
 <span class="csl-left-margin">\[31\] </span><span
-class="csl-right-inline">Álvarez, V. et al. 2009. [Algebra structures on
-the comparison of the reduced bar construction and the reduced
+class="csl-right-inline">Álvarez, V., Armario, J.A., Frau, M.D. and
+Real, P. 2009. [Algebra structures on the comparison of the reduced bar
+construction and the reduced
 *W*-construction](https://doi.org/10.1080/00927870902747662).
 *Communications in Algebra*. 37, 10 (2009), 3643–3665.</span>
 
@@ -567,17 +570,26 @@ the comparison of the reduced bar construction and the reduced
 <div id="ref-rer:classifying-space" class="csl-entry">
 
 <span class="csl-left-margin">\[32\] </span><span
-class="csl-right-inline">Romero, A. et al. 2009. [Interoperating between
-computer algebra systems: Computing homology of groups with Kenzo and
-GAP](https://doi.org/10.1145/1576702.1576744). *ISSAC 2009—Proceedings
-of the 2009 International Symposium on Symbolic and Algebraic
-Computation* (2009), 303–310.</span>
+class="csl-right-inline">Romero, A., Ellis, G. and Rubio, J. 2009.
+[Interoperating between computer algebra systems: Computing homology of
+groups with Kenzo and GAP](https://doi.org/10.1145/1576702.1576744).
+*ISSAC 2009—Proceedings of the 2009 International Symposium on Symbolic
+and Algebraic Computation* (2009), 303–310.</span>
+
+</div>
+
+<div id="ref-sergeraert:cp-spaces" class="csl-entry">
+
+<span class="csl-left-margin">\[33\] </span><span
+class="csl-right-inline">Sergeraert, F. 2009. [Triangulations of complex
+projective
+spaces](https://www-fourier.ujf-grenoble.fr/~sergerar/Papers/Mirian.pdf).</span>
 
 </div>
 
 <div id="ref-thomas:wbar" class="csl-entry">
 
-<span class="csl-left-margin">\[33\] </span><span
+<span class="csl-left-margin">\[34\] </span><span
 class="csl-right-inline">Thomas, S. 2008. [The functors *W̄* and
 Diag ∘ Nerve are simplicially homotopy
 equivalent](https://arxiv.org/abs/0804.1082). *Journal of Homotopy and
@@ -587,26 +599,47 @@ Related Structures*. 3, 1 (2008), 359–378.</span>
 
 <div id="ref-real:reducing-costs" class="csl-entry">
 
-<span class="csl-left-margin">\[34\] </span><span
-class="csl-right-inline">Berciano, A. et al. 2006. [Reducing
-computational costs in the basic perturbation
+<span class="csl-left-margin">\[35\] </span><span
+class="csl-right-inline">Berciano, A., Jiménez, M.J. and Real, P. 2006.
+[Reducing computational costs in the basic perturbation
 lemma](https://doi.org/10.1007/11870814_3). *Computer algebra in
-scientific computing*. Springer, Berlin. 33–48.</span>
+scientific computing*. V.G. Ganzha, E.W. Mayr, and E.V. Vorozhtsov, eds.
+Springer, Berlin. 33–48.</span>
 
 </div>
 
 <div id="ref-rrs:computing-spectral-sequences" class="csl-entry">
 
-<span class="csl-left-margin">\[35\] </span><span
-class="csl-right-inline">Romero, A. et al. 2006. [Computing spectral
+<span class="csl-left-margin">\[36\] </span><span
+class="csl-right-inline">Romero, A., Rubio, J. and Sergeraert, F. 2006.
+[Computing spectral
 sequences](https://doi.org/10.1016/j.jsc.2006.06.002). *Journal of
 Symbolic Computation*. 41, 10 (2006), 1059–1079.</span>
 
 </div>
 
+<div id="ref-gr:cohomology-ops" class="csl-entry">
+
+<span class="csl-left-margin">\[37\] </span><span
+class="csl-right-inline">González-Díaz, R. and Real, P. 2003.
+[Computation of cohomology operations of finite simplicial
+complexes](https://doi.org/10.4310/HHA.2003.v5.n2.a4). *Homology
+Homotopy Appl.* 83–93.</span>
+
+</div>
+
+<div id="ref-clement:thesis" class="csl-entry">
+
+<span class="csl-left-margin">\[38\] </span><span
+class="csl-right-inline">Clément, A. 2002. *[Integral cohomology of
+finite Postnikov towers](https://doc.rero.ch/record/482)*. Université de
+Lausanne.</span>
+
+</div>
+
 <div id="ref-real:hpt" class="csl-entry">
 
-<span class="csl-left-margin">\[36\] </span><span
+<span class="csl-left-margin">\[39\] </span><span
 class="csl-right-inline">Real, P. 2000. [Homological perturbation theory
 and associativity](https://doi.org/10.4310/hha.2000.v2.n1.a5).
 *Homology, Homotopy and Applications*. 2, (2000), 51–88.</span>
@@ -615,7 +648,7 @@ and associativity](https://doi.org/10.4310/hha.2000.v2.n1.a5).
 
 <div id="ref-dousson:thesis" class="csl-entry">
 
-<span class="csl-left-margin">\[37\] </span><span
+<span class="csl-left-margin">\[40\] </span><span
 class="csl-right-inline">Dousson, X. 1999. *[Homologie effective des
 classifiants et calculs de groupes
 d’homotopie](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/Dousson-Xavier.pdf)*.
@@ -623,11 +656,22 @@ l’Université Joseph Fourier.</span>
 
 </div>
 
+<div id="ref-goerss-jardine" class="csl-entry">
+
+<span class="csl-left-margin">\[41\] </span><span
+class="csl-right-inline">Goerss, P.G. and Jardine, J.F. 1999.
+*[Simplicial homotopy
+theory](https://doi.org/10.1007/978-3-0348-8707-6)*. Birkhäuser Verlag,
+Basel.</span>
+
+</div>
+
 <div id="ref-at-reductions" class="csl-entry">
 
-<span class="csl-left-margin">\[38\] </span><span
-class="csl-right-inline">Hurado, P.R. et al. 1999. [Algorithms in
-algebraic topology and homological algebra: The problem of the
+<span class="csl-left-margin">\[42\] </span><span
+class="csl-right-inline">Hurado, P.R., Álvarez, V., Armario, J.A. and
+González-Díaz, R. 1999. [Algorithms in algebraic topology and
+homological algebra: The problem of the
 complexity](https://doi.org/10.1023/A:1013544506151). *Zapiski Nauchnykh
 Seminarov POMI*. 258, (1999), 161–184, 358.</span>
 
@@ -635,9 +679,9 @@ Seminarov POMI*. 258, (1999), 161–184, 358.</span>
 
 <div id="ref-kendoc" class="csl-entry">
 
-<span class="csl-left-margin">\[39\] </span><span
-class="csl-right-inline">Rubio Garcia, J. et al. 1999. *[Kenzo: A
-symbolic software for effective homology
+<span class="csl-left-margin">\[43\] </span><span
+class="csl-right-inline">Rubio Garcia, J., Sergeraert, F. and Siret, Y.
+1999. *[Kenzo: A symbolic software for effective homology
 computation](https://github.com/miguelmarco/kenzo/tree/master/doc/doc_src)*.
 Institut Fourier.</span>
 
@@ -645,7 +689,7 @@ Institut Fourier.</span>
 
 <div id="ref-forman:morse" class="csl-entry">
 
-<span class="csl-left-margin">\[40\] </span><span
+<span class="csl-left-margin">\[44\] </span><span
 class="csl-right-inline">Forman, R. 1998. [Morse theory for cell
 complexes](https://doi.org/10.1006/aima.1997.1650). *Advances in
 Mathematics*. 134, 1 (1998), 90–145.</span>
@@ -654,25 +698,44 @@ Mathematics*. 134, 1 (1998), 90–145.</span>
 
 <div id="ref-real:homotopy-groups" class="csl-entry">
 
-<span class="csl-left-margin">\[41\] </span><span
+<span class="csl-left-margin">\[45\] </span><span
 class="csl-right-inline">Real, P. 1996. [An algorithm computing homotopy
-groups](https://doi.org/10.1016/S0378-4754(96)00021-3). *Mathematics and
-Computers in Simulation*. 461–465.</span>
+groups](https://doi.org/10.1016/S0378-4754(96)00021-3). *Math. Comput.
+Simulation*. 42, 4-6 (1996), 461–465.</span>
+
+</div>
+
+<div id="ref-real:steenrod-squares" class="csl-entry">
+
+<span class="csl-left-margin">\[46\] </span><span
+class="csl-right-inline">Real, P. 1996. [On the computability of the
+Steenrod squares](https://doi.org/10.1007/BF02955020). *Ann. Univ.
+Ferrara Sez. VII (N.S.)*. 42, (1996), 57–63 (1998).</span>
 
 </div>
 
 <div id="ref-morace:thesis" class="csl-entry">
 
-<span class="csl-left-margin">\[42\] </span><span
+<span class="csl-left-margin">\[47\] </span><span
 class="csl-right-inline">Morace, F. 1994. *[Cochaînes de brown et
 transformation d’eilenberg-mac lane: Réécriture en dimension deux et
 homologie](http://www.theses.fr/1994PA077273)*. Paris 7.</span>
 
 </div>
 
+<div id="ref-morace-proute:twisting" class="csl-entry">
+
+<span class="csl-left-margin">\[48\] </span><span
+class="csl-right-inline">Morace, F. and Prouté, A. 1994. [Brown’s
+natural twisting cochain and the Eilenberg-Mac Lane
+transformation](https://doi.org/10.1016/0022-4049(94)90040-X). *J. Pure
+Appl. Algebra*. 97, 1 (1994), 81–89.</span>
+
+</div>
+
 <div id="ref-real:thesis" class="csl-entry">
 
-<span class="csl-left-margin">\[43\] </span><span
+<span class="csl-left-margin">\[49\] </span><span
 class="csl-right-inline">Real Jurado, P. 1993. *[Algoritmos de cálculo
 de homología efectiva de los espacios
 clasificantes](https://idus.us.es/handle/11441/15908)*. Universidad de
@@ -682,18 +745,18 @@ Sevilla, Departamento de Geometría y Topología.</span>
 
 <div id="ref-rs:locally-effective" class="csl-entry">
 
-<span class="csl-left-margin">\[44\] </span><span
+<span class="csl-left-margin">\[50\] </span><span
 class="csl-right-inline">Rubio, J. and Sergeraert, F. 1993. [Locally
 effective objects and algebraic
 topology](https://doi.org/10.1007/978-1-4612-2752-6_17). *Computational
-algebraic geometry (Nice, 1992)*. Birkhäuser Boston, Boston, MA.
-235–251.</span>
+algebraic geometry (Nice, 1992)*. F. Eyssette and A. Galligo, eds.
+Birkhäuser Boston, Boston, MA. 235–251.</span>
 
 </div>
 
 <div id="ref-lambe-stasheff:perturbation" class="csl-entry">
 
-<span class="csl-left-margin">\[45\] </span><span
+<span class="csl-left-margin">\[51\] </span><span
 class="csl-right-inline">Lambe, L. and Stasheff, J. 1987. [Applications
 of perturbation theory to iterated
 fibrations](https://doi.org/10.1007/BF01165893). *Manuscripta
@@ -703,7 +766,7 @@ Mathematica*. 58, 3 (1987), 363–376.</span>
 
 <div id="ref-sergeraert:effective-1" class="csl-entry">
 
-<span class="csl-left-margin">\[46\] </span><span
+<span class="csl-left-margin">\[52\] </span><span
 class="csl-right-inline">Sergeraert, F. 1987. Homologie effective. I.
 *Comptes Rendus de l’Académie des Sciences - Series I - Mathematics*.
 304, 11 (1987), 279–282.</span>
@@ -712,7 +775,7 @@ class="csl-right-inline">Sergeraert, F. 1987. Homologie effective. I.
 
 <div id="ref-sergeraert:effective-2" class="csl-entry">
 
-<span class="csl-left-margin">\[47\] </span><span
+<span class="csl-left-margin">\[53\] </span><span
 class="csl-right-inline">Sergeraert, F. 1987. Homologie effective. II.
 *Comptes Rendus de l’Académie des Sciences - Series I - Mathematics*.
 304, 12 (1987), 319–321.</span>
