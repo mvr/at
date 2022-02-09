@@ -2,13 +2,14 @@
 
 -- | Classifying spaces for simplicial groups
 -- Wbar : sGrp -> 0-reduced sSet_*
--- See https://ncatlab.org/nlab/show/simplicial+classifying+space
+-- See <https://ncatlab.org/nlab/show/simplicial+classifying+space>
 -- In the Kenzo source, this is spread over
 -- classifying-spaces.lisp, classifying-spaces-dvf.lisp, cl-space-efhm.lisp
 -- Also anromero/resolutions.lisp in the fork
 module Math.Topology.SGrp.Wbar where
 
 import Data.List (intersect)
+import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
@@ -105,10 +106,23 @@ instance (SAb g) => SAb (Wbar g)
 -- Other simplicial groups will need the more complicated method
 -- described in serre.lisp and cl-space-efhm.lisp
 
+upshift :: FormalDegen a -> FormalDegen a
+upshift (NonDegen s) = NonDegen s
+upshift (Degen 0 s) = s
+upshift (Degen i s) = Degen (i - 1) (upshift s)
 
 instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
-  vf = undefined
+  vf (Wbar g) (WbarSimplex []) = Critical
+  vf (Wbar g) (WbarSimplex (s : ss)) =
+    let nss = normalise g ss
+     in case vf (Product (Wbar g) g) (nss, s) of
+          Source (ts', t') i -> Source (WbarSimplex (t' : unnormalise g ts')) (flipIncidence i)
+          Target (ss', s') i -> Target (WbarSimplex (s' : unnormalise g ss')) (flipIncidence i)
+          Critical -> case vf (Wbar g) (underlyingGeom nss) of
+            Source nss' i -> Source (WbarSimplex (degen s 0 : unnormalise g (downshift (fmap (const nss') nss) ))) (flipIncidence i)
+            Target ntt' i -> Target (WbarSimplex (upshift s : unnormalise g (upshift   (fmap (const ntt') nss) ))) (flipIncidence i)
+            Critical -> Critical
 
-instance (SGrp g, ZeroReduced g, FiniteType g) => Effective (Wbar g)
+-- instance (SGrp g, ZeroReduced g, FiniteType g) => Effective (Wbar g)
 
 --   type Model (Wbar g) = Bar (Model g)

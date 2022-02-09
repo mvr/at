@@ -20,6 +20,10 @@ incidenceCoef :: Num p => Incidence -> p
 incidenceCoef Pos = 1
 incidenceCoef Neg = -1
 
+flipIncidence :: Incidence -> Incidence
+flipIncidence Pos = Neg
+flipIncidence Neg = Pos
+
 data Status a
   = Source a Incidence
   | Target a Incidence
