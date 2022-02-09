@@ -16,11 +16,11 @@ import Math.Topology.SSet.Effective
 import Math.Topology.SSet.Product
 
 newtype Wbar g = Wbar g
-  deriving Show
+  deriving (Show)
 
 newtype WbarSimplex a = WbarSimplex a
-  deriving Show via a
-  deriving Functor
+  deriving (Show) via a
+  deriving (Functor)
 
 deriving instance (Eq g) => Eq (WbarSimplex g)
 
@@ -28,47 +28,21 @@ deriving instance (Eq g) => Eq (WbarSimplex g)
 -- 1. Create a bit field marking which positions are the unit
 -- 2. Intersect this with the shifted degeneracy operators for each entry
 -- 3. Delete all the surviving units and bit-extract every degeneracy operator appropriately
-filterCandidates :: (Pointed g) => g -> [Simplex g] -> [Int] -> Int -> [Int]
-filterCandidates g ss [] j = []
-filterCandidates g [] cs@(ct : crest) j = undefined -- can't happen
-filterCandidates g ss@(st : srest) cs@(ct : crest) j
-  | j > ct = cs
-  | j `elem` cs =
-    if isUnit g st
-      then ct : filterCandidates g srest crest (j + 1)
-      else filterCandidates g srest crest (j + 1)
-  | otherwise = filterCandidates g srest (cs `intersect` fmap (+ j) (degenList st)) (j + 1)
-
-downshiftList :: [Int] -> [Int]
-downshiftList [] = []
-downshiftList [0] = []
-downshiftList (i : is) = (i - 1) : downshiftList is
-
-extractDegens :: g -> [Simplex g] -> [Int] -> [Simplex g]
-extractDegens g s [] = s
-extractDegens g [] cs = []
-extractDegens g (s : u : ss) cs
-  | last cs == 0 = unDegen s cs : extractDegens g ss (downshiftList cs)
-extractDegens g (s : ss) cs
-  | otherwise = unDegen s cs : extractDegens g ss (downshiftList cs)
 
 normalise :: (Pointed g) => g -> [Simplex g] -> Simplex (Wbar g)
 normalise g [] = NonDegen $ WbarSimplex []
-normalise g (s : ss)
-  | isUnit g s = degen (normalise g ss) 0
-  | otherwise =
-    let candidates = degenList s
-        successes = filterCandidates g ss candidates 0
-     in foldl degen (NonDegen $ WbarSimplex $ extractDegens g (s : ss) successes) (fmap (1 +) successes)
+normalise g (s : ss) | isUnit g s = degen (normalise g ss) 0
+normalise g (s : ss) = downshift $ fmap (\(s, t) -> WbarSimplex (s : unnormalise g t)) p
+  where p = prodNormalise (s, normalise g ss)
 
-insertUnit :: (Pointed g) => g -> Int -> Int -> [Simplex g] -> [Simplex g]
-insertUnit g j 0 ss = constantAt (basepoint g) (length ss) : ss
-insertUnit g j i (s : ss) = degen s j : insertUnit g j (i -1) ss
-insertUnit g j i _ = error "insertUnit: impossible"
+insertUnit :: (Pointed g) => g -> Int -> [Simplex g] -> [Simplex g]
+insertUnit g 0 ss = constantAt (basepoint g) (length ss) : ss
+insertUnit g i (s : ss) = degen s (i - 1) : insertUnit g (i - 1) ss
+insertUnit g i _ = error "insertUnit: impossible"
 
 unnormalise :: (Pointed g) => g -> Simplex (Wbar g) -> [Simplex g]
 unnormalise g (NonDegen (WbarSimplex gs)) = gs
-unnormalise g (Degen i s) = insertUnit g i i (unnormalise g s)
+unnormalise g (Degen i s) = insertUnit g i (unnormalise g s)
 
 instance (SGrp g) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
