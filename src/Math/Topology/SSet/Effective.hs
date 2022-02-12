@@ -10,6 +10,7 @@ import Math.Topology.SSet.NormalisedChains
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.AbGroupPres
+import Math.Algebra.Combination
 
 class (SSet a, CC.ChainComplex (Model a)) => Effective a where
   type Model a

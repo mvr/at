@@ -4,6 +4,7 @@
 module Math.Algebra.ChainComplex.Tensor where
 
 import Control.Category.Constrained hiding (fmap, return)
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction

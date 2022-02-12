@@ -28,6 +28,7 @@
 module Math.Algebra.ChainComplex.Algebra.Bar where
 
 import Data.Coerce
+import Math.Algebra.Combination
 import Math.Algebra.Bicomplex hiding (FiniteType)
 import qualified Math.Algebra.Bicomplex as Bi (FiniteType)
 import Math.Algebra.ChainComplex

@@ -5,6 +5,7 @@
 module Math.Algebra.ChainComplex.DVF where
 
 import Data.Coerce
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.ChainComplex.Algebra

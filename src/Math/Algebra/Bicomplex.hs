@@ -4,6 +4,7 @@
 -- convention that the squares in the complex *anticommute*.
 module Math.Algebra.Bicomplex where
 
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex hiding (FiniteType)
 import qualified Math.Algebra.ChainComplex as CC (FiniteType)
 import Prelude hiding (id, return, (.))

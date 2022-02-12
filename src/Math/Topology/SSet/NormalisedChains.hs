@@ -6,6 +6,7 @@ module Math.Topology.SSet.NormalisedChains where
 
 import Control.Category.Constrained
 import Data.Coerce
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex as CC hiding (FiniteType, UMorphism (..))
 import qualified Math.Algebra.ChainComplex as CC (FiniteType (..), UMorphism (..))
 import Math.Topology.SSet
