@@ -102,7 +102,7 @@ reducePresentation m =
    in stripZeroes (li', l', d')
 
 fromPresentation :: Matrix Integer -> AbGroupPres
-fromPresentation m = AbGroupPres m d li l
+fromPresentation m = AbGroupPres m (M.forceMatrix d) (M.forceMatrix li) (M.forceMatrix l)
   where
     (li, l, d) = reducePresentation m
 
