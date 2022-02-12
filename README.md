@@ -75,16 +75,17 @@ Plan
 - Definitions
   - [x] Chain Complex
   - [x] Bicomplex
+    - [x] Tot
   - [x] Reduction
     - [x] Perturbation
   - [x] Strong Equivalence
-    - [x] Composition via Span
+    - [x] Composition via span
 - Constructions
   - [x] Tensor
     - [x] Functoriality
   - [x] 'Bicone' (specialised pushout for surjections)
-    - [x] Tot
   - [x] Bar
+    - [ ] Commutative algebra structure
     - [ ] Functoriality
   - [ ] Cobar
     - [ ] Of 1-reduced
@@ -105,9 +106,10 @@ Plan
   - [ ] Kan Structure on Chains of Groups
 - Finite Examples
   - [x] Spheres
-    - [ ] Treat S^1 separately (not 1-reduced)
+    - [ ] Treat `S¹` separately (not 1-reduced)
   - [x] Moore Spaces
   - [ ] Projective Spaces
+  - [ ] Lens Spaces
 - Eilenberg-MacLane Spaces
   - [x] [`K(ℤ,1)`](#ref-kendoc)
   - [x] `K(ℤ/2,1)` (Can be made particularly efficient)
@@ -134,7 +136,7 @@ Plan
 
 #### Effective Homology
 - Classifying Spaces
-  - [x] Direct Reduction of `K(ℤ,1)` to `S^1`
+  - [x] Direct Reduction of `K(ℤ,1)` to `S¹`
   - [ ] [Of 0-reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
   - [ ] Of General sGrps
 - Products
@@ -160,7 +162,7 @@ Plan
     - [x] [Naive but easy](#ref-kms%3Apoly-em-spaces)
     - [ ] [Polynomial time but complicated](#ref-kms%3Apoly-em-spaces)
   - [x] `K(ℤ/n,1)`?
-  - [ ] Classifying Spaces for 0-reduced sAb
+  - [x] Classifying Spaces for 0-reduced sAb
 - Homotopy Groups
   - [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
   - [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
@@ -171,8 +173,10 @@ Plan
 - [ ] Pretty-printing for everything
 - [ ] Docs for everything
 - [ ] Move this list to Github issues
-- [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex,
-      Morphism into SSet
+- [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex
+- [ ] Use bit operations eg from
+      [bits-extra](https://github.com/haskell-works/bits-extra) for
+      degeneracy operators.
 - [ ] Short-circuits: e.g. composing with zero/id for
       morphism/reduction/equivalence
 - [ ] Make sure things are being aggressively inlined
@@ -183,8 +187,9 @@ Plan
       appear to be [LinBox](https://linalg.org/) or
       [FLINT](http://flintlib.org/). The former appears to support
       sparse matrices better
-- [ ] Check homology of K(G,n) calculations against known results
+- [ ] Check homology of `K(G,n)` calculations against known results
       <!-- eg [Clement's thesis](#ref-clement%3Athesis) -->
+- [ ] Add methods to produce representatives of homology classes
 
 Notes
 -----
@@ -207,8 +212,7 @@ Notes
   bisimplicial set' functor. But it would be difficult to describe the
   total functor on bisimplicial spaces algorithmically, because its
   definition involves the equaliser of certain face maps. So it only
-  makes sense to try and implement consider bicomplexes and not
-  bisimplicial sets.
+  makes sense to implement bicomplexes and not bisimplicial sets.
 - Running Kenzo with SBCL:
   ```
   > rlwrap sbcl
@@ -321,7 +325,7 @@ Symbolic Computation*. 94, (2019), 149–172.</span>
 
 <span class="csl-left-margin">\[5\] </span><span
 class="csl-right-inline">Romero, A. and Sergeraert, F. 2019. [The
-eilenberg-zilber theorem via discrete vector
+Eilenberg-Zilber theorem via discrete vector
 fields](https://www-fourier.ujf-grenoble.fr/~sergerar/Papers/EZ-submitted.pdf).</span>
 
 </div>
@@ -507,7 +511,7 @@ Ecole Polytechnique X.</span>
 
 <span class="csl-left-margin">\[24\] </span><span
 class="csl-right-inline">Heras, J. 2010. [Pushout construction for the
-kenzo
+Kenzo
 systems](https://www.unirioja.es/cu/joheras/pushout/Doc/pushout.pdf).</span>
 
 </div>
@@ -737,7 +741,7 @@ Ferrara Sez. VII (N.S.)*. 42, (1996), 57–63 (1998).</span>
 
 <span class="csl-left-margin">\[47\] </span><span
 class="csl-right-inline">Morace, F. 1994. *[Cochaînes de brown et
-transformation d’eilenberg-mac lane: Réécriture en dimension deux et
+transformation d’Eilenberg-Mac Lane: Réécriture en dimension deux et
 homologie](http://www.theses.fr/1994PA077273)*. Paris 7.</span>
 
 </div>
