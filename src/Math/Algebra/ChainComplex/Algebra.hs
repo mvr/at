@@ -9,3 +9,5 @@ class ChainComplex a => Algebra a where
   muMor :: a -> Morphism (Tensor a a) a
 
 -- Can transfer algebra structure across reductions
+class Algebra a => CommAlgebra a
+

@@ -41,6 +41,8 @@ instance SGrp g => Algebra (NormalisedChains g) where
   unitMor (NormalisedChains g) = CC.Morphism 0 (const (return (BasisSimplex (basepoint g))))
   muMor (NormalisedChains g) = cfmap (prodMor g) . reductionG (ezReduction (Product g g))
 
+instance SAb g => CommAlgebra (NormalisedChains g)
+
 -- The set of n-simplices in a simplicial group forms a group.
 data NSimplicesOf a = NSimplicesOf Int a
 

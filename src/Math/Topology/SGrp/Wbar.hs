@@ -8,8 +8,9 @@
 -- Also anromero/resolutions.lisp in the fork
 module Math.Topology.SGrp.Wbar where
 
-import Data.List (intersect)
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
+import Math.Algebra.ChainComplex.Algebra
+import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
@@ -20,10 +21,9 @@ newtype Wbar g = Wbar g
   deriving (Show)
 
 newtype WbarSimplex a = WbarSimplex a
-  deriving (Show) via a
-  deriving (Functor)
-
-deriving instance (Eq g) => Eq (WbarSimplex g)
+  deriving Show via a
+  deriving Functor
+  deriving Eq
 
 -- TODO: there are probably efficient algorithms for this in terms of bit fields.
 -- 1. Create a bit field marking which positions are the unit
@@ -82,7 +82,6 @@ instance (SGrp g, ZeroReduced g) => OneReduced (Wbar g) -- Not a typo!
 instance (SGrp g, ZeroReduced g, FiniteType g) => FiniteType (Wbar g) where
   geomBasis (Wbar g) n =
     filter (isGeomSimplex (Wbar g)) $ fmap WbarSimplex $ sequence $ allSimplices g <$> reverse [0 .. (n - 1)]
-
 
 instance (SAb g) => SGrp (Wbar g) where
   -- TODO: can be more efficient, everywhere there is a degeneracy

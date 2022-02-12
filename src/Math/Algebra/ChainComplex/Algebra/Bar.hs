@@ -25,24 +25,27 @@
 -- occasion. Namely, the bar construction — or specifically, in this
 -- case, the bar construction of a differential graded algebra with
 -- coefficients in a pair of differential graded modules. "
+--
+-- For the commutative algebra structure see for example
+-- <https://doi.org/10.1023/A:1013544506151>
 module Math.Algebra.ChainComplex.Algebra.Bar where
 
 import Data.Coerce
-import Math.Algebra.Combination
 import Math.Algebra.Bicomplex hiding (FiniteType)
 import qualified Math.Algebra.Bicomplex as Bi (FiniteType)
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Algebra
+import Math.Algebra.Combination
 
 newtype Bar a = Bar a
 
 newtype BarBibasis a = BarBibasis a
   deriving (Eq)
-  deriving (Show)
+  deriving (Show) via a
 
 newtype BarBasis a = BarBasis a
   deriving (Eq)
-  deriving (Show)
+  deriving (Show) via a
 
 instance Algebra a => Bicomplex (Bar a) where
   type Bibasis (Bar a) = BarBibasis [Basis a]
@@ -83,5 +86,20 @@ instance Algebra a => ChainComplex (Bar a) where
 
 instance (Algebra a, FiniteType a) => FiniteType (Bar a) where
   basis (Bar a) i = fmap BarBasis (basis (Tot (Bar a)) i)
+
+shuffle :: (ChainComplex a) => a -> [Basis a] -> [Basis a] -> Combination [Basis a]
+shuffle c [] [] = 0
+shuffle c as [] = singleComb as
+shuffle c [] bs = singleComb bs
+shuffle c (a : as) (b : bs) =
+  fmap (a :) (shuffle c as (b : bs))
+    + kozulRule eps (fmap (b :) (shuffle c (a : as) bs))
+  where eps = (1 + degree c b) * (length (a:as) + sum (degree c <$> (a : as)))
+
+instance (CommAlgebra a) => Algebra (Bar a) where
+  unitMor _ = fmapBasis (const (coerce @[Basis a] []))
+  muMor (Bar a) = Morphism 0 $ coerce (uncurry (shuffle a))
+
+instance (CommAlgebra a) => CommAlgebra (Bar a)
 
 -- TODO: universal twisting cochain a -> Bar a (should be same as the one induced by the twist on Wbar)
