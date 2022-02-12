@@ -5,6 +5,7 @@ import Test.Hspec
 
 import Control.Monad (forM_, unless)
 
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.DVF
 

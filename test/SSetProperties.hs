@@ -73,6 +73,9 @@ checkOn a gs = do
 
 check :: (FiniteType a, Show (GeomSimplex a)) => Int -> a -> Spec
 check n a = do
+  -- TODO compute the bases once instead of repeatedly
+  it "basis simplices should be valid" $
+    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (\g -> g `shouldSatisfy` isGeomSimplex a))
   it "basis simplices have correct dimension" $
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (\g -> geomSimplexDim a g `shouldBe` i))
   it "should have the correct number of faces" $

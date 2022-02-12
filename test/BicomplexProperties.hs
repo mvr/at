@@ -3,6 +3,7 @@ module BicomplexProperties where
 
 import Control.Category.Constrained (id, (.))
 import Control.Monad (forM_, unless)
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex
 import Math.Algebra.Bicomplex
 import Test.Hspec

@@ -1,12 +1,9 @@
--- import Data.Coerce
-
--- import Math.Topology.SSet.DVF
-
-import qualified AbGroupPresTest
-import qualified AbelianCategoryProperties
+import Test.Hspec
 import Control.Monad (forM_)
-import qualified DVFProperties
+-- import Data.Coerce
 import Data.Proxy
+import Debug.Trace
+
 import Math.Algebra.AbGroupPres
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.Bicomplex hiding (FiniteType)
@@ -15,13 +12,17 @@ import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Group
 import Math.Topology.SGrp ()
-import Math.Topology.SGrp.Wbar
+import Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
 import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SSet.Product as Product
 import Math.Topology.SSet.Sphere
+
+import qualified AbGroupPresTest
+import qualified AbelianCategoryProperties
+import qualified DVFProperties
 import qualified MatrixOpsTest
 import qualified ReductionProperties
 import qualified SSetProperties
@@ -29,7 +30,8 @@ import qualified SGrpProperties
 import qualified BicomplexProperties
 import qualified ChainComplexProperties
 import qualified SmithNormalFormTest
-import Test.Hspec
+
+
 
 main :: IO ()
 main = hspec spec
@@ -109,11 +111,16 @@ spec = do
           DVFProperties.check 4 (NormalisedChains p)
 
   describe "K(ℤ/3,2)" $ do
-    let p = Wbar (WbarDiscrete (Zmod 3))
+    let g = WbarDiscrete (Zmod 3)
+    let p = Wbar g
+    it "normalisation should be invertible" $
+      forM_ [0 .. 5] (\i -> forM_ (allSimplices p i) (\s -> Wbar.normalise g (Wbar.unnormalise g s) `shouldBe` s))
     describe "SSet" $
       SSetProperties.check 4 p
     describe "DVF" $
-      DVFProperties.check 4 (NormalisedChains p)
+      DVFProperties.check 4 (NormalisedChains p) -- This is actually not enough to uncover errors
+
+  -- TODO: normalise wrong on normalise (WbarDiscrete (Zmod 3)) [Degen 1 (NonDegen [1,1]), Degen 1 (NonDegen [1]), Degen 0 (NonDegen []), NonDegen []]
 
   describe "Bar" $ do
     let a = Bar (NormalisedChains (WbarDiscrete (Zmod 3)))
