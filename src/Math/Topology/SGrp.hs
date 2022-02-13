@@ -5,14 +5,16 @@
 module Math.Topology.SGrp where
 
 import Control.Category.Constrained
+import Prelude hiding (fmap, id, return, (.))
+
 import qualified Math.Algebra.ChainComplex as CC (UMorphism (..))
 import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.Combination
 import Math.Algebra.Group
 import Math.Topology.SSet
 import Math.Topology.SSet.NormalisedChains
 import Math.Topology.SSet.Product
-import Prelude hiding (return, (.), id)
 
 class (SSet a, Pointed a) => SGrp a where
   -- The identity map is always just picking out a 0-simplex, so we
@@ -38,8 +40,8 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
     where (×) = prodFunc
 
 instance SGrp g => Algebra (NormalisedChains g) where
-  unitMor (NormalisedChains g) = CC.Morphism 0 (const (return (BasisSimplex (basepoint g))))
-  muMor (NormalisedChains g) = cfmap (prodMor g) . reductionG (ezReduction (Product g g))
+  unitMor (NormalisedChains g) = CC.Morphism 0 (const (singleComb (BasisSimplex (basepoint g))))
+  muMor (NormalisedChains g) = fmap (prodMor g) . reductionG (ezReduction (Product g g))
 
 instance SAb g => CommAlgebra (NormalisedChains g)
 

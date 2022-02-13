@@ -1,7 +1,7 @@
 module Math.Algebra.Combination where
 
 import Prelude hiding (id, return, (.))
-import Control.Category.Constrained (id, join, return, (.))
+import Control.Category.Constrained (join, return)
 import qualified Control.Category.Constrained as Constrained
 import Data.Maybe (fromMaybe)
 import Data.List (find)
@@ -53,13 +53,15 @@ n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
 singleComb :: b -> Combination b
 singleComb a = Combination [(1, a)]
 
-instance Constrained.Functor (->) (->) Combination where
-  type CodObj Combination a = Eq a
-  fmap f (Combination cs) = Combination $ normalise $ fmap (fmap f) cs
+instance Constrained.Functor (Constrained.Sub Eq (->)) (->) Combination where
+  fmap (Constrained.Sub f) (Combination cs) = Combination $ normalise $ fmap (fmap f) cs
 
-instance Constrained.Monad (->) Combination where
-  return a = Combination [(1, a)]
-  join (Combination cs) = foldr (\(n, c1) c2 -> (n .* c1) + c2) 0 cs
+instance Constrained.Functor (Constrained.Sub Eq (->)) (Constrained.Sub Eq (->)) Combination where
+  fmap f = Constrained.Sub $ Constrained.fmap f
+
+instance Constrained.Monad (Constrained.Sub Eq (->)) Combination where
+  return = Constrained.Sub $ \a -> Combination [(1, a)]
+  join = Constrained.Sub $ \(Combination cs) -> foldr (\(n, c1) c2 -> (n .* c1) + c2) 0 cs
 
 instance (Eq b) => Num (Combination b) where
   fromInteger 0 = Combination []

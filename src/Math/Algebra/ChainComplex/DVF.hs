@@ -1,18 +1,20 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 -- | Discrete Vector Field on a Chain Complex
 -- Following as:ez-dvf
 module Math.Algebra.ChainComplex.DVF where
 
+import Control.Category.Constrained (id, (.))
+import qualified Control.Category.Constrained as Constrained
 import Data.Coerce
-import Math.Algebra.Combination
+import Prelude hiding (id, return, (.))
+
 import Math.Algebra.ChainComplex
-import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.ChainComplex.Algebra
-import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Equivalence
-import Prelude hiding (id, (.), return)
-import Control.Category.Constrained (id, (.), return)
+import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.Combination
 
 -- Units of Z
 data Incidence = Pos | Neg
@@ -30,6 +32,7 @@ data Status a
   | Target a Incidence
   | Critical
   deriving (Functor)
+  deriving (Constrained.Functor (->) (->)) via (Constrained.Wrapped Status)
 
 class ChainComplex a => DVF a where
   -- TODO: Name??
@@ -56,9 +59,10 @@ instance (DVF a, FiniteType a) => FiniteType (CriticalComplex a) where
   basis (CriticalComplex a) n = coerce $ filter (isCritical a) (basis a n)
 
 proj :: DVF a => a -> Morphism a (CriticalComplex a)
-proj a = Morphism 0 $ coerce $ \b -> case vf a b of
-  Critical -> return b
-  _ -> Combination []
+proj a = Morphism 0 $
+  coerce $ \b -> case vf a b of
+    Critical -> singleComb b
+    _ -> Combination []
 
 incl :: DVF a => a -> Morphism (CriticalComplex a) a
 incl a = fmapBasis coerce

@@ -3,7 +3,7 @@
 -- Tried to keep it minimal, no crazy tricks
 module Control.Category.Constrained where
 
-import qualified Control.Monad
+import qualified Control.Monad (join)
 import Data.Kind (Type)
 import GHC.Exts (Constraint)
 import Prelude hiding (Functor, Monad, fmap, id, (.), (<$>))
@@ -11,8 +11,8 @@ import qualified Prelude
 
 infixr 9 .
 
-class Semigroupoid (cat :: Type -> Type -> Type) where
-  type Object cat (o :: Type) :: Constraint
+class Semigroupoid (cat :: i -> i -> Type) where
+  type Object cat (o :: i) :: Constraint
   type Object cat o = ()
 
   (.) ::
@@ -30,49 +30,38 @@ instance Semigroupoid (->) where
 instance Category (->) where
   id = Prelude.id
 
--- newtype With (cat :: Type -> Type -> Type) (c :: Type -> Constraint) (a :: Type) (b :: Type) = With (cat a b)
+newtype Sub (con :: i -> Constraint) (c :: i -> i -> *) a b = Sub {incl :: c a b}
 
--- instance (Category cat) => Category (With cat c) where
---   type Object (With cat c) o = (Object cat o, c o)
---   id = With id
---   (With f) . (With g) = With (f . g)
+instance Semigroupoid c => Semigroupoid (Sub con c) where
+  type Object (Sub con c) o = (Object c o, con o)
+  (Sub g) . (Sub f) = Sub (g . f)
 
-class Functor dom cod f where
-  -- For convenience, to avoid some unpleasant newtypes in practice.
-  -- This would really be equivalent to something like
-  -- `Functor dom (cod `With` CodObj f) f`
-  type CodObj f (o :: Type) :: Constraint
-  type CodObj f o = ()
+instance Category c => Category (Sub con c) where
+  id = Sub id
 
-  fmap :: (Object dom a, Object dom b, Object cod (f a), Object cod (f a), CodObj f b) => dom a b -> cod (f a) (f b)
-  default fmap :: (dom ~ (->), cod ~ (->), Prelude.Functor f) => dom a b -> cod (f a) (f b)
-  fmap = Prelude.fmap
+class Functor (dom :: i -> i -> *) (cod :: j -> j -> *) (f :: i -> j) where
+  fmap :: (Object dom a, Object dom b) => dom a b -> cod (f a) (f b)
 
-cfmap ::
-  ( Object dom a,
-    Object dom b,
-    Object cod (f a),
-    CodObj f b,
-    Functor dom cod f
-  ) =>
-  dom a b ->
-  cod (f a) (f b)
-cfmap = fmap
+(<$>) :: (Functor dom cod f, Object dom a, Object dom b) => dom a b -> cod (f a) (f b)
+(<$>) = fmap
+infixl 4 <$>
 
--- (<$>) :: (Functor dom cod f, Object dom a, Object dom b, Object cod (f a), Object cod (f a), CodObj f b) => dom a b -> cod (f a) (f b)
--- (<$>) = fmap
--- infixl 4 <$>
+newtype Wrapped (f :: * -> *) a = Wrapped (f a)
+
+instance (Prelude.Functor f) => Functor (->) (->) (Wrapped f) where
+  fmap f (Wrapped a) = Wrapped (Prelude.fmap f a)
 
 -- I don't care to factor this through Applicative. Only makes sense
 -- for Cartesian categories anyway.
-class (Functor cat cat m) => Monad (cat :: Type -> Type -> Type) m where
+class (Functor cat cat m) => Monad cat m where
   return :: (Object cat a) => cat a (m a)
-  join :: (Object cat a, CodObj m a) => cat (m (m a)) (m a)
+  join :: forall a. Object cat a => cat (m (m a)) (m a)
 
   default return :: (cat ~ (->), Prelude.Monad m) => cat a (m a)
   return = Prelude.return
+
   default join :: (cat ~ (->), Prelude.Monad m) => cat (m (m a)) (m a)
   join = Control.Monad.join
 
-(>>=) :: (Monad (->) m, CodObj m b, CodObj m (m b)) => m a -> (a -> m b) -> m b
+(>>=) :: (Monad (->) m) => m a -> (a -> m b) -> m b
 a >>= f = join (fmap f a)

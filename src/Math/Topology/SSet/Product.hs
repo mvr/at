@@ -8,8 +8,10 @@
 -- some backwards, we follow Kenzo by going backwards.
 module Math.Topology.SSet.Product where
 
-import Control.Category.Constrained (cfmap, return, (.))
+import Control.Category.Constrained (fmap, (.))
 import Data.Coerce
+import Prelude hiding (fmap, id, return, (.))
+
 import Math.Algebra.ChainComplex hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Coalgebra
@@ -17,11 +19,11 @@ import Math.Algebra.ChainComplex.DVF hiding (DVF)
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.Combination
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.NormalisedChains
-import Prelude hiding (id, return, (.))
 
 data Product a b = Product a b
 
@@ -170,8 +172,8 @@ diagMor :: Morphism a (Product a a)
 diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
 
 instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NormalisedChains a) where
-  counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then return () else 0
-  delMor (NormalisedChains a) = reductionF (ezReduction (Product a a)) . cfmap diagMor
+  counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then singleComb () else 0
+  delMor (NormalisedChains a) = reductionF (ezReduction (Product a a)) . fmap diagMor
 
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)

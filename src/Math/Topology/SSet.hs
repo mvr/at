@@ -20,6 +20,7 @@ data FormalDegen a
   = NonDegen a
   | Degen Int (FormalDegen a)
   deriving (Eq, Functor)
+  deriving (Constrained.Functor (->) (->)) via (Constrained.Wrapped FormalDegen)
 
 instance Show a => Show (FormalDegen a) where
   show (NonDegen a) = show a
@@ -175,6 +176,9 @@ instance Constrained.Semigroupoid UMorphism where
 
 instance Constrained.Category UMorphism where
   id = Morphism $ \s -> NonDegen s
+
+instance Constrained.Functor UMorphism (->) FormalDegen where
+  fmap = onSimplex
 
 -- Reid Barton:
 -- https://categorytheory.zulipchat.com/#narrow/stream/241590-theory.3A-

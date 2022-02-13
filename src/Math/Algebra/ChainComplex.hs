@@ -1,10 +1,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Chain complex of free Z-modules
+-- | Chain complex of free \(ℤ\)-modules
 module Math.Algebra.ChainComplex where
 
-import Prelude hiding (id, return, (.))
-import Control.Category.Constrained (id, join, (.))
+import Control.Category.Constrained (id, join, (.), incl)
 import qualified Control.Category.Constrained as Constrained
 import qualified Data.Matrix as M
 import Math.Algebra.AbGroupPres
@@ -55,8 +54,11 @@ data UMorphism d a b = Morphism
 
 type Morphism a b = UMorphism Int (Basis a) (Basis b)
 
-onComb :: (Eq b) => UMorphism d a b -> Combination a -> Combination b
-onComb m c = join $ fmap (m `onBasis`) c
+instance Constrained.Functor (UMorphism d) (->) Combination where
+  fmap m c = incl (join @(Constrained.Sub Eq (->))) $ fmap (m `onBasis`) c
+
+onComb :: (Eq a, Eq b) => UMorphism d a b -> Combination a -> Combination b
+onComb = Constrained.fmap
 
 morphismZeroOfDeg :: d -> UMorphism d a b
 morphismZeroOfDeg d = Morphism d (const (Combination []))
@@ -74,7 +76,7 @@ instance Show d => Show (UMorphism d a b) where
 instance Num d => Constrained.Semigroupoid (UMorphism d) where
   type Object (UMorphism d) a = Eq a
 
-  (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (join . fmap f2 . f1)
+  (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (incl (join @(Constrained.Sub Eq (->))) . fmap f2 . f1)
 
 instance Num d => Constrained.Category (UMorphism d) where
   id = Morphism 0 (\x -> Combination [(1, x)])

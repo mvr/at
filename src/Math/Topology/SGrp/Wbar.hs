@@ -8,14 +8,21 @@
 -- Also anromero/resolutions.lisp in the fork
 module Math.Topology.SGrp.Wbar where
 
-import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
+import Control.Category.Constrained ((.))
+import Prelude hiding (id, return, (.))
+
+import Math.Algebra.ChainComplex as CC (Morphism)
 import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Algebra.Bar
+import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
+import Math.Algebra.ChainComplex.Equivalence
+import Math.Algebra.ChainComplex.Reduction
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
-import Math.Topology.SSet.Product
+import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.Product hiding (criticalIso, criticalIsoInv)
 
 newtype Wbar g = Wbar g
   deriving (Show)

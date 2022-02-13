@@ -37,5 +37,5 @@ instance FiniteType a => CC.FiniteType (NormalisedChains a) where
 
 instance Functor UMorphism (CC.UMorphism Int) BasisSimplex where
   fmap m = CC.Morphism 0 $ \(BasisSimplex s) -> case m `onGeomSimplex` s of
-    NonDegen t -> return $ BasisSimplex t
+    NonDegen t -> singleComb (BasisSimplex t)
     Degen _ _ -> Combination []
