@@ -32,7 +32,7 @@ import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Group
-import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.NChains
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
@@ -65,7 +65,7 @@ instance (SSet a, SGrp g) => SSet (TotalSpace a g) where
         <$> prodNormalise
           ( face a s n,
             prod
-              (NSimplicesOf (n -1) g)
+              (NDimSimplicesOf (n - 1) g)
               (tau `twistOn` s)
               (face g t n)
           )
@@ -78,14 +78,14 @@ instance (SSet a, SGrp g) => DVF (TotalSpace a g) where
 
 totalSpaceChainsIso ::
   CC.Morphism
-    (Perturbed (NormalisedChains (Product a b)))
-    (NormalisedChains (TotalSpace a b))
+    (Perturbed (NChains (Product a b)))
+    (NChains (TotalSpace a b))
 totalSpaceChainsIso = fmapBasis coerce
 
 totalSpaceChainsIsoInv ::
   CC.Morphism
-    (NormalisedChains (TotalSpace a b))
-    (Perturbed (NormalisedChains (Product a b)))
+    (NChains (TotalSpace a b))
+    (Perturbed (NChains (Product a b)))
 totalSpaceChainsIsoInv = fmapBasis coerce
 
 instance
@@ -98,7 +98,7 @@ instance
   type Model (TotalSpace a g) = Perturbed (Tensor (Model a) (Model g))
 
   eff t@(TotalSpace a g tau) =
-    composeLeft (NormalisedChains t) (isoToReduction totalSpaceChainsIso totalSpaceChainsIsoInv) $
+    composeLeft (NChains t) (isoToReduction totalSpaceChainsIso totalSpaceChainsIsoInv) $
       perturbLeft
         (eff (Product a g))
-        (coerce (diff (NormalisedChains (TotalSpace a g tau))) - diff (NormalisedChains (Product a g)))
+        (coerce (diff (NChains (TotalSpace a g tau))) - diff (NChains (Product a g)))

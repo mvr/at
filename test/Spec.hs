@@ -16,7 +16,7 @@ import Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
-import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product as Product
 import Math.Topology.SSet.Sphere
 
@@ -43,20 +43,20 @@ testProduct n a b = do
   describe "SSet" $
     SSetProperties.check n p
   describe "DVF" $
-    DVFProperties.check n (NormalisedChains p)
+    DVFProperties.check n (NChains p)
 
   it "criticalIso is a bijection" $
     ChainComplexProperties.checkIso
       n
-      (CriticalComplex (NormalisedChains (Product a b)))
-      (Tensor (NormalisedChains a) (NormalisedChains b))
+      (CriticalComplex (NChains (Product a b)))
+      (Tensor (NChains a) (NChains b))
       Product.criticalIso
       (Product.criticalIsoInv a b)
 
   describe "dvfReduction" $
-    ReductionProperties.check n (NormalisedChains p) (CriticalComplex (NormalisedChains p)) (dvfReduction (NormalisedChains p))
+    ReductionProperties.check n (NChains p) (CriticalComplex (NChains p)) (dvfReduction (NChains p))
   describe "ezReduction" $
-    ReductionProperties.check n (NormalisedChains p) (Tensor (NormalisedChains a) (NormalisedChains b)) (ezReduction p)
+    ReductionProperties.check n (NChains p) (Tensor (NChains a) (NChains b)) (ezReduction p)
 
 spec :: Spec
 spec = do
@@ -89,15 +89,15 @@ spec = do
       SSetProperties.checkOn p gs
 
     describe "DVF" $
-      DVFProperties.checkOn (NormalisedChains p)  (BasisSimplex <$> gs)
+      DVFProperties.checkOn (NChains p)  (BasisSimplex <$> gs)
 
     describe "dvfReduction" $
       ReductionProperties.checkOn
-        (NormalisedChains p)
-        (CriticalComplex (NormalisedChains p))
+        (NChains p)
+        (CriticalComplex (NChains p))
         (BasisSimplex <$> gs)
         (CriticalBasis <$> BasisSimplex <$> criticalBasis)
-        (dvfReduction (NormalisedChains p))
+        (dvfReduction (NChains p))
 
   describe "K(ℤ/n,1)s" $ do
     forM_ [2, 3, 4, 5] $ \i -> do
@@ -108,7 +108,7 @@ spec = do
         describe "SGrp" $
           SGrpProperties.check 4 p
         describe "DVF" $
-          DVFProperties.check 4 (NormalisedChains p)
+          DVFProperties.check 4 (NChains p)
 
   describe "K(ℤ/3,2)" $ do
     let g = WbarDiscrete (Zmod 3)
@@ -118,12 +118,12 @@ spec = do
     describe "SSet" $
       SSetProperties.check 4 p
     describe "DVF" $
-      DVFProperties.check 4 (NormalisedChains p) -- This is actually not enough to uncover errors
+      DVFProperties.check 4 (NChains p) -- This is actually not enough to uncover errors
 
   -- TODO: normalise wrong on normalise (WbarDiscrete (Zmod 3)) [Degen 1 (NonDegen [1,1]), Degen 1 (NonDegen [1]), Degen 0 (NonDegen []), NonDegen []]
 
   describe "Bar" $ do
-    let a = Bar (NormalisedChains (WbarDiscrete (Zmod 3)))
+    let a = Bar (NChains (WbarDiscrete (Zmod 3)))
     describe "is a bicomplex" $ do
       let as = do
             h <- [0 .. 5]

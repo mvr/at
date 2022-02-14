@@ -8,12 +8,12 @@ module Math.Topology.SSet.DVF where
 
 import Data.Coerce
 import qualified Math.Algebra.ChainComplex.DVF as CC
-import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.NChains
 import Math.Topology.SSet
 
 class SSet a => DVF a where
   -- TODO: Name??
   vf :: a -> GeomSimplex a -> CC.Status (GeomSimplex a)
 
-instance DVF a => CC.DVF (NormalisedChains a) where
-  vf (NormalisedChains a) (BasisSimplex b) = coerce $ vf a b
+instance DVF a => CC.DVF (NChains a) where
+  vf (NChains a) (BasisSimplex b) = coerce $ vf a b

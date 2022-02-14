@@ -25,7 +25,7 @@ import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
-import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.NChains
 import Prelude hiding ((.))
 
 type KZ1 = WbarDiscrete Z
@@ -42,14 +42,14 @@ instance DVF KZ1 where
     | a1 < 0 = Source (1 : a1 : as) Pos
     | otherwise = Source (1 : a1 - 1 : as) Neg
 
-criticalIso :: CC.Morphism (CriticalComplex (NormalisedChains KZ1)) CircleComplex
+criticalIso :: CC.Morphism (CriticalComplex (NChains KZ1)) CircleComplex
 criticalIso = fmapBasis $
   coerce $ \case
     [] -> Left ()
     [1 :: Integer] -> Right (ShiftBasis ())
     _ -> error "impossible"
 
-criticalIsoInv :: CC.Morphism CircleComplex (CriticalComplex (NormalisedChains KZ1))
+criticalIsoInv :: CC.Morphism CircleComplex (CriticalComplex (NChains KZ1))
 criticalIsoInv = fmapBasis $
   coerce $ \case
     Left () -> []
@@ -60,9 +60,9 @@ instance Effective KZ1 where
 
   eff _ =
     fromRedLeft
-      (NormalisedChains (WbarDiscrete Z))
+      (NChains (WbarDiscrete Z))
       (Sum () (Shift ()))
-      (isoToReduction criticalIso criticalIsoInv . dvfReduction (NormalisedChains (WbarDiscrete Z)))
+      (isoToReduction criticalIso criticalIsoInv . dvfReduction (NChains (WbarDiscrete Z)))
 
 -- This seems to work... TODO: give a reduction from this to a chain
 -- complex with one basis element in each dimension, no need to

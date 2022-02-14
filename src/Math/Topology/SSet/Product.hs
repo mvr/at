@@ -23,7 +23,7 @@ import Math.Algebra.Combination
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
-import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.NChains
 
 data Product a b = Product a b
 
@@ -140,8 +140,8 @@ status (Product a b) (s, t) =
 criticalIso ::
   forall a b.
   CC.Morphism
-    (CriticalComplex (NormalisedChains (Product a b)))
-    (Tensor (NormalisedChains a) (NormalisedChains b))
+    (CriticalComplex (NChains (Product a b)))
+    (Tensor (NChains a) (NChains b))
 criticalIso = fmapBasis $ coerce @((Simplex a, Simplex b) -> _) $ \(s, t) -> (underlyingGeom s, underlyingGeom t)
 
 criticalIsoInv ::
@@ -149,8 +149,8 @@ criticalIsoInv ::
   a ->
   b ->
   CC.Morphism
-    (Tensor (NormalisedChains a) (NormalisedChains b))
-    (CriticalComplex (NormalisedChains (Product a b)))
+    (Tensor (NChains a) (NChains b))
+    (CriticalComplex (NChains (Product a b)))
 criticalIsoInv a b = fmapBasis $
   coerce $
     \(s, t) ->
@@ -162,18 +162,18 @@ ezReduction ::
   (SSet a, SSet b) =>
   Product a b ->
   Reduction
-    (NormalisedChains (Product a b))
-    (Tensor (NormalisedChains a) (NormalisedChains b))
+    (NChains (Product a b))
+    (Tensor (NChains a) (NChains b))
 ezReduction p@(Product a b) =
   isoToReduction criticalIso (criticalIsoInv a b)
-    . dvfReduction (NormalisedChains p)
+    . dvfReduction (NChains p)
 
 diagMor :: Morphism a (Product a a)
 diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
 
-instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NormalisedChains a) where
+instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NChains a) where
   counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then singleComb () else 0
-  delMor (NormalisedChains a) = reductionF (ezReduction (Product a a)) . fmap diagMor
+  delMor (NChains a) = reductionF (ezReduction (Product a a)) . fmap diagMor
 
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
@@ -181,6 +181,6 @@ instance (Effective a, Effective b) => Effective (Product a b) where
   eff p@(Product a b) =
     tensorEquiv (eff a) (eff b)
       . fromRedLeft
-        (NormalisedChains (Product a b))
-        (Tensor (NormalisedChains a) (NormalisedChains b))
+        (NChains (Product a b))
+        (Tensor (NChains a) (NChains b))
         (ezReduction p)

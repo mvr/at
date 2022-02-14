@@ -13,7 +13,7 @@ import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Combination
 import Math.Algebra.Group
 import Math.Topology.SSet
-import Math.Topology.SSet.NormalisedChains
+import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product
 
 class (SSet a, Pointed a) => SGrp a where
@@ -39,19 +39,19 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
   invMor (Product a b) = invMor a × invMor b
     where (×) = prodFunc
 
-instance SGrp g => Algebra (NormalisedChains g) where
-  unitMor (NormalisedChains g) = CC.Morphism 0 (const (singleComb (BasisSimplex (basepoint g))))
-  muMor (NormalisedChains g) = fmap (prodMor g) . reductionG (ezReduction (Product g g))
+instance SGrp g => Algebra (NChains g) where
+  unitMor (NChains g) = CC.Morphism 0 (const (singleComb (BasisSimplex (basepoint g))))
+  muMor (NChains g) = fmap (prodMor g) . reductionG (ezReduction (Product g g))
 
-instance SAb g => CommAlgebra (NormalisedChains g)
+instance SAb g => CommAlgebra (NChains g)
 
--- The set of n-simplices in a simplicial group forms a group.
-data NSimplicesOf a = NSimplicesOf Int a
+-- | The set of \(n\)-simplices in a simplicial group forms an ordinary group.
+data NDimSimplicesOf a = NDimSimplicesOf Int a
 
-instance (SGrp a) => Group (NSimplicesOf a) where
-  type Element (NSimplicesOf a) = Simplex a
-  prod (NSimplicesOf n a) s t = prodMor a `onSimplex` prodNormalise (s, t)
-  unit (NSimplicesOf n a) = constantAt (basepoint a) n
-  inv (NSimplicesOf n a) s = invMor a `onSimplex` s
+instance (SGrp a) => Group (NDimSimplicesOf a) where
+  type Element (NDimSimplicesOf a) = Simplex a
+  prod (NDimSimplicesOf n a) s t = prodMor a `onSimplex` prodNormalise (s, t)
+  unit (NDimSimplicesOf n a) = constantAt (basepoint a) n
+  inv (NDimSimplicesOf n a) s = invMor a `onSimplex` s
 
-instance (SAb a) => Abelian (NSimplicesOf a)
+instance (SAb a) => Abelian (NDimSimplicesOf a)
