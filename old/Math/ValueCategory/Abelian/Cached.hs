@@ -1,39 +1,39 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
+
 module Math.ValueCategory.Abelian.Cached where
 
 import Math.ValueCategory
 import Math.ValueCategory.Abelian
 
-data Cached a = Cached { getCached :: a, cachedIsZero :: Bool }
+data Cached a = Cached {getCached :: a, cachedIsZero :: Bool}
 
-data CachedMorphism a =
-    CachedZeroMorphism {
-      cachedDomain :: Cached a,
-      cachedCodomain :: Cached a
-  }
-  | CachedIdentityMorphism {
-      cachedDomain :: Cached a
-  }
-  | CachedMorphism {
-      cachedDomain :: Cached a,
-      cachedCodomain :: Cached a,
-      cachedMorphism :: Morphism a,
-      cachedKernel :: CachedMorphism a,
-      cachedCokernel :: CachedMorphism a
-  }
+data CachedMorphism a
+  = CachedZeroMorphism
+      { cachedDomain :: Cached a,
+        cachedCodomain :: Cached a
+      }
+  | CachedIdentityMorphism
+      { cachedDomain :: Cached a
+      }
+  | CachedMorphism
+      { cachedDomain :: Cached a,
+        cachedCodomain :: Cached a,
+        cachedMorphism :: Morphism a,
+        cachedKernel :: CachedMorphism a,
+        cachedCokernel :: CachedMorphism a
+      }
 
 instance Show a => Show (Cached a) where
   show = show . getCached
 
-instance (AbelianCategory a, Eq a, Eq (Morphism a), Show (Morphism a)) =>  Show (CachedMorphism a) where
+instance (AbelianCategory a, Eq a, Eq (Morphism a), Show (Morphism a)) => Show (CachedMorphism a) where
   show (CachedZeroMorphism d c) = show (zeroMorphism d c)
   show (CachedIdentityMorphism d) = show (vid d)
   show f = show (cachedMorphism f)
-
 
 instance (Eq a) => Eq (Cached a) where
   (Cached _ True) == (Cached _ True) = True
@@ -51,16 +51,15 @@ instance (Eq a, Eq (Morphism a), AbelianCategory a) => ValueCategory (Cached a) 
 
   vid c = CachedIdentityMorphism c
 
-  domain   = cachedDomain
+  domain = cachedDomain
   codomain (CachedIdentityMorphism d) = d
   codomain f = cachedCodomain f
 
-  (CachedIdentityMorphism _) .* f  = f
+  (CachedIdentityMorphism _) .* f = f
   f .* (CachedIdentityMorphism _) = f
-  (CachedZeroMorphism _ c)       .* f = zeroMorphism (domain f) c
-  f .* (CachedZeroMorphism d _)       = zeroMorphism d (codomain f)
+  (CachedZeroMorphism _ c) .* f = zeroMorphism (domain f) c
+  f .* (CachedZeroMorphism d _) = zeroMorphism d (codomain f)
   f .* g = toCachedMorphism (cachedMorphism f .* cachedMorphism g)
-
 
 instance (Eq a, Eq (Morphism a), AbelianCategory a) => AbelianCategory (Cached a) where
   zero = Cached zero True
@@ -78,18 +77,20 @@ instance (Eq a, Eq (Morphism a), AbelianCategory a) => AbelianCategory (Cached a
   cokernelMorphism f g phi = toCachedMorphism $ cokernelMorphism (cachedMorphism f) (cachedMorphism g) (cachedMorphism phi) -- TODO
 
 toCached :: (Eq a, AbelianCategory a) => a -> Cached a
-toCached a = Cached {
-               getCached = a,
-               cachedIsZero = a == zero
-             }
+toCached a =
+  Cached
+    { getCached = a,
+      cachedIsZero = a == zero
+    }
 
 toCachedMorphism :: (Eq a, Eq (Morphism a), AbelianCategory a) => Morphism a -> CachedMorphism a
 toCachedMorphism f | isZeroMorphism f = CachedZeroMorphism (toCached $ domain f) (toCached $ codomain f)
 toCachedMorphism f | f == vid (domain f) = CachedIdentityMorphism (toCached $ domain f)
-toCachedMorphism f = CachedMorphism {
-  cachedDomain = toCached (domain f),
-  cachedCodomain = toCached (codomain f),
-  cachedMorphism = f,
-  cachedKernel = toCachedMorphism $ kernel f,
-  cachedCokernel = toCachedMorphism $ cokernel f
-}
+toCachedMorphism f =
+  CachedMorphism
+    { cachedDomain = toCached (domain f),
+      cachedCodomain = toCached (codomain f),
+      cachedMorphism = f,
+      cachedKernel = toCachedMorphism $ kernel f,
+      cachedCokernel = toCachedMorphism $ cokernel f
+    }

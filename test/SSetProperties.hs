@@ -1,7 +1,7 @@
 -- |
 module SSetProperties where
 
-import Control.Monad (forM_, when, unless)
+import Control.Monad (forM_, unless, when)
 import Test.Hspec
 import Prelude hiding (id, (.))
 
@@ -13,11 +13,13 @@ checkIdentities a g = do
       s = NonDegen g
 
   -- it "satisfies the simplicial identity ∂i ∘ ∂j = ∂(j-1) ∘ ∂i if i < j" $
-  when (d > 1) $ sequence_ $ do
-    j <- [1 .. d]
-    i <- [0 .. (j - 1)]
-    return $ unless (face a (face a s j) i == face a (face a s i) (j - 1)) $
-       expectationFailure $ "On simplex " ++ show g ++ ", ∂" ++ show i ++ " ∘ ∂" ++ show j ++ " = " ++ show (face a (face a s j) i) ++ " but " ++ "∂" ++ show (j-1) ++ " ∘ ∂" ++ show i ++ " = " ++ show (face a (face a s i) (j - 1))
+  when (d > 1) $
+    sequence_ $ do
+      j <- [1 .. d]
+      i <- [0 .. (j - 1)]
+      return $
+        unless (face a (face a s j) i == face a (face a s i) (j - 1)) $
+          expectationFailure $ "On simplex " ++ show g ++ ", ∂" ++ show i ++ " ∘ ∂" ++ show j ++ " = " ++ show (face a (face a s j) i) ++ " but " ++ "∂" ++ show (j -1) ++ " ∘ ∂" ++ show i ++ " = " ++ show (face a (face a s i) (j - 1))
 
   -- The rest should follow from the formal degeneracy operations but
   -- may as well do them as a sanity check
@@ -61,9 +63,12 @@ checkDims a g =
 checkOn :: (SSet a, Show (GeomSimplex a)) => a -> [GeomSimplex a] -> Spec
 checkOn a gs = do
   it "should have the correct number of faces" $
-    forM_ gs (\g ->
-                let d = geomSimplexDim a g in
-                when (d >= 1) $ length (geomFaces a g) `shouldBe` d + 1)
+    forM_
+      gs
+      ( \g ->
+          let d = geomSimplexDim a g
+           in when (d >= 1) $ length (geomFaces a g) `shouldBe` d + 1
+      )
   it "faces should be valid simplices " $
     forM_ gs (checkFaces a)
   it "faces should have correct dimensions" $
@@ -79,7 +84,7 @@ check n a = do
   it "basis simplices have correct dimension" $
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (\g -> geomSimplexDim a g `shouldBe` i))
   it "should have the correct number of faces" $
-    forM_ [1 .. n] (\i -> forM_ (geomBasis a i) (\g -> length (geomFaces a g) `shouldBe` (i+1)))
+    forM_ [1 .. n] (\i -> forM_ (geomBasis a i) (\g -> length (geomFaces a g) `shouldBe` (i + 1)))
   it "faces should be valid simplices " $
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkFaces a))
   it "faces should have correct dimensions" $
@@ -92,11 +97,12 @@ checkMorphismFaces a b m g = do
   let d = geomSimplexDim a g
       s = NonDegen g
 
-  when (d > 0) $ sequence_ $ do
-    i <- [0 .. d]
-    return $
-      unless (m `onSimplex` (face a s i) == face b (m `onSimplex` s) i) $
-      expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g
+  when (d > 0) $
+    sequence_ $ do
+      i <- [0 .. d]
+      return $
+        unless (m `onSimplex` (face a s i) == face b (m `onSimplex` s) i) $
+          expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g
 
   sequence_ $ do
     i <- [0 .. d]

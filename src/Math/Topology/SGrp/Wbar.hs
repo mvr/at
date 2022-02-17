@@ -28,9 +28,9 @@ newtype Wbar g = Wbar g
   deriving (Show)
 
 newtype WbarSimplex a = WbarSimplex a
-  deriving Show via a
-  deriving Functor
-  deriving Eq
+  deriving (Show) via a
+  deriving (Functor)
+  deriving (Eq)
 
 -- TODO: there are probably efficient algorithms for this in terms of bit fields.
 -- 1. Create a bit field marking which positions are the unit
@@ -41,7 +41,8 @@ normalise :: (Pointed g) => g -> [Simplex g] -> Simplex (Wbar g)
 normalise g [] = NonDegen $ WbarSimplex []
 normalise g (s : ss) | isUnit g s = degen (normalise g ss) 0
 normalise g (s : ss) = downshift $ fmap (\(s, t) -> WbarSimplex (s : unnormalise g t)) p
-  where p = prodNormalise (s, normalise g ss)
+  where
+    p = prodNormalise (s, normalise g ss)
 
 insertUnit :: (Pointed g) => g -> Int -> [Simplex g] -> [Simplex g]
 insertUnit g 0 ss = constantAt (basepoint g) (length ss) : ss
@@ -119,16 +120,15 @@ upshift (Degen i s) = Degen (i - 1) (upshift s)
 
 instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
   vf (Wbar g) (WbarSimplex []) = Critical
-  vf (Wbar g) (WbarSimplex (s : ss)) =
-    let nss = normalise g ss
-     in case vf (Product (Wbar g) g) (nss, s) of
-          Source (ts', t') i -> Source (WbarSimplex (t' : unnormalise g ts')) (flipIncidence i)
-          Target (ss', s') i -> Target (WbarSimplex (s' : unnormalise g ss')) (flipIncidence i)
-          Critical -> case vf (Wbar g) (underlyingGeom nss) of
-            Source nss' i -> Source (WbarSimplex (degen s 0 : unnormalise g (downshift (fmap (const nss') nss) ))) (flipIncidence i)
-            Target ntt' i -> Target (WbarSimplex (upshift s : unnormalise g (upshift   (fmap (const ntt') nss) ))) (flipIncidence i)
-            Critical -> Critical
 
 -- instance (SGrp g, ZeroReduced g, FiniteType g) => Effective (Wbar g)
 
 --   type Model (Wbar g) = Bar (Model g)
+  vf (Wbar g) (WbarSimplex (s : ss)) | nss <- normalise g ss =
+    case vf (Product (Wbar g) g) (nss, s) of
+      Source (ts', t') i -> Source (WbarSimplex (t' : unnormalise g ts')) (flipIncidence i)
+      Target (ss', s') i -> Target (WbarSimplex (s' : unnormalise g ss')) (flipIncidence i)
+      Critical -> case vf (Wbar g) (underlyingGeom nss) of
+        Source nss' i -> Source (WbarSimplex (degen s 0 : unnormalise g (downshift (fmap (const nss') nss)))) (flipIncidence i)
+        Target ntt' i -> Target (WbarSimplex (upshift s : unnormalise g (upshift (fmap (const ntt') nss)))) (flipIncidence i)
+        Critical -> Critical

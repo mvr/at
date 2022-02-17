@@ -6,7 +6,7 @@ import Prelude hiding (Bounded)
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
-newtype Sphere = Sphere { sphereDim :: Int }
+newtype Sphere = Sphere {sphereDim :: Int}
 
 instance Show Sphere where
   show (Sphere n) = "S^" ++ show n
@@ -25,7 +25,7 @@ instance SSet Sphere where
   geomFace (Sphere n) Basepoint _ = undefined
   geomFace (Sphere n) Cell _ = constantAt Basepoint (n - 1)
   geomFaces (Sphere n) Basepoint = []
-  geomFaces (Sphere n) Cell = replicate (n+1) $ constantAt Basepoint (n - 1)
+  geomFaces (Sphere n) Cell = replicate (n + 1) $ constantAt Basepoint (n - 1)
 
 instance FiniteType Sphere where
   geomBasis (Sphere n) i

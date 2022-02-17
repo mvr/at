@@ -23,7 +23,7 @@ unnormalise :: (Group a, Eq (Element a)) => a -> Simplex (WbarDiscrete a) -> [El
 unnormalise a (NonDegen g) = g
 unnormalise a (Degen i g) =
   let (before, after) = splitAt i (unnormalise a g)
-  in before ++ [unit a] ++ after
+   in before ++ [unit a] ++ after
 
 instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
   -- A non-degenerate n-simplex is a list of n non-identity elements
@@ -50,7 +50,8 @@ instance (Group a, Eq (Element a)) => ZeroReduced (WbarDiscrete a)
 
 instance (FiniteGroup a, Eq (Element a)) => FiniteType (WbarDiscrete a) where
   geomBasis (WbarDiscrete a) i = sequence (replicate i nonident)
-    where nonident = filter (\x -> x /= unit a) (elements a)
+    where
+      nonident = filter (\x -> x /= unit a) (elements a)
 
 instance (Abelian a, Eq (Element a)) => S.SGrp (WbarDiscrete a) where
   prodMor (WbarDiscrete a) = Morphism $ \(s, t) -> normalise a $ fmap (uncurry (prod a)) (zip (unnormalise a s) (unnormalise a t))

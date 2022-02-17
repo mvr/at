@@ -6,9 +6,9 @@
 -- means no desuspension is necessary to define the projections.
 module Math.Algebra.ChainComplex.Bicone where
 
-import Math.Algebra.Combination
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.Combination
 import Prelude hiding (return)
 
 data Bicone b c d = Bicone b c d (Morphism b c) (Morphism d c)
@@ -47,10 +47,11 @@ projRight = Morphism 0 (\case FromD d -> singleComb d; _ -> 0)
 
 projRedLeft :: (Eq b, Eq c, Eq d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) b
 projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morphism 0 g) (Morphism 1 h)
-  where g b = singleComb (FromB b) - (FromD <$> g2 `onComb` (f1 `onBasis` b))
-        h (FromB b) = 0
-        h (FromC c) = FromD <$> g2 `onBasis` c
-        h (FromD d) = FromD <$> h2 `onBasis` d
+  where
+    g b = singleComb (FromB b) - (FromD <$> g2 `onComb` (f1 `onBasis` b))
+    h (FromB b) = 0
+    h (FromC c) = FromD <$> g2 `onBasis` c
+    h (FromD d) = FromD <$> h2 `onBasis` d
 
 projRedRight :: (Eq b, Eq c, Eq d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) d
 projRedRight (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projRight (Morphism 0 g) (Morphism 1 h)

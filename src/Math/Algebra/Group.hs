@@ -36,4 +36,4 @@ instance Group Zmod where
 instance Abelian Zmod
 
 instance FiniteGroup Zmod where
-  elements (Zmod n) = [0..n-1]
+  elements (Zmod n) = [0 .. n -1]

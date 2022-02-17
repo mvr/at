@@ -138,7 +138,7 @@ divideDiag s a = do
       doDivide 0 _ = Nothing
       doDivide i n = case divMod n i of
         (q, 0) -> Just q
-        _      -> Nothing
+        _ -> Nothing
   x <- sequence $ M.elementwise doDivide stripes a
   case compare (M.nrows s) (M.ncols s) of
     EQ -> return x
@@ -209,8 +209,9 @@ instance AdditiveCategory AbGroupPres where
 -- TODO: Check performance vs. using reduced matrices.
 instance AbelianCategory AbGroupPres where
   kernel f = morphismFromFullMatrix (fromPresentation ker) (domain f) kappa
-    where ker   = matrixKernelModulo kappa                  (presentation (domain f))
-          kappa = matrixKernelModulo (fullMorphism $ mor f) (presentation (codomain f))
+    where
+      ker = matrixKernelModulo kappa (presentation (domain f))
+      kappa = matrixKernelModulo (fullMorphism $ mor f) (presentation (codomain f))
 
   kernelArrow f g phi = morphismFromFullMatrix (domain kerf) (domain kerg) (fromJust $ solveMatrix m a)
     where

@@ -4,7 +4,7 @@ module Math.Topology.SSet.Moore where
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
-data Moore = Moore { mooreP :: Int, mooreDim :: Int }
+data Moore = Moore {mooreP :: Int, mooreDim :: Int}
 
 instance Show Moore where
   show (Moore p n) = "M(" ++ show p ++ ", " ++ show n ++ ")"
@@ -24,8 +24,8 @@ instance SSet Moore where
   geomFace (Moore p n) Basepoint _ = undefined
   geomFace (Moore p n) N _ = constantAt Basepoint (n - 1)
   geomFace (Moore p n) NPlusOne i
-    | even i && i < p*2 = NonDegen N
-    | otherwise         = constantAt Basepoint n
+    | even i && i < p * 2 = NonDegen N
+    | otherwise = constantAt Basepoint n
 
 instance FiniteType Moore where
   geomBasis (Moore p n) i

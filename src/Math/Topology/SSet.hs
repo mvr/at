@@ -1,7 +1,7 @@
 module Math.Topology.SSet where
 
-import Control.Monad (ap)
 import qualified Control.Category.Constrained as Constrained
+import Control.Monad (ap)
 import Data.Maybe (isJust)
 import Prelude hiding (Bounded)
 
@@ -33,7 +33,7 @@ instance Applicative FormalDegen where
 
 instance Monad FormalDegen where
   (NonDegen s) >>= f = f s
-  (Degen i s)  >>= f = degen (s >>= f) i
+  (Degen i s) >>= f = degen (s >>= f) i
 
 isDegen :: FormalDegen a -> Bool
 isDegen (NonDegen _) = False
@@ -61,7 +61,7 @@ isImageOfDegen :: FormalDegen a -> Int -> Bool
 isImageOfDegen (NonDegen _) _ = False
 isImageOfDegen (Degen j s) i
   | i == j = True
-  | i >  j = False -- We missed it, it can't be further down.
+  | i > j = False -- We missed it, it can't be further down.
   | otherwise = isImageOfDegen s i
 
 constantAt :: a -> Int -> FormalDegen a
@@ -99,6 +99,7 @@ class Eq (GeomSimplex a) => SSet a where
   isGeomSimplex _ _ = True
 
   geomSimplexDim :: a -> GeomSimplex a -> Int
+
   -- geomSimplexDim a s = length (geomFaces a s)
   geomFace :: a -> GeomSimplex a -> Int -> Simplex a
 
@@ -107,17 +108,16 @@ class Eq (GeomSimplex a) => SSet a where
     let d = geomSimplexDim a s
      in if d == 0 then [] else fmap (geomFace a s) [0 .. d]
 
-  -- TODO: for efficiency?
-  -- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
+-- TODO: for efficiency?
+-- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
 
 isSimplex' :: SSet a => a -> Simplex a -> Maybe Int
 isSimplex' a (NonDegen s) = if isGeomSimplex a s then Just (geomSimplexDim a s) else Nothing
 isSimplex' a (Degen i s) = do
   nextdim <- isSimplex' a s
-  if i <= nextdim then
-    Just (nextdim + 1)
-  else
-    Nothing
+  if i <= nextdim
+    then Just (nextdim + 1)
+    else Nothing
 
 isSimplex :: SSet a => a -> Simplex a -> Bool
 isSimplex a s = isJust (isSimplex' a s)
@@ -136,7 +136,7 @@ face a (Degen j s) i
 hasFace :: SSet a => a -> GeomSimplex a -> GeomSimplex a -> Bool
 hasFace a t s = NonDegen s `elem` geomFaces a t
 
-frontFace :: SSet a => a -> Simplex a ->  Simplex a
+frontFace :: SSet a => a -> Simplex a -> Simplex a
 frontFace a s = face a s 0
 
 backFace :: SSet a => a -> Simplex a -> Simplex a
@@ -148,17 +148,19 @@ class SSet a => FiniteType a where
 
 allSimplices :: (FiniteType a) => a -> Int -> [Simplex a]
 allSimplices a n | n < 0 = []
-allSimplices a n = fmap NonDegen (geomBasis a n) ++ (degensOf =<< allSimplices a (n-1))
-  where degensOf s@(NonDegen g) = fmap (\i -> Degen i s) [0..simplexDim a s]
-        degensOf s@(Degen j _) = fmap (\i -> Degen i s) [(j+1) .. simplexDim a s]
+allSimplices a n = fmap NonDegen (geomBasis a n) ++ (degensOf =<< allSimplices a (n -1))
+  where
+    degensOf s@(NonDegen g) = fmap (\i -> Degen i s) [0 .. simplexDim a s]
+    degensOf s@(Degen j _) = fmap (\i -> Degen i s) [(j + 1) .. simplexDim a s]
 
 class SSet a => Bounded a where
   amplitude :: a -> [Int]
 
 class SSet a => Pointed a where
   basepoint :: a -> GeomSimplex a
-  -- TODO: move Pointed to its own file to import Morphism
-  -- basepointMor :: a -> Morphism () a
+
+-- TODO: move Pointed to its own file to import Morphism
+-- basepointMor :: a -> Morphism () a
 
 -- | SSet with a unique 0-simplex.
 class Pointed a => ZeroReduced a

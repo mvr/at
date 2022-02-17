@@ -1,15 +1,14 @@
 -- | A SSet with Effective Homology
-
 module Math.Topology.SSet.Effective where
 
 import Control.Category.Constrained
 import Prelude hiding (id, (.))
 
-import Math.Topology.SSet
-import Math.Topology.SSet.NChains
+import Math.Algebra.AbGroupPres
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
-import Math.Algebra.AbGroupPres
+import Math.Topology.SSet
+import Math.Topology.SSet.NChains
 
 class (SSet a, CC.ChainComplex (Model a)) => Effective a where
   type Model a

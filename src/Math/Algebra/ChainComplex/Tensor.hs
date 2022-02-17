@@ -4,10 +4,10 @@
 module Math.Algebra.ChainComplex.Tensor where
 
 import Control.Category.Constrained hiding (fmap, return)
-import Math.Algebra.Combination
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.Combination
 import Prelude hiding (id, (.))
 
 data Tensor a b = Tensor a b
@@ -32,7 +32,7 @@ tensorCombination :: Combination a -> Combination b -> Combination (a, b)
 tensorCombination (Combination as) (Combination bs) = Combination $ do
   (c, a) <- as
   (d, b) <- bs
-  return (c*d, (a,b))
+  return (c * d, (a, b))
 
 tensorFunc ::
   (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
@@ -42,8 +42,8 @@ tensorFunc ::
   Morphism a2 b2 ->
   Morphism (Tensor a1 a2) (Tensor b1 b2)
 tensorFunc a1 a2 (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
- where
-  ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
+  where
+    ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
 
 tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
 tensorAssoc = fmapBasis $ \((a, b), c) -> (a, (b, c))
@@ -73,14 +73,14 @@ tensorReduction ::
   Reduction a2 b2 ->
   Reduction (Tensor a1 a2) (Tensor b1 b2)
 tensorReduction a1 a2 b1 b2 (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction f' g' h'
- where
-  (⊗) = tensorFunc a1 a2
-  (⊗^) = tensorFunc a1 a2
-  (⊗^^) = tensorFunc b1 b2
+  where
+    (⊗) = tensorFunc a1 a2
+    (⊗^) = tensorFunc a1 a2
+    (⊗^^) = tensorFunc b1 b2
 
-  f' = f1 ⊗ f2
-  g' = g1 ⊗^^ g2
-  h' = (h1 ⊗^ (g2 . f2)) + (id ⊗^ h2)
+    f' = f1 ⊗ f2
+    g' = g1 ⊗^^ g2
+    h' = (h1 ⊗^ (g2 . f2)) + (id ⊗^ h2)
 
 -- Convenience:
 tensorFuncArr ::

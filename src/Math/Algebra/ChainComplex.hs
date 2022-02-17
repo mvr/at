@@ -3,10 +3,12 @@
 -- | Chain complex of free \(ℤ\)-modules
 module Math.Algebra.ChainComplex where
 
-import Control.Category.Constrained (id, join, (.), incl)
+import Control.Category.Constrained (id, incl, join, (.))
 import qualified Control.Category.Constrained as Constrained
+import Data.Coerce
 import qualified Data.Matrix as M
 import Prelude hiding (Bounded, id, return, (.))
+
 import Math.Algebra.AbGroupPres
 import Math.Algebra.Combination
 import Math.ValueCategory (Arrow)
@@ -139,6 +141,6 @@ homologies a = fmap (uncurry homology) pairs
 
 neghomologies :: FiniteType a => a -> [AbGroupPres]
 neghomologies a = fmap (uncurry homology) pairs
- where
-  diffs = fmap (chainDiff a . negate) [-1 ..]
-  pairs = zip diffs (tail diffs)
+  where
+    diffs = fmap (chainDiff a . negate) [-1 ..]
+    pairs = zip diffs (tail diffs)

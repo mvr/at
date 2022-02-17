@@ -6,11 +6,12 @@ module Math.Topology.SSet.NChains where
 
 import Control.Category.Constrained
 import Data.Coerce
+import Prelude hiding (Bounded, Functor, return)
+
+import Math.Algebra.ChainComplex as CC hiding (Bounded, FiniteType, UMorphism (..), amplitude)
+import qualified Math.Algebra.ChainComplex as CC (Bounded, FiniteType (..), UMorphism (..), amplitude)
 import Math.Algebra.Combination
-import Math.Algebra.ChainComplex as CC hiding (FiniteType, UMorphism (..), Bounded, amplitude)
-import qualified Math.Algebra.ChainComplex as CC (FiniteType (..), UMorphism (..), Bounded, amplitude)
 import Math.Topology.SSet
-import Prelude hiding (Functor, return, Bounded)
 
 -- | Normalised chain complex of a SSet
 newtype NChains a = NChains a
@@ -19,8 +20,8 @@ instance Show a => Show (NChains a) where
   show (NChains a) = "N(" ++ show a ++ ")"
 
 newtype BasisSimplex a = BasisSimplex a
-  deriving Eq via a
-  deriving Show via a
+  deriving (Eq) via a
+  deriving (Show) via a
 
 instance SSet a => CC.ChainComplex (NChains a) where
   type Basis (NChains a) = BasisSimplex (GeomSimplex a)

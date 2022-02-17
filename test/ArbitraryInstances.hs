@@ -5,9 +5,9 @@ module ArbitraryInstances where
 
 import Data.List (sort)
 import Data.Matrix
-import Math.ValueCategory
 import Math.Algebra.AbGroupPres
 import Math.Algebra.AbGroupPres.IsoClass
+import Math.ValueCategory
 import System.Random
 import Test.QuickCheck
 

@@ -8,8 +8,8 @@ import Prelude hiding (Bounded)
 import Math.Topology.SSet
 
 data Skeleton a = Skeleton Int a
-  deriving ZeroReduced via a
-  deriving OneReduced via a
+  deriving (ZeroReduced) via a
+  deriving (OneReduced) via a
 
 instance Show a => Show (Skeleton a) where
   show (Skeleton n a) = "sk_" ++ show n ++ " " ++ show a

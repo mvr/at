@@ -1,9 +1,9 @@
 module Math.Topology.SpectralSequence where
 
-import Math.ValueCategory
 import Math.Algebra.AbGroup.Effective
+import Math.ValueCategory
 
-data SpectralSequence ob = SpectralSequence {
-  entry        :: Integer -> Integer -> Integer -> ob,
-  differential :: Integer -> Integer -> Integer -> Morphism ob
-}
+data SpectralSequence ob = SpectralSequence
+  { entry :: Integer -> Integer -> Integer -> ob,
+    differential :: Integer -> Integer -> Integer -> Morphism ob
+  }

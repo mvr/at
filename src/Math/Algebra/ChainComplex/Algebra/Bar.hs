@@ -97,7 +97,8 @@ shuffle c [] bs = singleComb bs
 shuffle c (a : as) (b : bs) =
   fmap (a :) (shuffle c as (b : bs))
     + kozulRule eps (fmap (b :) (shuffle c (a : as) bs))
-  where eps = (1 + degree c b) * (length (a:as) + sum (degree c <$> (a : as)))
+  where
+    eps = (1 + degree c b) * (length (a : as) + sum (degree c <$> (a : as)))
 
 instance (CommAlgebra a) => Algebra (Bar a) where
   unitMor _ = fmapBasis (const (coerce @[Basis a] []))

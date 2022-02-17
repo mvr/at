@@ -97,7 +97,8 @@ dK a d = proj a . (d - (d . h a d . d)) . incl a
 
 dvfReduction :: DVF a => a -> Reduction a (CriticalComplex a)
 dvfReduction a = Reduction (f a d) (g a d) (h a d)
-  where d = diff a
+  where
+    d = diff a
 
 dvfEquivalence :: DVF a => a -> Equivalence a (CriticalComplex a)
 dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)
@@ -105,6 +106,6 @@ dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)
 -- When does this actually work?
 instance (Algebra a, DVF a) => Algebra (CriticalComplex a) where
   muMor (CriticalComplex a) = proj a . muMor a . (incl a ⊗ incl a)
-   where
-    (⊗) = tensorFunc (CriticalComplex a) (CriticalComplex a)
+    where
+      (⊗) = tensorFunc (CriticalComplex a) (CriticalComplex a)
   unitMor (CriticalComplex a) = proj a . unitMor a

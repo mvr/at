@@ -213,6 +213,8 @@ Notes
   total functor on bisimplicial spaces algorithmically, because its
   definition involves the equaliser of certain face maps. So it only
   makes sense to implement bicomplexes and not bisimplicial sets.
+- Auto-formatting the code:
+  `fourmolu -o -XTypeApplications -i $(find . -name '*.hs')`
 - Running Kenzo with SBCL:
   ```
   > rlwrap sbcl

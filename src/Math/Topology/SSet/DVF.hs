@@ -8,8 +8,8 @@ module Math.Topology.SSet.DVF where
 
 import Data.Coerce
 import qualified Math.Algebra.ChainComplex.DVF as CC
-import Math.Topology.SSet.NChains
 import Math.Topology.SSet
+import Math.Topology.SSet.NChains
 
 class SSet a => DVF a where
   -- TODO: Name??

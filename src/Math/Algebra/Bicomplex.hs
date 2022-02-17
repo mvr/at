@@ -4,20 +4,20 @@
 -- convention that the squares in the complex *anticommute*.
 module Math.Algebra.Bicomplex where
 
-import Math.Algebra.Combination
 import Math.Algebra.ChainComplex hiding (FiniteType)
 import qualified Math.Algebra.ChainComplex as CC (FiniteType)
+import Math.Algebra.Combination
 import Prelude hiding (id, return, (.))
 
 newtype Bidegree = Bidegree (Int, Int)
-  deriving Show via (Int, Int)
+  deriving (Show) via (Int, Int)
 
 -- This should just be a monoid instance.
 instance Num Bidegree where
   fromInteger 0 = Bidegree (0, 0)
   fromInteger _ = error "Bidegree: fromInteger"
 
-  (Bidegree (h,v)) + (Bidegree (h',v')) = Bidegree (h+h', v+v')
+  (Bidegree (h, v)) + (Bidegree (h', v')) = Bidegree (h + h', v + v')
   negate _ = error "Bidegree: negate"
 
   (*) = error "Bidegree: (*)"
@@ -48,8 +48,8 @@ validBicomb a (Combination bs) = and $ fmap (\(_, b) -> isBibasis a b) bs
 newtype Tot a = Tot a
 
 newtype TotBasis a = TotBasis a
-  deriving Eq
-  deriving Show via a
+  deriving (Eq)
+  deriving (Show) via a
 
 instance (Bicomplex a) => ChainComplex (Tot a) where
   type Basis (Tot a) = TotBasis (Bibasis a)

@@ -32,12 +32,14 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
   -- TODO: this does more normalising/unnormalising than necessary,
   -- some rewrite rules might fix that.
   prodMor (Product a b) = (prodMor a × prodMor b) . αi . (id × α) . (id × (s × id)) . (id × αi) . α
-    where (×) = prodFunc
-          α = prodAssoc
-          αi = prodAssocInv
-          s = prodSym
+    where
+      (×) = prodFunc
+      α = prodAssoc
+      αi = prodAssocInv
+      s = prodSym
   invMor (Product a b) = invMor a × invMor b
-    where (×) = prodFunc
+    where
+      (×) = prodFunc
 
 instance SGrp g => Algebra (NChains g) where
   unitMor (NChains g) = CC.Morphism 0 (const (singleComb (BasisSimplex (basepoint g))))

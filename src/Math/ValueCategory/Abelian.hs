@@ -1,20 +1,27 @@
 {-# LANGUAGE FlexibleContexts #-}
+
 module Math.ValueCategory.Abelian where
 
 import Math.ValueCategory
-import Math.ValueCategory.Additive ( AdditiveCategory(zero) )
+import Math.ValueCategory.Additive (AdditiveCategory (zero))
 
 class AdditiveCategory a => AbelianCategory a where
-  kernel       :: Arrow a -> Arrow a
+  kernel :: Arrow a -> Arrow a
+
   -- Given f : A -> B, f' : A' -> B' and phi : A -> A' such that TODO, this is the induced map ker f -> ker f'
   kernelArrow :: Arrow a -> Arrow a -> Arrow a -> Arrow a
 
-  cokernel       :: Arrow a -> Arrow a
+  cokernel :: Arrow a -> Arrow a
+
   -- Given f : A -> B, f' : A' -> B' and B -> B' such that TODO, this is the induced map coker f -> coker f'
   cokernelArrow :: Arrow a -> Arrow a -> Arrow a -> Arrow a
 
-  {-# MINIMAL kernel, kernelArrow,
-              cokernel, cokernelArrow #-}
+  {-# MINIMAL
+    kernel,
+    kernelArrow,
+    cokernel,
+    cokernelArrow
+    #-}
 
 kernelObject :: AbelianCategory a => Arrow a -> a
 kernelObject = domain . kernel
@@ -56,4 +63,4 @@ isExact f g = homology f g == zero
 isExactSequence :: (Eq a, AbelianCategory a) => [Arrow a] -> Bool
 isExactSequence [] = True
 isExactSequence [x] = True
-isExactSequence (x:y:xs) = isExact x y && isExactSequence (y:xs)
+isExactSequence (x : y : xs) = isExact x y && isExactSequence (y : xs)

@@ -32,11 +32,11 @@ import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Group
-import Math.Topology.SSet.NChains
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
+import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product
 import Prelude hiding (id, return, (.))
 

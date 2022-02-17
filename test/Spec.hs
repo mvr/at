@@ -1,20 +1,21 @@
-import Test.Hspec
 import Control.Monad (forM_)
+import Test.Hspec
+
 -- import Data.Coerce
 import Data.Proxy
 import Debug.Trace
 
 import Math.Algebra.AbGroupPres
-import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.Bicomplex hiding (FiniteType)
-import Math.Algebra.ChainComplex.DVF
+import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Algebra.Bar
-import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.ChainComplex.DVF
 import Math.Algebra.ChainComplex.Hom
+import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Group
 import Math.Topology.SGrp ()
-import Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.KGn
+import Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
 import Math.Topology.SSet.NChains
@@ -23,16 +24,14 @@ import Math.Topology.SSet.Sphere
 
 import qualified AbGroupPresTest
 import qualified AbelianCategoryProperties
+import qualified BicomplexProperties
+import qualified ChainComplexProperties
 import qualified DVFProperties
 import qualified MatrixOpsTest
 import qualified ReductionProperties
-import qualified SSetProperties
 import qualified SGrpProperties
-import qualified BicomplexProperties
-import qualified ChainComplexProperties
+import qualified SSetProperties
 import qualified SmithNormalFormTest
-
-
 
 main :: IO ()
 main = hspec spec
@@ -71,7 +70,7 @@ spec = do
   describe "hom complex" $
     let c = NChains (Sphere 3)
         d = NChains (Sphere 2)
-    in ChainComplexProperties.checkChainCondition (Hom c d) 10
+     in ChainComplexProperties.checkChainCondition (Hom c d) 10
 
   describe "products" $
     describe "S³ × S²" $ testProduct 7 (Sphere 3) (Sphere 2)
@@ -89,13 +88,13 @@ spec = do
         gs = [0 .. 3] >>= (\d -> sequence (replicate d ns))
 
         criticalBasis = [[], [1]]
-        -- circlebasis = [Left (), Right (ShiftBasis ())]
+    -- circlebasis = [Left (), Right (ShiftBasis ())]
 
     describe "SSet" $
       SSetProperties.checkOn p gs
 
     describe "DVF" $
-      DVFProperties.checkOn (NChains p)  (BasisSimplex <$> gs)
+      DVFProperties.checkOn (NChains p) (BasisSimplex <$> gs)
 
     describe "dvfReduction" $
       ReductionProperties.checkOn

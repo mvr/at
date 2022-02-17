@@ -1,6 +1,7 @@
-{-# OPTIONS_GHC -Wno-orphans #-} -- Temporarily
--- | Additive Category
+-- Temporarily
+{-# OPTIONS_GHC -Wno-orphans #-}
 
+-- | Additive Category
 module Math.ValueCategory.Additive where
 
 import Math.ValueCategory
@@ -14,17 +15,18 @@ class (Num (LooseMorphism a), ValueCategory a) => AdditiveCategory a where
   looseFromZero b = looseZeroMorphism zero b
 
   looseZeroMorphism :: a -> a -> LooseMorphism a
-  -- looseZeroMorphism a b = looseFromZero b <> looseToZero a
 
-  -- looseAddMorphisms :: LooseMorphism a -> LooseMorphism a -> LooseMorphism a
-  -- looseSubtractMorphisms :: LooseMorphism a -> LooseMorphism a -> LooseMorphism a
-  -- looseNegateMorphism :: LooseMorphism a -> LooseMorphism a
+-- looseZeroMorphism a b = looseFromZero b <> looseToZero a
 
-  -- {-# MINIMAL
-  --  zero,
-  --  (toZero, fromZero | zeroMorphism),
-  --  addMorphisms,
-  --  (subtractMorphisms | negateMorphism) #-}
+-- looseAddMorphisms :: LooseMorphism a -> LooseMorphism a -> LooseMorphism a
+-- looseSubtractMorphisms :: LooseMorphism a -> LooseMorphism a -> LooseMorphism a
+-- looseNegateMorphism :: LooseMorphism a -> LooseMorphism a
+
+-- {-# MINIMAL
+--  zero,
+--  (toZero, fromZero | zeroMorphism),
+--  addMorphisms,
+--  (subtractMorphisms | negateMorphism) #-}
 
 toZero :: AdditiveCategory a => a -> Arrow a
 toZero a = Arrow a (looseToZero a) zero

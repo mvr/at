@@ -1,16 +1,14 @@
 module Math.Algebra.Combination where
 
-import Prelude hiding (id, return, (.))
 import Control.Category.Constrained (join, return)
 import qualified Control.Category.Constrained as Constrained
-import Data.Maybe (fromMaybe)
 import Data.List (find)
-
+import Data.Maybe (fromMaybe)
+import Prelude hiding (id, return, (.))
 
 -- | Z-linear combinations
 newtype Combination b = Combination {coeffs :: [(Int, b)]}
   deriving (Functor)
-
 
 instance Eq b => Eq (Combination b) where
   c == c' = null (coeffs (c - c'))

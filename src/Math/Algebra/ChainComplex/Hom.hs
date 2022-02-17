@@ -63,6 +63,7 @@ internalFunc ::
   (ChainComplex a, ChainComplex b, ChainComplex a', ChainComplex b') =>
   Morphism (Tensor (Hom a b) (Hom a' b')) (Hom (Tensor a a') (Tensor b b'))
 internalFunc = Morphism 0 $ \(HomBasis s t, HomBasis s' t') -> singleComb $ HomBasis (s, s') (t, t')
+
 -- internalFunc = hommap undefined . homunit
 --    where
 --     -- fiddle = αi . (id ⊗ α) . (id ⊗ (s ⊗ id)) . (id ⊗ αi) . α
@@ -70,7 +71,6 @@ internalFunc = Morphism 0 $ \(HomBasis s t, HomBasis s' t') -> singleComb $ HomB
 --     -- α = tensorAssoc
 --     -- αi = tensorAssocInv
 --   -- prodMor (Product a b) = (prodMor a × prodMor b) . αi . (id × α) . (id × (s × id)) . (id × αi) . α
-
 
 -- instance (FiniteType a, Bounded a, Bounded b, Eq (HomBasis a b)) => Bounded (Hom a b) where
 --   amplitude (Hom a b) =
