@@ -22,6 +22,7 @@ instance (ChainComplex a, ChainComplex b) => ChainComplex (Tensor a b) where
         fmap (,t) (diff a `onBasis` s)
           + kozulRule (degree a s) (fmap (s,) (diff b `onBasis` t))
 
+-- TODO: this assumes that a and b are null below degree 0
 instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
   dim (Tensor a b) n = sum [dim a i * dim b (n - i) | i <- [0 .. n]]
   basis (Tensor a b) n =
@@ -33,16 +34,16 @@ tensorCombination (Combination as) (Combination bs) = Combination $ do
   (d, b) <- bs
   return (c*d, (a,b))
 
-tensorMorphism ::
+tensorFunc ::
   (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
   a1 ->
   a2 ->
   Morphism a1 b1 ->
   Morphism a2 b2 ->
   Morphism (Tensor a1 a2) (Tensor b1 b2)
-tensorMorphism a1 a2 (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
-  where
-    ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
+tensorFunc a1 a2 (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
+ where
+  ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
 
 tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
 tensorAssoc = fmapBasis $ \((a, b), c) -> (a, (b, c))
@@ -72,18 +73,22 @@ tensorReduction ::
   Reduction a2 b2 ->
   Reduction (Tensor a1 a2) (Tensor b1 b2)
 tensorReduction a1 a2 b1 b2 (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction f' g' h'
-  where
-    f' = tensorMorphism a1 a2 f1 f2
-    g' = tensorMorphism b1 b2 g1 g2
-    h' = (tensorMorphism a1 a2 h1 (g2 . f2)) + (tensorMorphism a1 a2 id h2)
+ where
+  (⊗) = tensorFunc a1 a2
+  (⊗^) = tensorFunc a1 a2
+  (⊗^^) = tensorFunc b1 b2
+
+  f' = f1 ⊗ f2
+  g' = g1 ⊗^^ g2
+  h' = (h1 ⊗^ (g2 . f2)) + (id ⊗^ h2)
 
 -- Convenience:
-tensorMorphismArr ::
+tensorFuncArr ::
   (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
   ClosedMorphism a1 b1 ->
   ClosedMorphism a2 b2 ->
   ClosedMorphism (Tensor a1 a2) (Tensor b1 b2)
-tensorMorphismArr (ClosedMorphism a1 m1 b1) (ClosedMorphism a2 m2 b2) = ClosedMorphism (Tensor a1 a2) (tensorMorphism a1 a2 m1 m2) (Tensor b1 b2)
+tensorFuncArr (ClosedMorphism a1 m1 b1) (ClosedMorphism a2 m2 b2) = ClosedMorphism (Tensor a1 a2) (tensorFunc a1 a2 m1 m2) (Tensor b1 b2)
 
 -- tensorReductionArr ::
 --   (ChainComplex a1, ChainComplex a2) =>

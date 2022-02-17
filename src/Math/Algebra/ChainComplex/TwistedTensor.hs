@@ -34,7 +34,7 @@ perturbationForCochain a b tauMor = delta
     idA = ClosedMorphism a id a
     idB = ClosedMorphism b id b
     assoc = ClosedMorphism (Tensor (Tensor a b) b) tensorAssoc (Tensor a (Tensor b b))
-    (⊗) = tensorMorphismArr
+    (⊗) = tensorFuncArr
 
 -- | Calculating the twisting cochain from a perturbation on a tensor
 -- product: franz:twisting

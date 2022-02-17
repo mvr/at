@@ -49,6 +49,7 @@ instance Bounded () where
 validComb :: ChainComplex a => a -> Combination (Basis a) -> Bool
 validComb a (Combination bs) = and $ fmap (\(_, b) -> isBasis a b) bs
 
+-- well, not really
 kozulRule :: Num b => Int -> b -> b
 kozulRule n c = if even n then c else negate c
 

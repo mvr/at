@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Math.Algebra.AbGroupPres where
@@ -98,8 +97,7 @@ stripZeroes (li, l, d) =
 reducePresentation :: Matrix Integer -> (Matrix Integer, Matrix Integer, Matrix Integer)
 reducePresentation m =
   let (Triple li l d _ _) = smithNormalForm m
-      (li', l', d') = stripOnes (li, l, d)
-   in stripZeroes (li', l', d')
+   in stripZeroes $ stripOnes (li, l, d)
 
 fromPresentation :: Matrix Integer -> AbGroupPres
 fromPresentation m = AbGroupPres m (M.forceMatrix d) (M.forceMatrix li) (M.forceMatrix l)

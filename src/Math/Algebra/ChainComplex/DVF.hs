@@ -104,6 +104,7 @@ dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)
 
 -- When does this actually work?
 instance (Algebra a, DVF a) => Algebra (CriticalComplex a) where
-  muMor (CriticalComplex a) = proj a . muMor a . (incl a `t` incl a)
-    where t = tensorMorphism (CriticalComplex a) (CriticalComplex a)
+  muMor (CriticalComplex a) = proj a . muMor a . (incl a ⊗ incl a)
+   where
+    (⊗) = tensorFunc (CriticalComplex a) (CriticalComplex a)
   unitMor (CriticalComplex a) = proj a . unitMor a

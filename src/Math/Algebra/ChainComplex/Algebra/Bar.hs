@@ -1,19 +1,25 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | The bar construction of a DG-algebra `A`, specifically,
--- `Bar(Z,A,Z)`.  The bar construction of an ordinary algebra is a
+-- | The bar construction of a DG-algebra \(A\), specifically,
+-- \(Bar(ℤ,A,ℤ)\).  The bar construction of an ordinary algebra is a
 -- special case (sometimes called the 'standard complex').
 --
--- There are lots of places that the signs can go wrong. Here are
--- various descriptions of the bar construction.
--- Section 2.2.2 in http://math.uchicago.edu/~may/REU2019/REUPapers/Zhang,Ruoqi(Rachel).pdf
--- Also https://ncatlab.org/nlab/show/bar+and+cobar+construction
--- Also Homology, MacLane, Chapter X.10 (Kenzo claims there is a sign error)
+-- There are many resources that describe this bar construction. For
+-- example, see Section 2.2.2 in
+-- <http://math.uchicago.edu/~may/REU2019/REUPapers/Zhang,Ruoqi(Rachel).pdf>.
+-- Also <https://ncatlab.org/nlab/show/bar+and+cobar+construction>,
+-- and Homology, MacLane, Chapter X.10 (Kenzo claims there is a sign
+-- error)
 --
--- To reduce the surface area of where sign issues can creep in, I am
--- going to factor the construction into the composite of simpler
--- ones:
+-- For the commutative algebra structure see for example
+-- <https://doi.org/10.1023/A:1013544506151>
+--
+-- To reduce the surface area of where sign issues can creep in, the
+-- construction is factored into two steps:
 -- Alg(Z) -Bar-> {Simplicial objects in Ch(Z)} -Dold-Kan-> biCh(Z) -Tot-> Ch(Z)
+module Math.Algebra.ChainComplex.Algebra.Bar where
+
+-- There are lots of places that the signs can go wrong.
 --
 -- Whatever we do should end up compatible with the sign choices made
 -- by Kenzo, so we can confirm things are going right.
@@ -25,12 +31,9 @@
 -- occasion. Namely, the bar construction — or specifically, in this
 -- case, the bar construction of a differential graded algebra with
 -- coefficients in a pair of differential graded modules. "
---
--- For the commutative algebra structure see for example
--- <https://doi.org/10.1023/A:1013544506151>
-module Math.Algebra.ChainComplex.Algebra.Bar where
 
 import Data.Coerce
+
 import Math.Algebra.Bicomplex hiding (FiniteType)
 import qualified Math.Algebra.Bicomplex as Bi (FiniteType)
 import Math.Algebra.ChainComplex
@@ -101,5 +104,7 @@ instance (CommAlgebra a) => Algebra (Bar a) where
   muMor (Bar a) = Morphism 0 $ coerce (uncurry (shuffle a))
 
 instance (CommAlgebra a) => CommAlgebra (Bar a)
+
+-- TODO: functoriality on reductions, this is tougher. check gl:pertrubation-theory-ii, but probably real:algebra-structures, real:hpt
 
 -- TODO: universal twisting cochain a -> Bar a (should be same as the one induced by the twist on Wbar)

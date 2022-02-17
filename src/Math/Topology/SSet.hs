@@ -160,10 +160,10 @@ class SSet a => Pointed a where
   -- TODO: move Pointed to its own file to import Morphism
   -- basepointMor :: a -> Morphism () a
 
--- | SSet has unique 0-simplex.
+-- | SSet with a unique 0-simplex.
 class Pointed a => ZeroReduced a
 
--- | SSet has no non-degenerate 1-simplices.
+-- | SSets with no non-degenerate 1-simplices.
 class ZeroReduced a => OneReduced a
 
 -- | Simplicial morphisms

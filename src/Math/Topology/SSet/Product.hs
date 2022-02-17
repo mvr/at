@@ -90,6 +90,11 @@ prodAssocInv = Morphism $ \(s, tr) ->
 prodFunc :: Morphism a a' -> Morphism b b' -> Morphism (Product a b) (Product a' b')
 prodFunc m m' = Morphism $ \(s, t) -> prodNormalise (m `onSimplex` s, m' `onSimplex` t)
 
+-- TODO: there is probably some kind of typeclass trickery we could
+-- use to implement 'coherence'. It would be nice to specify a
+-- type-level mapping (1, (2, 3)) -> ((2, 1), 3) and have it put
+-- together the above maps as required.
+
 instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status
 
