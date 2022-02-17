@@ -36,7 +36,7 @@ factorsOf = f (head primes) (tail primes)
   where
     f n ns m
       | m < 2 = []
-      | m < n ^ 2 = [m]
+      | m < n * n = [m]
       | m `mod` n == 0 = n : f n ns (m `div` n)
       | otherwise = f (head ns) (tail ns) m
 

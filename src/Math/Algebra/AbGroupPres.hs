@@ -189,6 +189,11 @@ instance Num AbMorphism where
   (AbMorphism f' r') - (AbMorphism f r) = AbMorphism (f' - f) (r' - r)
   negate (AbMorphism f r) = AbMorphism (negate f) (negate r)
 
+  fromInteger _ = error "AbMorphism: fromInteger"
+  (*) = error "AbMorphism: (*)"
+  abs = error "AbMorphism: abs"
+  signum = error "AbMorphism: signum"
+
 instance AdditiveCategory AbGroupPres where
   zero =
     AbGroupPres

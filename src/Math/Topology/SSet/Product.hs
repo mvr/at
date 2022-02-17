@@ -8,7 +8,7 @@
 -- some backwards, we follow Kenzo by going backwards.
 module Math.Topology.SSet.Product where
 
-import Control.Category.Constrained (fmap, id, (.))
+import Control.Category.Constrained (fmap, (.))
 import Data.Coerce
 import Prelude hiding (fmap, id, return, (.))
 

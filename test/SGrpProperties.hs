@@ -1,7 +1,6 @@
 -- |
 module SGrpProperties where
 
-import Control.Monad (forM_, unless, when)
 import qualified SSetProperties as SSet
 import Test.Hspec
 import Prelude hiding (id, (.))

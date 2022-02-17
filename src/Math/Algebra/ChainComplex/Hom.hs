@@ -3,7 +3,6 @@
 -- | Internal hom of chain complexes
 module Math.Algebra.ChainComplex.Hom where
 
-import Control.Category.Constrained (id, (.))
 import qualified Control.Category.Constrained as Constrained
 
 import Prelude hiding (Bounded, id, (.))

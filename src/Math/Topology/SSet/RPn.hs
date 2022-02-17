@@ -36,3 +36,5 @@ instance Pointed RPn where
   basepoint (RPn n) = coerce (basepoint KZmod2_1)
 
 instance ZeroReduced RPn
+
+instance Effective RPn

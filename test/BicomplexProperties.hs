@@ -1,8 +1,8 @@
 -- |
 module BicomplexProperties where
 
-import Control.Category.Constrained (id, (.))
-import Control.Monad (forM_, unless)
+import Control.Category.Constrained ((.))
+import Control.Monad (forM_)
 import Math.Algebra.Bicomplex
 import Math.Algebra.ChainComplex
 import Math.Algebra.Combination

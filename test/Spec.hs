@@ -3,7 +3,6 @@ import Test.Hspec
 
 -- import Data.Coerce
 import Data.Proxy
-import Debug.Trace
 
 import Math.Algebra.AbGroupPres
 import Math.Algebra.Bicomplex hiding (FiniteType)
