@@ -75,6 +75,11 @@ instance DVF (WbarDiscrete Zmod) where
     | otherwise = Target (a1 + 1 : as) Neg
   vf (WbarDiscrete (Zmod n)) (a1 : as) = Source (1 : a1 - 1 : as) Neg
 
+instance Effective (WbarDiscrete Zmod) where
+  type Model (WbarDiscrete Zmod) = CriticalComplex (NChains (WbarDiscrete Zmod))
+  model w = CriticalComplex (NChains w)
+  eff w = dvfEquivalence (NChains w)
+
 -- | An efficient version of \(K(\mathbb{Z}/2, 1)\)
 -- Ugly name, but what can you do?
 data KZmod2_1 = KZmod2_1
