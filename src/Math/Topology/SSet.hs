@@ -3,6 +3,7 @@ module Math.Topology.SSet where
 import Control.Monad (ap)
 import qualified Control.Category.Constrained as Constrained
 import Data.Maybe (isJust)
+import Prelude hiding (Bounded)
 
 -- NOTE: This should be made much more efficient. First, it could be
 -- flattened so that in a degenerate simplex you have immediate access
@@ -150,6 +151,9 @@ allSimplices a n | n < 0 = []
 allSimplices a n = fmap NonDegen (geomBasis a n) ++ (degensOf =<< allSimplices a (n-1))
   where degensOf s@(NonDegen g) = fmap (\i -> Degen i s) [0..simplexDim a s]
         degensOf s@(Degen j _) = fmap (\i -> Degen i s) [(j+1) .. simplexDim a s]
+
+class SSet a => Bounded a where
+  amplitude :: a -> [Int]
 
 class SSet a => Pointed a where
   basepoint :: a -> GeomSimplex a

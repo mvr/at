@@ -6,6 +6,7 @@ module Math.Algebra.ChainComplex where
 import Control.Category.Constrained (id, join, (.), incl)
 import qualified Control.Category.Constrained as Constrained
 import qualified Data.Matrix as M
+import Prelude hiding (Bounded, id, return, (.))
 import Math.Algebra.AbGroupPres
 import Math.Algebra.Combination
 import Math.ValueCategory (Arrow)
@@ -37,6 +38,13 @@ instance FiniteType () where
   dim _ _ = 0
   basis _ 0 = [()]
   basis _ _ = []
+
+class ChainComplex a => Bounded a where
+  -- | Dimensions with non-zero chains
+  amplitude :: a -> [Int]
+
+instance Bounded () where
+  amplitude _ = [0]
 
 validComb :: ChainComplex a => a -> Combination (Basis a) -> Bool
 validComb a (Combination bs) = and $ fmap (\(_, b) -> isBasis a b) bs
