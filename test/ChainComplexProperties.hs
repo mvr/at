@@ -27,11 +27,18 @@ isIdOnAll m bs = forM_ bs (\b -> isIdOn b m)
 isZeroOnAll :: (Num d, Eq a', Show a', Show a) => UMorphism d a a' -> [a] -> Expectation
 isZeroOnAll m bs = forM_ bs (\b -> isZeroOn b m)
 
-checkChainCondition :: (ChainComplex a, Show (Basis a)) => a -> String -> [Basis a] -> Spec
-checkChainCondition a name as = do
+checkChainConditionOn :: (ChainComplex a, Show (Basis a)) => a -> String -> [Basis a] -> Spec
+checkChainConditionOn a name as = do
   it "images should be valid" $
     forM_ as (\b -> diff a `onBasis` b `shouldSatisfy` validComb a)
   it ("∂ ∘ ∂ = 0 for " ++ name) $ (diff a . diff a) `isZeroOnAll` as
+
+checkChainCondition :: (FiniteType a, Show (Basis a)) => a -> Int -> Spec
+checkChainCondition a n = do
+  let as = [0 .. n] >>= basis a
+  it "images should be valid" $
+    forM_ as (\b -> diff a `onBasis` b `shouldSatisfy` validComb a)
+  it ("∂ ∘ ∂ = 0") $ (diff a . diff a) `isZeroOnAll` as
 
 checkChainMap :: (ChainComplex a, ChainComplex a', Show (Basis a'), Show (Basis a)) => a -> a' -> String -> [Basis a] -> Morphism a a' -> Spec
 checkChainMap a a' name as m = do

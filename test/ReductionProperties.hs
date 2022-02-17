@@ -22,8 +22,8 @@ checkTop a as bs (Reduction f g h) = do
 
 checkOn :: (ChainComplex a, ChainComplex b, Show (Basis b), Show (Basis a)) => a -> b -> [Basis a] -> [Basis b] -> Reduction a b -> Spec
 checkOn a b as bs r@(Reduction f g h) = do
-  checkChainCondition a "top" as
-  checkChainCondition b "bottom" bs
+  checkChainConditionOn a "top" as
+  checkChainConditionOn b "bottom" bs
   checkChainMap a b "f" as f
   checkChainMap b a "g" bs g
 

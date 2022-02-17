@@ -10,6 +10,7 @@ import Math.Algebra.Bicomplex hiding (FiniteType)
 import Math.Algebra.ChainComplex.DVF
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.ChainComplex.Hom
 import Math.Algebra.Group
 import Math.Topology.SGrp ()
 import Math.Topology.SGrp.Wbar as Wbar
@@ -66,6 +67,11 @@ spec = do
   describe "Abelian category problems for AbGroup" $ AbelianCategoryProperties.spec (Proxy @AbGroupPres)
   -- describe "Abelian category problems for Cached AbGroup" $ AbelianCategoryProperties.spec (Proxy @AbGroupPres)
   AbGroupPresTest.spec
+
+  describe "hom complex" $
+    let c = NChains (Sphere 3)
+        d = NChains (Sphere 2)
+    in ChainComplexProperties.checkChainCondition (Hom c d) 10
 
   describe "products" $
     describe "S³ × S²" $ testProduct 7 (Sphere 3) (Sphere 2)
@@ -133,4 +139,4 @@ spec = do
     describe "is a chain complex" $ do
       let as = [0 .. 5] >>= CC.basis a
 
-      ChainComplexProperties.checkChainCondition a "bar" as
+      ChainComplexProperties.checkChainConditionOn a "bar" as
