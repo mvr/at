@@ -1,4 +1,4 @@
--- | The standard n-simplex
+-- | The standard \(n\)-simplex
 
 module Math.Topology.SSet.NSimplex where
 
@@ -6,7 +6,9 @@ import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
 newtype NSimplex = NSimplex { simplexDimension :: Int }
-  deriving (Eq, Ord, Show)
+
+instance Show NSimplex where
+  show (NSimplex n) = "Δ^" ++ show n
 
 newtype NSimplexSimplex = NSimplexSimplex [Int]
   deriving (Eq, Ord, Show)

@@ -14,7 +14,9 @@ import Prelude hiding (Functor, return, Bounded)
 
 -- | Normalised chain complex of a SSet
 newtype NChains a = NChains a
-  deriving (Show)
+
+instance Show a => Show (NChains a) where
+  show (NChains a) = "N(" ++ show a ++ ")"
 
 newtype BasisSimplex a = BasisSimplex a
   deriving Eq via a

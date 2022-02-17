@@ -1,11 +1,15 @@
--- | The n-sphere S^n
+-- | The \(n\)-sphere \(S^n\)
 module Math.Topology.SSet.Sphere where
+
+import Prelude hiding (Bounded)
 
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
 newtype Sphere = Sphere { sphereDim :: Int }
-  deriving (Eq, Ord, Show)
+
+instance Show Sphere where
+  show (Sphere n) = "S^" ++ show n
 
 data SphereSimplex = Basepoint | Cell
   deriving (Eq, Ord, Show)

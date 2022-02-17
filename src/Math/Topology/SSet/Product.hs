@@ -27,6 +27,9 @@ import Math.Topology.SSet.NChains
 
 data Product a b = Product a b
 
+instance (Show a, Show b) => Show (Product a b) where
+  show (Product a b) = show a ++ " × " ++ show b
+
 -- NOTE: In bit-field form we can use "Parallel Bits Extract" or
 -- similar to do this efficiently. Single x86 instruction!
 -- https://stackoverflow.com/questions/21144237/standard-c11-code-equivalent-to-the-pext-haswell-instruction-and-likely-to-be

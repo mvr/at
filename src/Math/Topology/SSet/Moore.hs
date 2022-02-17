@@ -5,7 +5,9 @@ import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
 data Moore = Moore { mooreP :: Int, mooreDim :: Int }
-  deriving (Eq, Ord, Show)
+
+instance Show Moore where
+  show (Moore p n) = "M(" ++ show p ++ ", " ++ show n ++ ")"
 
 data MooreSimplex = Basepoint | N | NPlusOne
   deriving (Eq, Ord, Show)
