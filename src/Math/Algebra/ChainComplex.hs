@@ -110,12 +110,9 @@ instance Constrained.Semigroupoid ClosedMorphism where
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
 chainGroup :: FiniteType a => a -> Int -> AbGroupPres
-chainGroup a n | n < 0 = zero
 chainGroup a n = freeAbGroup (fromIntegral (dim a n))
 
 chainDiff :: FiniteType a => a -> Int -> Arrow AbGroupPres
-chainDiff a n | n < 0 = zeroArrow zero zero
-chainDiff a 0 = toZero (chainGroup a 0)
 chainDiff a n
   | rows == 0 && cols == 0 = zeroArrow zero zero
   | rows == 0 = toZero (chainGroup a n)
@@ -138,3 +135,9 @@ homologies a = fmap (uncurry homology) pairs
   where
     diffs = fmap (chainDiff a) [0 ..]
     pairs = zip (tail diffs) diffs
+
+neghomologies :: FiniteType a => a -> [AbGroupPres]
+neghomologies a = fmap (uncurry homology) pairs
+ where
+  diffs = fmap (chainDiff a . negate) [-1 ..]
+  pairs = zip diffs (tail diffs)
