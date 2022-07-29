@@ -38,6 +38,7 @@ import Math.Algebra.Bicomplex hiding (FiniteType)
 import qualified Math.Algebra.Bicomplex as Bi (FiniteType)
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Algebra
+import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.Combination
 
 newtype Bar a = Bar a
@@ -105,6 +106,12 @@ instance (CommAlgebra a) => Algebra (Bar a) where
   muMor (Bar a) = Morphism 0 $ coerce (uncurry (shuffle a))
 
 instance (CommAlgebra a) => CommAlgebra (Bar a)
+
+barEquiv ::
+  (ChainComplex a, ChainComplex b) =>
+  Equivalence a b ->
+  Equivalence (Bar a) (Bar b)
+barEquiv = _
 
 -- TODO: functoriality on reductions, this is tougher. check gl:pertrubation-theory-ii, but probably real:algebra-structures, real:hpt
 

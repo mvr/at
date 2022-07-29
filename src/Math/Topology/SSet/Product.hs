@@ -145,12 +145,21 @@ status (Product a b) (s, t) =
         t
       )
 
+stripProduct :: (Simplex a, Simplex b) -> (GeomSimplex a, GeomSimplex b)
+stripProduct (s, t) = (underlyingGeom s, underlyingGeom t)
+
+reconstructProduct :: (SSet a, SSet b) => a -> b -> (GeomSimplex a, GeomSimplex b) -> (Simplex a, Simplex b)
+reconstructProduct a b (s, t) =
+  let n = geomSimplexDim a s
+      m = geomSimplexDim b t
+  in (downshiftN n (constantAt s m), constantAt t n)
+
 criticalIso ::
   forall a b.
   CC.Morphism
     (CriticalComplex (NChains (Product a b)))
     (Tensor (NChains a) (NChains b))
-criticalIso = fmapBasis $ coerce @((Simplex a, Simplex b) -> _) $ \(s, t) -> (underlyingGeom s, underlyingGeom t)
+criticalIso = fmapBasis $ coerce @((Simplex a, Simplex b) -> _) stripProduct
 
 criticalIsoInv ::
   (SSet a, SSet b) =>
@@ -159,12 +168,7 @@ criticalIsoInv ::
   CC.Morphism
     (Tensor (NChains a) (NChains b))
     (CriticalComplex (NChains (Product a b)))
-criticalIsoInv a b = fmapBasis $
-  coerce $
-    \(s, t) ->
-      let n = geomSimplexDim a s
-          m = geomSimplexDim b t
-       in (downshiftN n (constantAt s m), constantAt t n)
+criticalIsoInv a b = fmapBasis $ coerce $ reconstructProduct a b
 
 ezReduction ::
   (SSet a, SSet b) =>

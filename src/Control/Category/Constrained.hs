@@ -51,6 +51,8 @@ newtype Wrapped (f :: * -> *) a = Wrapped (f a)
 instance (Prelude.Functor f) => Functor (->) (->) (Wrapped f) where
   fmap f (Wrapped a) = Wrapped (Prelude.fmap f a)
 
+deriving via (Wrapped []) instance Functor (->) (->) []
+
 -- I don't care to factor this through Applicative. Only makes sense
 -- for Cartesian categories anyway.
 class (Functor cat cat m) => Monad cat m where

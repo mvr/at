@@ -9,9 +9,11 @@
 module Math.Topology.SGrp.Wbar where
 
 import Control.Category.Constrained ((.))
+import Data.Coerce
 import Prelude hiding (id, return, (.))
 
-import Math.Algebra.ChainComplex as CC (Morphism)
+import qualified Math.Algebra.Bicomplex as Bi
+import qualified Math.Algebra.ChainComplex as CC (Morphism, fmapBasis)
 import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
@@ -55,7 +57,7 @@ unnormalise g (Degen i s) = insertUnit g i (unnormalise g s)
 
 instance (SGrp g) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
-  -- (Wbar G)_n = G_n-1 x xG_n-2 x ... x G_0
+  -- (Wbar G)_n = G_n-1 x G_n-2 x ... x G_0
   -- meeting a slightly complicated condition on whether the list
   -- contains a unit, and the things proceding it are all degeneracies
   type GeomSimplex (Wbar g) = WbarSimplex [Simplex g]
@@ -132,3 +134,45 @@ instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
         Source nss' i -> Source (WbarSimplex (degen s 0 : unnormalise g (downshift (fmap (const nss') nss)))) (flipIncidence i)
         Target ntt' i -> Target (WbarSimplex (upshift s : unnormalise g (upshift (fmap (const ntt') nss)))) (flipIncidence i)
         Critical -> Critical
+
+stripBar :: Pointed g => g -> GeomSimplex (Wbar g) -> [GeomSimplex g]
+stripBar g (WbarSimplex as) = filter (/= basepoint g) $ fmap underlyingGeom as
+
+reconstructBar :: SGrp g => g -> [GeomSimplex g] -> GeomSimplex (Wbar g)
+reconstructBar _ [] = WbarSimplex []
+reconstructBar g (a:as) = WbarSimplex (a':nb')
+  where rest = reconstructBar g as
+        (b', a') = reconstructProduct (Wbar g) g (rest, a)
+        nb' = unnormalise g b'
+
+criticalIso ::
+  forall g.
+  (Pointed g) =>
+  g ->
+  CC.Morphism
+    (CriticalComplex (NChains (Wbar g)))
+    (Bar (NChains g))
+criticalIso g = CC.fmapBasis $ coerce @(GeomSimplex (Wbar g) -> _) (stripBar g)
+
+criticalIsoInv ::
+  (SGrp g) =>
+  g ->
+  CC.Morphism
+    (Bar (NChains g))
+    (CriticalComplex (NChains (Wbar g)))
+criticalIsoInv g = CC.fmapBasis $ coerce $ reconstructBar g
+
+wbarReduction ::
+  (SAb g, ZeroReduced g) =>
+  Wbar g ->
+  Reduction
+    (NChains (Wbar g))
+    (Bar (NChains g))
+wbarReduction p@(Wbar g) =
+  isoToReduction (criticalIso g) (criticalIsoInv g)
+    . dvfReduction (NChains p)
+
+instance (SAb g, Effective g, ZeroReduced g, Algebra (Model g)) => Effective (Wbar g) where
+  type Model (Wbar g) = Bar (Model g)
+  model (Wbar g) = Bar (model g)
+  eff (Wbar g) = barEquiv (eff g) . fromRedLeft (NChains (Wbar g)) (Bar (NChains g)) (wbarReduction (Wbar g))
