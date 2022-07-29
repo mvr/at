@@ -27,9 +27,33 @@ data AbGroupPres = AbGroupPres
 instance Eq AbGroupPres where
   a == b = reduced a == reduced b
 
+-- Cokernel of the reduced matrix
+newtype AbGroupPresElt = AbGroupPresElt { eltVector :: (Matrix Integer) }
+
+normaliseElt :: AbGroupPres -> Matrix Integer -> AbGroupPresElt
+normaliseElt (AbGroupPres _ d _ _) c = AbGroupPresElt $ M.fromList (M.nrows d) 1 $ fmap (uncurry doMod) pairs
+  where
+    pairs = zip (V.toList (M.getDiag d) ++ repeat 0) (M.toList c)
+    doMod x 0 = x
+    doMod x d = x `mod` d
+
 instance Group AbGroupPres where
-  type Element AbGroupPres = Matrix Integer
-  -- TODO
+  type Element AbGroupPres = AbGroupPresElt
+  prod g (AbGroupPresElt x) (AbGroupPresElt y) = normaliseElt g (x + y)
+  unit (AbGroupPres _ d _ _) = AbGroupPresElt $ M.zero (M.nrows d) 1
+  inv g (AbGroupPresElt x) = normaliseElt g (negate x)
+
+instance Abelian AbGroupPres
+
+columnStdBasis :: Int -> Int -> Matrix Integer
+columnStdBasis c i = M.matrix c 1 (\(j, _) -> if i == j then 1 else 0)
+
+indGenerators :: AbGroupPres -> [AbGroupPresElt]
+indGenerators a@(AbGroupPres _ d _ _)
+  | a == zero = []
+  | otherwise = (AbGroupPresElt . columnStdBasis c) <$> [1 .. c]
+  where
+    c = M.nrows d
 
 isoClass :: AbGroupPres -> IsoClass
 isoClass (AbGroupPres _ d _ _) = IsoClass (fromIntegral r) (invariantFactorsToElementaryDivisors diag)
