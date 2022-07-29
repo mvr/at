@@ -26,7 +26,7 @@
 module Math.Topology.SSet.PrincipalFibration where
 
 import Data.Coerce
-import Math.Algebra.ChainComplex
+import Math.Algebra.ChainComplex hiding (Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
@@ -45,6 +45,9 @@ newtype PrincipalFibration a g = PrincipalFibration {twistOnGeom :: GeomSimplex 
 twistOn :: PrincipalFibration a g -> Simplex a -> Simplex g
 twistOn f (NonDegen s) = f `twistOnGeom` s
 twistOn f (Degen i s) = degen (f `twistOn` s) i
+
+pullback :: PrincipalFibration b g -> Morphism a b -> PrincipalFibration a g
+pullback t f = PrincipalFibration $ \a -> t `twistOn` (f `onGeomSimplex` a)
 
 data TotalSpace a g = TotalSpace a g (PrincipalFibration a g)
 
