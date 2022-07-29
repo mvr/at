@@ -19,7 +19,7 @@ import Prelude hiding (Bounded)
 -- operator.
 data FormalDegen a
   = NonDegen a
-  | Degen Int (FormalDegen a)
+  | Degen !Int (FormalDegen a)
   deriving (Eq, Functor)
   deriving (Constrained.Functor (->) (->)) via (Constrained.Wrapped FormalDegen)
 
