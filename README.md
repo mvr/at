@@ -1,6 +1,8 @@
 AT
 ==
 
+![build status](https://github.com/mvr/at/actions/workflows/haskell.yml/badge.svg)
+
 A Haskell rewrite of
 [Kenzo](https://www-fourier.ujf-grenoble.fr/~sergerar/Kenzo/), a
 collection of algorithms for 'effective algebraic topology'. The
@@ -81,11 +83,12 @@ Plan
   - [x] Strong Equivalence
     - [x] Composition via span
 - Constructions
-  - [x] Tensor
+  - [x] Tensor (of chain complex)
     - [x] Functoriality
+  - [ ] Hom (of chain complex)
   - [x] 'Bicone' (specialised pushout for surjections)
   - [x] Bar
-    - [ ] Commutative algebra structure
+    - [x] Commutative algebra structure
     - [ ] Functoriality
   - [ ] Cobar
     - [ ] Of 1-reduced
@@ -128,11 +131,13 @@ Plan
     - [x] For non-reduced group
     - [x] Special case for discrete groups
     - [x] Group Structure
+    - [x] Canonical twisting function `WG -> G`
   - [ ] Suspension
     - [ ] 0-reduced
     - [ ] General [Kan suspension](#ref-goerss-jardine)
   - [ ] Pushouts (of 1-reduced sSets)
   - [ ] Other Finite Homotopy Colimits
+  - [ ] 'Nerve' taking a ChainComplex back to a sAb?
 
 #### Effective Homology
 - Classifying Spaces
@@ -166,11 +171,12 @@ Plan
 - Homotopy Groups
   - [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
   - [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
-- Steenrod Operations?
+- Cohomology Operations
+  - [ ] [Over fields using  "minimal models"](#ref-gr%3Acohomology-ops) and
 
 #### Misc TODOs
 - [ ] Fix space leaks, jeez
-- [ ] Pretty-printing for everything
+- [ ] Pretty-printing for everything (unicode sub/superscripts in output?)
 - [ ] Docs for everything
 - [ ] Move this list to Github issues
 - [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex
