@@ -45,7 +45,8 @@ isCritical a b
 
 newtype CriticalComplex a = CriticalComplex a
 newtype CriticalBasis a = CriticalBasis a
-  deriving (Eq, Show)
+  deriving (Eq)
+  deriving (Show) via a
 
 -- Could be done as a use of the perturbation lemma, but I think these
 -- direct definitions might end up being more efficient
