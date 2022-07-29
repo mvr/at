@@ -25,6 +25,7 @@ import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product hiding (criticalIso, criticalIsoInv)
+import Math.Topology.SSet.PrincipalFibration
 
 newtype Wbar g = Wbar g
   deriving (Show)
@@ -176,3 +177,11 @@ instance (SAb g, Effective g, ZeroReduced g, Algebra (Model g)) => Effective (Wb
   type Model (Wbar g) = Bar (Model g)
   model (Wbar g) = Bar (model g)
   eff (Wbar g) = barEquiv (eff g) . fromRedLeft (NChains (Wbar g)) (Bar (NChains g)) (wbarReduction (Wbar g))
+
+-- | Canonical twisting function \(\bar W G \rightsquigarrow G\),
+-- corresponding to the fibre sequence \( G \hookrightarrow W G
+-- \twoheadrightarrow \bar W G\). The total space \(W G\) is
+-- contractible.
+
+canonicalTwist :: PrincipalFibration (Wbar g) g
+canonicalTwist = PrincipalFibration $ \(WbarSimplex s) -> head s -- shockingly simple
