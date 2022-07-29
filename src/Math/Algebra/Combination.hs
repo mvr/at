@@ -16,16 +16,25 @@ instance Eq b => Eq (Combination b) where
 -- TODO: obviously make this a hashmap, possibly with special cases
 -- for very small combinations? Unless hashmap alreayd does this.
 
-showTerm :: Show b => (Int, b) -> String
-showTerm (0, b) = error "showTerm: 0 coefficient"
-showTerm (1, b) = show b
-showTerm (-1, b) = "-" ++ show b
-showTerm (i, b) = show i ++ "·" ++ show b
+showAddTerm :: Show b => (Int, b) -> String
+showAddTerm (0, b) = error "showTerm: 0 coefficient"
+showAddTerm (1, b) = show b
+showAddTerm (-1, b) = " - " ++ show b
+showAddTerm (c, b)
+  | c < 0 = " - " ++ show (-c) ++ "·" ++ show b
+  | otherwise = " + " ++ show c ++ "·" ++ show b
+
+showSoloTerm :: Show b => (Int, b) -> String
+showSoloTerm (0, b) = error "showSoloTerm: 0 coefficient"
+showSoloTerm (1, b) = show b
+showSoloTerm (-1, b) = "-" ++ show b
+showSoloTerm (c, b) = show c ++ "·" ++ show b
 
 instance Show b => Show (Combination b) where
+  -- TODO: this reverses order, does anyone care?
   show (Combination []) = "0"
-  show (Combination [t]) = showTerm t
-  show (Combination (t : cs)) = showTerm t ++ " + " ++ show (Combination cs)
+  show (Combination [t]) = showSoloTerm t
+  show (Combination (t : cs)) = show cs ++ showAddTerm t
 
 coeffOf :: (Eq b) => Combination b -> b -> Int
 coeffOf (Combination l) b = fromMaybe 0 $ fst <$> find (\(c, b') -> b == b') l
