@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 -- | The space \(K(\mathbb{Z}, 1)\), homotopy equivalent to the
--- circle. We cannot use the same method as Wbar to show that this
+-- circle. We cannot use the same method as `Wbar` to show that this
 -- simplicial set is effective, because \(\mathbb{Z}\) (as a discrete
 -- \(sGrp\)) is not 0-reduced.
 --
@@ -12,8 +12,10 @@ module Math.Topology.SGrp.KGn where
 
 import Control.Category.Constrained ((.))
 import Data.Coerce
+import Math.Algebra.Combination
 import Math.Algebra.ChainComplex as CC hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
+import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
@@ -31,6 +33,14 @@ import Prelude hiding ((.))
 type KZ1 = WbarDiscrete Z
 
 type CircleComplex = () `Sum` Shift ()
+
+instance Algebra CircleComplex where
+  unitMor _ = CC.Morphism 0 (const (singleComb (Left ())))
+  muMor _ = CC.Morphism 0 go
+    where go (Left _, Left _) = singleComb (Left ())
+          go (Left _, Right _) = singleComb (Right (ShiftBasis ()))
+          go (Right _, Left _) = singleComb (Right (ShiftBasis ()))
+          go (Right _, Right _) = 2 .* singleComb (Right (ShiftBasis ()))
 
 instance DVF KZ1 where
   vf _ [] = Critical
