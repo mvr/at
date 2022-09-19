@@ -69,6 +69,10 @@ data UMorphism d a b = Morphism
 
 type Morphism a b = UMorphism Int (Basis a) (Basis b)
 
+-- | Identical to `onBasis`, but sometimes clearer
+underlyingFunction :: UMorphism d a b -> (a -> Combination b)
+underlyingFunction = onBasis
+
 instance Constrained.Functor (UMorphism d) (->) Combination where
   fmap m c = incl (join @(Constrained.Sub Eq (->))) $ fmap (m `onBasis`) c
 

@@ -10,6 +10,13 @@ import Prelude hiding (id, return, (.))
 newtype Combination b = Combination {coeffs :: [(Int, b)]}
   deriving (Functor)
 
+instance Applicative Combination where
+  pure b = Combination [(1, b)]
+  (Combination fs) <*> (Combination as) = Combination $ do
+    (fc, f) <- fs
+    (ac, a) <- as
+    return (fc * ac, f a)
+
 instance Eq b => Eq (Combination b) where
   c == c' = null (coeffs (c - c'))
 
@@ -59,6 +66,11 @@ n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
 
 singleComb :: b -> Combination b
 singleComb a = Combination [(1, a)]
+
+-- TODO: generalise via Constrained.Traversable
+-- traverseComb :: (Eq b) => (a -> Combination b) -> [a] -> Combination [b]
+-- traverseComb f [] = 0
+-- traverseComb f (a:as) = liftA2 (:)
 
 instance Constrained.Functor (Constrained.Sub Eq (->)) (->) Combination where
   fmap (Constrained.Sub f) (Combination cs) = Combination $ normalise $ fmap (fmap f) cs

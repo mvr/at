@@ -28,7 +28,8 @@ instance Category UReduction where
 isoToReduction :: (Eq a) => UMorphism Int a b -> UMorphism Int b a -> UReduction a b
 isoToReduction f g = Reduction f g 0
 
-data Perturbed a = Perturbed a (Morphism a a)
+data Perturbed a = Perturbed { perturbedOrig :: a,
+                               perturbedDiff :: Morphism a a }
 
 newtype PerturbedBasis a = PerturbedBasis a
   deriving (Eq)

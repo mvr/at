@@ -159,6 +159,9 @@ class SSet a => Bounded a where
 class SSet a => Pointed a where
   basepoint :: a -> GeomSimplex a
 
+basepointSimplex :: (Pointed a) => a -> Simplex a
+basepointSimplex a = NonDegen (basepoint a)
+
 -- TODO: move Pointed to its own file to import Morphism
 -- basepointMor :: a -> Morphism () a
 

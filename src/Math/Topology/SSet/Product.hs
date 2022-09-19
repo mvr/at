@@ -190,6 +190,8 @@ instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NChains a) where
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
 
+  model (Product a b) = Tensor (model a) (model b)
+
   eff p@(Product a b) =
     tensorEquiv (eff a) (eff b)
       . fromRedLeft

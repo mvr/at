@@ -104,3 +104,7 @@ tensorEquiv ::
   Equivalence (Tensor a1 a2) (Tensor b1 b2)
 tensorEquiv (Equivalence a1 l1 x1 r1 b1) (Equivalence a2 l2 x2 r2 b2) =
   Equivalence (Tensor a1 a2) (tensorReduction x1 x2 a1 a2 l1 l2) (Tensor x1 x2) (tensorReduction x1 x2 b1 b2 r1 r2) (Tensor b1 b2)
+
+-- TODO: this could use a group homomorphism type
+crossProduct :: HomologyClass a -> HomologyClass a' -> HomologyClass (Tensor a a')
+crossProduct (HomologyClass x) (HomologyClass y) = HomologyClass (tensorCombination x y)
