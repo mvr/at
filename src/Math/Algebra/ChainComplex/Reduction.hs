@@ -7,8 +7,9 @@ module Math.Algebra.ChainComplex.Reduction where
 import Control.Category.Constrained
 import Data.Coerce
 import Math.Algebra.ChainComplex
+import Math.Algebra.Combination (singleComb)
 
-import Prelude hiding (id, (.))
+import Prelude hiding (id, (.), fmap)
 
 data UReduction a b = Reduction
   { reductionF :: UMorphism Int a b, -- degree 0
@@ -52,7 +53,8 @@ perturb ::
 perturb a b (Reduction f g h) deltahat =
   (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f') (coerce g') (coerce h'))
   where
-    sigma = id - (h . deltahat . sigma)
+    sigmaimp d = singleComb d - fmap sigma ( (h . deltahat) `onBasis` d)
+    sigma = Morphism 0 sigmaimp
     f' = f . (id - (deltahat . sigma . h))
     g' = sigma . g
     h' = sigma . h
