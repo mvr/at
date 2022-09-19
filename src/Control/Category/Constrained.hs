@@ -30,7 +30,7 @@ instance Semigroupoid (->) where
 instance Category (->) where
   id = Prelude.id
 
-newtype Sub (con :: i -> Constraint) (c :: i -> i -> *) a b = Sub {incl :: c a b}
+newtype Sub (con :: i -> Constraint) (c :: i -> i -> Type) a b = Sub {incl :: c a b}
 
 instance Semigroupoid c => Semigroupoid (Sub con c) where
   type Object (Sub con c) o = (Object c o, con o)
@@ -39,14 +39,14 @@ instance Semigroupoid c => Semigroupoid (Sub con c) where
 instance Category c => Category (Sub con c) where
   id = Sub id
 
-class Functor (dom :: i -> i -> *) (cod :: j -> j -> *) (f :: i -> j) where
+class Functor (dom :: i -> i -> Type) (cod :: j -> j -> Type) (f :: i -> j) where
   fmap :: (Object dom a, Object dom b) => dom a b -> cod (f a) (f b)
 
 (<$>) :: (Functor dom cod f, Object dom a, Object dom b) => dom a b -> cod (f a) (f b)
 (<$>) = fmap
 infixl 4 <$>
 
-newtype Wrapped (f :: * -> *) a = Wrapped (f a)
+newtype Wrapped (f :: Type -> Type) a = Wrapped { unwrap :: f a }
 
 instance (Prelude.Functor f) => Functor (->) (->) (Wrapped f) where
   fmap f (Wrapped a) = Wrapped (Prelude.fmap f a)
@@ -55,9 +55,9 @@ deriving via (Wrapped []) instance Functor (->) (->) []
 
 -- I don't care to factor this through Applicative. Only makes sense
 -- for Cartesian categories anyway.
-class (Functor cat cat m) => Monad cat m where
-  return :: (Object cat a) => cat a (m a)
-  join :: forall a. Object cat a => cat (m (m a)) (m a)
+class Functor cat cat m => Monad cat m where
+  return :: Object cat a => cat a (m a)
+  join :: Object cat a => cat (m (m a)) (m a)
 
   default return :: (cat ~ (->), Prelude.Monad m) => cat a (m a)
   return = Prelude.return
