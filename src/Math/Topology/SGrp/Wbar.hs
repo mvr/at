@@ -183,5 +183,7 @@ instance (SAb g, Effective g, ZeroReduced g, Algebra (Model g)) => Effective (Wb
 -- \twoheadrightarrow \bar W G\). The total space \(W G\) is
 -- contractible.
 
-canonicalTwist :: PrincipalFibration (Wbar g) g
-canonicalTwist = PrincipalFibration $ \(WbarSimplex s) -> head s -- shockingly simple
+canonicalTwist :: (Pointed g) => g -> PrincipalFibration (Wbar g) g
+canonicalTwist g = PrincipalFibration $ \(WbarSimplex s) -> case length s of
+  0 -> basepointSimplex g
+  _ -> head s
