@@ -32,6 +32,9 @@ import Prelude hiding ((.))
 
 type KZ1 = WbarDiscrete Z
 
+kz1 :: WbarDiscrete Z
+kz1 = WbarDiscrete Z
+
 type CircleComplex = () `Sum` Shift ()
 
 instance Algebra CircleComplex where
