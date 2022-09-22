@@ -1,3 +1,4 @@
+{-# LANGUAGE RebindableSyntax #-}
 -- I don't want to import a whole package just for this.
 
 -- Tried to keep it minimal, no crazy tricks
@@ -6,7 +7,7 @@ module Control.Category.Constrained where
 import qualified Control.Monad (join)
 import Data.Kind (Type)
 import GHC.Exts (Constraint)
-import Prelude hiding (Functor, Monad, fmap, id, (.), (<$>))
+import Prelude hiding (Functor, Monad, Traversable, fmap, id, (.), (<$>), (>>=), (>>), return)
 import qualified Prelude
 
 infixr 9 .
@@ -65,5 +66,10 @@ class Functor cat cat m => Monad cat m where
   default join :: (cat ~ (->), Prelude.Monad m) => cat (m (m a)) (m a)
   join = Control.Monad.join
 
+instance (Prelude.Monad m) => Monad (->) (Wrapped m) where
+  return a = Wrapped (Prelude.return a)
+  join (Wrapped mma) = Wrapped $ Control.Monad.join (Prelude.fmap unwrap mma)
+
+deriving via (Wrapped []) instance Monad (->) []
 (>>=) :: (Monad (->) m) => m a -> (a -> m b) -> m b
 a >>= f = join (fmap f a)
