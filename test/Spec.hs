@@ -182,7 +182,7 @@ spec = do
       SSetProperties.checkOn x gs
 
 
-  focus $ describe "PrincipalFibration over S3" $ do
+  describe "PrincipalFibration over S3" $ do
     let s3 = Sphere 3
         kz2 = Wbar kz1
         kz3 = Wbar kz2
