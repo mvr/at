@@ -5,8 +5,10 @@
 --   its domain and codomain.
 module Math.ValueCategory where
 
+import Data.Kind
+
 class (Semigroup (Arrow ob)) => ValueCategory ob where
-  type LooseMorphism ob = (mor :: *) | mor -> ob
+  type LooseMorphism ob = (mor :: Type) | mor -> ob
 
   looseid :: ob -> LooseMorphism ob
 
