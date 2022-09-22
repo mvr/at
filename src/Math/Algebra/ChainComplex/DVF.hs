@@ -111,3 +111,5 @@ instance (Algebra a, DVF a) => Algebra (CriticalComplex a) where
     where
       (⊗) = tensorFunc (CriticalComplex a) (CriticalComplex a)
   unitMor (CriticalComplex a) = proj a . unitMor a
+
+instance (CommAlgebra a, DVF a) => CommAlgebra (CriticalComplex a)
