@@ -1,7 +1,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | A strong deformation retract of chain complexes.
--- We follow Kenzo by shortening this to 'reduction'.
+-- | A strong deformation retract of chain complexes.  We follow Kenzo
+-- and call these 'reductions'. In other places these are called
+-- 'contractions' or 'SDR-data'.
 module Math.Algebra.ChainComplex.Reduction where
 
 import Control.Category.Constrained
@@ -42,7 +43,7 @@ instance (ChainComplex a, Eq (Basis a)) => ChainComplex (Perturbed a) where
 
 -- | The Basic Perturbation Lemma
 -- The recursion only terminates if (deltahat . h) is
--- pointwise nilpotent.
+-- pointwise nilpotent, and this is not checked!.
 perturb ::
   (Eq (Basis a), Eq (Basis b)) =>
   a ->
@@ -61,8 +62,8 @@ perturb a b (Reduction f g h) deltahat =
     delta = f . deltahat . g'
 
 -- | Use the BPL to set the differential of `a` to a particular
--- morphism. (Again, the nilpotence condition of the BPL must be
--- satisfied.)
+-- morphism. Again, the nilpotence condition of the BPL must be
+-- satisfied.
 perturbTo ::
   (Eq (Basis a), Eq (Basis b), ChainComplex a) =>
   a ->

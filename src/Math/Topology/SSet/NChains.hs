@@ -13,7 +13,7 @@ import qualified Math.Algebra.ChainComplex as CC (Bounded, FiniteType (..), UMor
 import Math.Algebra.Combination
 import Math.Topology.SSet
 
--- | Normalised chain complex of a SSet
+-- | Normalised chain complex of a `SSet`
 newtype NChains a = NChains a
 
 instance Show a => Show (NChains a) where

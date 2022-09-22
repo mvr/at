@@ -47,7 +47,7 @@ instance SGrp g => Algebra (NChains g) where
 
 instance SAb g => CommAlgebra (NChains g)
 
--- | The set of \(n\)-simplices in a simplicial group forms an ordinary group.
+-- | The set of /all/ \(n\)-simplices in a simplicial group forms an ordinary group.
 data NDimSimplicesOf a = NDimSimplicesOf Int a
 
 instance (SGrp a) => Group (NDimSimplicesOf a) where

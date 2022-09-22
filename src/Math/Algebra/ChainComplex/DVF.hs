@@ -58,6 +58,7 @@ instance DVF a => ChainComplex (CriticalComplex a) where
 
 instance (DVF a, FiniteType a) => FiniteType (CriticalComplex a) where
   basis (CriticalComplex a) n = coerce $ filter (isCritical a) (basis a n)
+  -- TODO: add function to directly return the critical basis which in general is much smaller
 
 proj :: DVF a => a -> Morphism a (CriticalComplex a)
 proj a = Morphism 0 $

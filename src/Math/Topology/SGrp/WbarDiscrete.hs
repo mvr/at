@@ -41,7 +41,7 @@ instance (Group a, Eq (Element a)) => SSet (WbarDiscrete a) where
       underlying [s] 1 = []
       underlying (s : s' : ss) 1 = prod a s s' : ss
       underlying (s : ss) i = s : underlying ss (i - 1)
-      underlying _ _ = undefined -- can't happen
+      underlying _ _ = error "WbarDiscrete geomFace: impossible" -- can't happen
 
 instance (Group a, Eq (Element a)) => Pointed (WbarDiscrete a) where
   basepoint (WbarDiscrete a) = []

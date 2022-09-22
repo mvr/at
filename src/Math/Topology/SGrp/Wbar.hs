@@ -126,10 +126,6 @@ upshift (Degen i s) = Degen (i - 1) (upshift s)
 
 instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
   vf (Wbar g) (WbarSimplex []) = Critical
-
--- instance (SGrp g, ZeroReduced g, FiniteType g) => Effective (Wbar g)
-
---   type Model (Wbar g) = Bar (Model g)
   vf (Wbar g) (WbarSimplex (s : ss)) | nss <- normalise g ss =
     case vf (Product (Wbar g) g) (nss, s) of
       Source (ts', t') i -> Source (WbarSimplex (t' : unnormalise g ts')) (flipIncidence i)

@@ -57,7 +57,7 @@ homcounit = Morphism 0 $ \(HomBasis s t, s') -> if s == s' then singleComb t els
 homunit :: (Bounded b) => Morphism a (Hom b (Tensor a b))
 homunit = Morphism 0 $ \s -> undefined
 
---TODO: definitely needs a sign of some kind here
+--FIXME: definitely needs a sign of some kind here
 internalFunc ::
   (ChainComplex a, ChainComplex b, ChainComplex a', ChainComplex b') =>
   Morphism (Tensor (Hom a b) (Hom a' b')) (Hom (Tensor a a') (Tensor b b'))
