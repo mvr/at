@@ -33,7 +33,7 @@ data Perturbed a = Perturbed { perturbedOrig :: a,
                                perturbedDiff :: Morphism a a }
 
 newtype PerturbedBasis a = PerturbedBasis a
-  deriving (Eq)
+  deriving (Eq, Show)
 
 instance (ChainComplex a, Eq (Basis a)) => ChainComplex (Perturbed a) where
   type Basis (Perturbed a) = PerturbedBasis (Basis a)

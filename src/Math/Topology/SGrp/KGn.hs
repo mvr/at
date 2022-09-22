@@ -96,6 +96,7 @@ instance Effective (WbarDiscrete Zmod) where
 -- | An efficient version of \(K(\mathbb{Z}/2, 1)\)
 -- Ugly name, but what can you do?
 data KZmod2_1 = KZmod2_1
+  deriving (Show)
 
 instance SSet KZmod2_1 where
   type GeomSimplex KZmod2_1 = Int
