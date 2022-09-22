@@ -36,10 +36,14 @@ data Perturbed a = Perturbed { perturbedOrig :: a,
 newtype PerturbedBasis a = PerturbedBasis a
   deriving (Eq, Show)
 
-instance (ChainComplex a, Eq (Basis a)) => ChainComplex (Perturbed a) where
+instance (ChainComplex a) => ChainComplex (Perturbed a) where
   type Basis (Perturbed a) = PerturbedBasis (Basis a)
   degree (Perturbed a _) (PerturbedBasis b) = degree a b
   diff (Perturbed a delta) = Morphism (-1) $ coerce $ \b -> diff a `onBasis` b + delta `onBasis` b
+
+instance (FiniteType a) => FiniteType (Perturbed a) where
+  dim (Perturbed a _) = dim a
+  basis (Perturbed a _) n = fmap PerturbedBasis (basis a n)
 
 -- | The Basic Perturbation Lemma
 -- The recursion only terminates if (deltahat . h) is
