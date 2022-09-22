@@ -6,6 +6,9 @@ import Test.Hspec
 import Prelude hiding (id, (.))
 
 import Math.Topology.SSet
+import Math.Topology.SSet.Product
+import Math.Topology.SSet.TwistedProduct
+import Math.Topology.SGrp
 
 checkIdentities :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkIdentities a g = do
@@ -53,7 +56,7 @@ checkIdentities a g = do
 
 checkFaces :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkFaces a g =
-  forM_ (geomFaces a g) (\s -> unless (isSimplex a s) $ expectationFailure $ "Face " ++ show s ++ " of " ++ show g ++ " is not a valid simplex")
+  forM_ (zip [0..] (geomFaces a g)) (\(i, s) -> unless (isSimplex a s) $ expectationFailure $ show i ++ "th face " ++ show s ++ " of " ++ show g ++ " is not a valid simplex")
 
 checkDims :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkDims a g =
@@ -118,3 +121,43 @@ checkMorphismOn a b m gs = do
 
   it "should commute with faces and degeneracies" $
     forM_ gs (\g -> checkMorphismFaces a b m g)
+
+checkTwistFaces :: (SSet a, SGrp b, Show (GeomSimplex a), Show (GeomSimplex b)) => a -> b -> Twist a b -> GeomSimplex a -> Expectation
+checkTwistFaces a b m g = do
+  let d = geomSimplexDim a g
+      s = NonDegen g
+      twistOn = twistOnFor a b
+
+  when (d > 0) $ do
+    sequence_ $ do
+      i <- [1 .. d-1]
+      return $
+        unless (m `twistOn` face a s i == face b (m `twistOn` s) i) $
+          expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g ++ ", f∂" ++ show i ++ " = " ++ show (m `twistOn` face a s i) ++ " but " ++ "∂" ++ show i ++ "f = " ++ show (face b (m `twistOn` s) i)
+
+    let i = 0
+    unless (prodMor b `onSimplex` prodNormalise (m `twistOn` face a s 1, invMor b `onSimplex` (m `twistOn` face a s 0)) == face b (m `twistOn` s) 0) $
+      expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g
+
+  -- sequence_ $ do
+  --   i <- [0 .. d]
+
+  --   return $
+  --     unless (m `onSimplex` (degen s i) == degen (m `onSimplex` s) i) $
+  --       expectationFailure $ "Morphism did not commute with degen " ++ show i ++ " of " ++ show g
+
+checkTwistOn :: (SSet a, SGrp b, Show (GeomSimplex a), Show (GeomSimplex b)) => a -> b -> Twist a b -> [GeomSimplex a] -> Spec
+checkTwistOn a b m gs = do
+  let twistOn = twistOnFor a b
+
+  it "should have valid images" $
+    forM_ gs (\g -> m `twistOnGeom` g `shouldSatisfy` isSimplex b)
+
+  it "should have images of the correct dimension" $
+    forM_ gs (\g ->
+        unless (geomSimplexDim a g == 0 || simplexDim b (m `twistOnGeom` g) == (geomSimplexDim a g - 1)) $
+          expectationFailure $ "Image " ++ show (m `twistOnGeom` g) ++ " of " ++ show g ++ " is the wrong dimension"
+             )
+
+  it "should commute with faces and degeneracies" $
+    forM_ gs (\g -> checkTwistFaces a b m g)

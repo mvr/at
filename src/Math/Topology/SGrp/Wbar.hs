@@ -25,7 +25,7 @@ import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product hiding (criticalIso, criticalIsoInv)
-import Math.Topology.SSet.PrincipalFibration
+import Math.Topology.SSet.TwistedProduct
 
 newtype Wbar g = Wbar g
   deriving (Show)
@@ -182,7 +182,7 @@ instance (SAb g, Effective g, ZeroReduced g, Algebra (Model g)) => Effective (Wb
 -- \twoheadrightarrow \bar W G\). The total space \(W G\) is
 -- contractible.
 
-canonicalTwist :: (Pointed g) => g -> PrincipalFibration (Wbar g) g
-canonicalTwist g = PrincipalFibration $ \(WbarSimplex s) -> case length s of
+canonicalTwist :: (SGrp g) => g -> Twist (Wbar g) g
+canonicalTwist g = Twist $ \(WbarSimplex s) -> case length s of
   0 -> basepointSimplex g
   _ -> head s

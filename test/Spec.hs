@@ -20,6 +20,7 @@ import Math.Topology.SSet
 import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product as Product
 import Math.Topology.SSet.Sphere
+import Math.Topology.SSet.TwistedProduct
 
 import qualified AbGroupPresTest
 import qualified AbelianCategoryProperties
@@ -138,3 +139,81 @@ spec = do
       let as = [0 .. 5] >>= CC.basis a
 
       ChainComplexProperties.checkChainConditionOn a "bar" as
+
+  describe "BarBar" $ do
+    let a = Bar (Bar (NChains (WbarDiscrete (Zmod 3))))
+    describe "is a bicomplex" $ do
+      let as = do
+            h <- [0 .. 6]
+            v <- [0 .. 6]
+            bibasis a (h, v)
+      BicomplexProperties.checkChainConditions a as
+    describe "is a chain complex" $ do
+      let as = [0 .. 6] >>= CC.basis a
+
+      ChainComplexProperties.checkChainConditionOn a "bar" as
+
+
+  describe "PrincipalFibration over S2" $ do
+    let s2 = Sphere 2
+        classifying :: Morphism Sphere (Wbar KZ1)
+        classifying = Morphism m
+          where m Cell = NonDegen $ WbarSimplex [NonDegen [1], NonDegen []]
+                m Basepoint = NonDegen $ WbarSimplex []
+
+        fibration :: Twist Sphere KZ1
+        fibration = pullback (Wbar kz1) kz1 (canonicalTwist kz1) classifying
+        x :: TotalSpace Sphere KZ1
+        x = totalSpace s2 kz1 fibration
+
+        n = 3
+        ks = [-3 .. -1] ++ [1 .. 3]
+        gs = [TwistedProductSimplex (s, t) | s <- someSimplices kz1 n (\d -> if d <= 3 then sequence (replicate d ks) else []),
+                                             t <- allSimplices s2 n
+                                           , isGeomSimplex (Product kz1 s2) (s, t)]
+
+    describe "classifying morphism" $
+      SSetProperties.checkMorphismOn s2 (Wbar kz1) classifying [Basepoint, Cell]
+
+    describe "twist" $
+      SSetProperties.checkTwistOn s2 kz1 fibration [Basepoint, Cell]
+
+    describe "SSet" $
+      SSetProperties.checkOn x gs
+
+
+  focus $ describe "PrincipalFibration over S3" $ do
+    let s3 = Sphere 3
+        kz2 = Wbar kz1
+        kz3 = Wbar kz2
+        classifying = Morphism m
+          where m Cell = NonDegen $ WbarSimplex [
+                      NonDegen (WbarSimplex [NonDegen [1], NonDegen []]),
+                      Degen 0 (NonDegen (WbarSimplex [])),
+                      NonDegen (WbarSimplex [])
+                    ]
+                m Basepoint = NonDegen $ WbarSimplex []
+
+        fibration = pullback kz3 kz2 (canonicalTwist kz2) classifying
+
+        x = totalSpace s3 (Wbar kz1) fibration
+
+        n = 3
+        ks = [-3 .. -1] ++ [1 .. 3]
+        somekz1 :: Int -> [Simplex KZ1]
+        somekz1 d = someSimplices kz1 n (\d -> if d <= 3 then sequence (replicate d ks) else [])
+        somegeomkz2 :: Int -> [GeomSimplex (Wbar KZ1)]
+        somegeomkz2 n = filter (isGeomSimplex kz2) $ fmap WbarSimplex $ sequence $ somekz1 <$> reverse [0 .. (n - 1)]
+        somekz2 n = someSimplices kz2 n somegeomkz2
+        gs = [TwistedProductSimplex (s, t) | s <- somekz2 n,
+                                             t <- allSimplices s3 n
+                                           , isGeomSimplex (Product kz2 s3) (s, t)]
+
+    describe "classifying morphism" $
+      SSetProperties.checkMorphismOn s3 kz3 classifying [Basepoint, Cell]
+
+    describe "twist" $
+      SSetProperties.checkTwistOn s3 kz2 fibration [Basepoint, Cell]
+
+    describe "SSet" $
+      SSetProperties.checkOn x gs
