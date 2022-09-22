@@ -63,7 +63,10 @@ instance (SGrp g) => SSet (Wbar g) where
   -- contains a unit, and the things proceding it are all degeneracies
   type GeomSimplex (Wbar g) = WbarSimplex [Simplex g]
 
-  isGeomSimplex (Wbar g) (WbarSimplex ss) = normalise g ss == NonDegen (WbarSimplex ss) && all (isSimplex g) ss
+  isGeomSimplex (Wbar g) (WbarSimplex ss) =
+    all (\(i, s) -> simplexDim g s == i) (zip (reverse [0..length ss-1]) ss)
+    && normalise g ss == NonDegen (WbarSimplex ss)
+    && all (isSimplex g) ss
 
   geomSimplexDim _ (WbarSimplex ss) = length ss
 
