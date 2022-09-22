@@ -13,6 +13,23 @@ collaborators.
 Writing it from scratch myself is the only chance I have of
 understanding it!
 
+Examples
+--------
+See the `examples/` folder.
+
+```
+...
+> let x = totalSpace s3 (Wbar kz1) fibration
+> putStr "π₄ S³ is: "
+> print (homology x !! 4)
+π₄ S³ is: ℤ/2
+```
+
+```
+> homology (Wbar (WbarDiscrete (Zmod 3)))
+[ℤ,0,ℤ/3,0,ℤ/3,0,ℤ/(3^2),ℤ/3,ℤ/3,ℤ/3,ℤ/3 ⊕ ℤ/3,^C
+```
+
 Central Concepts of Kenzo
 -------------------------
 
@@ -196,6 +213,8 @@ Plan
 - [ ] Check homology of `K(G,n)` calculations against known results
       <!-- eg [Clement's thesis](#ref-clement%3Athesis) -->
 - [ ] Add methods to produce representatives of homology classes
+- [ ] Rewrite `Bar` to be a perturbed `TensorCoalgebra`?
+- [ ] Rename `basepoint` to `geomBasepoint` say
 
 Notes
 -----

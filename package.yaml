@@ -8,9 +8,9 @@ maintainer:          "mitchell.v.riley@gmail.com"
 extra-source-files:
 - README.md
 
-synopsis:  Haskell rewrite of Kenzo
-category:  Math
-description: In README
+synopsis: Effective Algebraic Topology
+category: Math
+description: See README.md
 
 dependencies:
 - base >= 4.7 && < 5
@@ -52,6 +52,32 @@ default-extensions:
 # - UnboxedTuples
 - UnicodeSyntax
 - ViewPatterns
+
+executables:
+  KZmod3_2:
+    main: KZmod3_2.hs
+    source-dirs:
+      examples
+    dependencies:
+      - at
+      - vector
+      - matrix
+      - mtl
+    ghc-options:
+      - -O2
+      - -main-is KZmod3_2
+  Pi4S3:
+    main: Pi4S3.hs
+    source-dirs:
+      examples
+    dependencies:
+      - at
+      - vector
+      - matrix
+      - mtl
+    ghc-options:
+      - -O2
+      - -main-is Pi4S3
 
 library:
   source-dirs:
