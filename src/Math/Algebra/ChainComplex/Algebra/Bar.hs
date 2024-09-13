@@ -33,7 +33,6 @@ module Math.Algebra.ChainComplex.Algebra.Bar where
 -- coefficients in a pair of differential graded modules. "
 
 import Data.Coerce ( coerce )
-import Control.Applicative ( Applicative(liftA2) )
 import Control.Category.Constrained ((.))
 import Prelude hiding ((.))
 
