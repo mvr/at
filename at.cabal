@@ -1,0 +1,156 @@
+cabal-version: 3.0
+
+name:          at
+version:       0.0.1.0
+synopsis:      Effective Algebraic Topology
+description:   See README.md
+category:      Math
+homepage:      https://github.com/mvr/at#readme
+bug-reports:   https://github.com/mvr/at/issues
+author:        Mitchell Riley
+maintainer:    mitchell.v.riley@gmail.com
+license:       BSD-3-Clause
+license-file:  LICENSE
+build-type:    Simple
+
+extra-source-files:
+  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/mvr/at
+
+common defaults
+  default-language: Haskell2010
+  default-extensions:
+    DefaultSignatures
+    DeriveFoldable
+    DeriveFunctor
+    DeriveTraversable
+    DerivingVia
+    FlexibleContexts
+    FlexibleInstances
+    FunctionalDependencies
+    GADTs
+    GeneralizedNewtypeDeriving
+    LambdaCase
+    NoMonomorphismRestriction
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeFamilyDependencies
+    TypeOperators
+    UnicodeSyntax
+    ViewPatterns
+  build-depends:
+    base >= 4.7 && < 5
+
+library
+  import: defaults
+  hs-source-dirs: src
+  exposed-modules:
+    Control.Category.Constrained
+    Math.Algebra.AbGroupPres
+    Math.Algebra.AbGroupPres.IsoClass
+    Math.Algebra.Bicomplex
+    Math.Algebra.ChainComplex
+    Math.Algebra.ChainComplex.Algebra
+    Math.Algebra.ChainComplex.Algebra.Bar
+    Math.Algebra.ChainComplex.Bicone
+    Math.Algebra.ChainComplex.Coalgebra
+    Math.Algebra.ChainComplex.DVF
+    Math.Algebra.ChainComplex.Equivalence
+    Math.Algebra.ChainComplex.Hom
+    Math.Algebra.ChainComplex.Reduction
+    Math.Algebra.ChainComplex.Shift
+    Math.Algebra.ChainComplex.Sum
+    Math.Algebra.ChainComplex.Tensor
+    Math.Algebra.ChainComplex.TwistedTensor
+    Math.Algebra.Combination
+    Math.Algebra.Group
+    Math.Algebra.SmithNormalForm
+    Math.Topology.SGrp
+    Math.Topology.SGrp.KGn
+    Math.Topology.SGrp.Wbar
+    Math.Topology.SGrp.WbarDiscrete
+    Math.Topology.SSet
+    Math.Topology.SSet.DVF
+    Math.Topology.SSet.Effective
+    Math.Topology.SSet.Moore
+    Math.Topology.SSet.NChains
+    Math.Topology.SSet.NSimplex
+    Math.Topology.SSet.Product
+    Math.Topology.SSet.RPn
+    Math.Topology.SSet.Skeleton
+    Math.Topology.SSet.Sphere
+    Math.Topology.SSet.TwistedProduct
+    Math.ValueCategory
+    Math.ValueCategory.Abelian
+    Math.ValueCategory.Additive
+  ghc-options:
+    -Wall
+    -Wno-name-shadowing
+    -Wno-unused-matches
+  build-depends:
+    matrix,
+    mtl,
+    vector
+
+executable KZmod3_2
+  import: defaults
+  main-is: KZmod3_2.hs
+  hs-source-dirs: examples
+  ghc-options:
+    -O2
+    -main-is KZmod3_2
+  build-depends:
+    at,
+    matrix,
+    mtl,
+    vector
+
+executable Pi4S3
+  import: defaults
+  main-is: Pi4S3.hs
+  hs-source-dirs: examples
+  ghc-options:
+    -O2
+    -main-is Pi4S3
+  build-depends:
+    at,
+    matrix,
+    mtl,
+    vector
+
+test-suite spec
+  import: defaults
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs: test
+  other-modules:
+    AbGroupPresTest
+    AbelianCategoryProperties
+    ArbitraryInstances
+    BicomplexProperties
+    ChainComplexProperties
+    DVFProperties
+    MatrixOpsTest
+    ReductionProperties
+    SGrpProperties
+    SSetProperties
+    SmithNormalFormTest
+  ghc-options:
+    -Wall
+    -Wno-name-shadowing
+    -Wno-unused-matches
+  build-depends:
+    at,
+    hspec,
+    matrix,
+    QuickCheck,
+    random,
+    vector
