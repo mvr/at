@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE InstanceSigs #-}
 
--- | A principle \(G\)-bundle over \(A\), represented as a degree (-1) map of
+-- | A principal \(G\)-bundle over \(A\), represented as a degree (-1) map of
 -- simplicial sets \(τ : A \to G\).
 --
 -- A twisting operation can be turned into a twisting cochain of the
@@ -16,14 +16,13 @@
 -- 4. Extract the twisting cochain \(t\) from \(A ⊗_t G\)
 module Math.Topology.SSet.TwistedProduct where
 
--- TODO: update the following
 -- The following equations are satisfied:
 -- \[
 -- \begin{aligned}
---   ∂_i(τ b) &= τ(∂_i b) && \text{if } i < n - 1 \\
---   ∂_{n−1} (τ b) &= [τ (∂_n b)]^{−1} · τ (∂_{n−1} b) \\
---   η_i(τ_b) &= τ(η_i b) && \text{if } i ≤ n - 1 \\
---   e_n &= τ(η_n b)
+--   ∂_0(τ b) &= τ(∂_1 b) · [τ(∂_0 b)]^{-1} \\
+--   ∂_i(τ b) &= τ(∂_{i+1} b) && \text{if } i > 0 \\
+--   η_i(τ b) &= τ(η_{i+1} b) \\
+--   e_n &= τ(η_0 b)
 -- \end{aligned}
 -- \]
 --
