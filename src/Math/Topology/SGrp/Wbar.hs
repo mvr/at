@@ -14,7 +14,6 @@ import Prelude hiding (id, return, (.))
 
 import qualified Math.Algebra.Bicomplex as Bi
 import qualified Math.Algebra.ChainComplex as CC (Morphism, fmapBasis)
-import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Algebra.ChainComplex.Equivalence
@@ -172,7 +171,7 @@ wbarReduction p@(Wbar g) =
   isoToReduction (criticalIso g) (criticalIsoInv g)
     . dvfReduction (NChains p)
 
-instance (SAb g, Effective g, ZeroReduced g, Algebra (Model g)) => Effective (Wbar g) where
+instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where
   type Model (Wbar g) = Perturbed (TensorSusp (Model g))
   eff (Wbar g) = barEquiv (eff g) . fromRedLeft (NChains (Wbar g)) (Bar (NChains g)) (wbarReduction (Wbar g))
 

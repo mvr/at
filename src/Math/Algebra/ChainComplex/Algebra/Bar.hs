@@ -86,7 +86,7 @@ tensorAlgFunc ::
   Morphism (TensorSusp a) (TensorSusp b)
 tensorAlgFunc (Morphism deg f) = Morphism deg (coerce $ traverse @[] f)
 
-instance (Algebra a, FiniteType a) => Bi.FiniteType (TensorSusp a) where
+instance FiniteType a => Bi.FiniteType (TensorSusp a) where
   bibasis (TensorSusp a) (hd, vd) = TensorSuspBibasis <$> go vd hd
     where
       go 0 0 = [[]]
@@ -97,7 +97,7 @@ instance (Algebra a, FiniteType a) => Bi.FiniteType (TensorSusp a) where
         rest <- go (i - 1) (d - j)
         return (b : rest)
 
-instance (Algebra a, FiniteType a) => FiniteType (TensorSusp a) where
+instance FiniteType a => FiniteType (TensorSusp a) where
   basis (TensorSusp a) i = TensorSuspBasis <$> basis (Tot (TensorSusp a)) i
 
 verth :: (ChainComplex a) => Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
