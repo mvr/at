@@ -128,28 +128,31 @@ checkTwistFaces a b m g = do
       s = NonDegen g
       twistOn = twistOnFor a b
 
-  when (d > 0) $ do
-    sequence_ $ do
-      i <- [1 .. d-1]
-      return $
-        unless (m `twistOn` face a s i == face b (m `twistOn` s) i) $
-          expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g ++ ", f∂" ++ show i ++ " = " ++ show (m `twistOn` face a s i) ++ " but " ++ "∂" ++ show i ++ "f = " ++ show (face b (m `twistOn` s) i)
+  when (d > 1) $ do
+    forM_ [1 .. d - 1] $ \i -> do
+      let actual = face b (m `twistOn` s) i
+          expected = m `twistOn` face a s (i + 1)
+      unless (actual == expected) $
+        expectationFailure $ "Twist failed positive face " ++ show i ++ " of " ++ show g ++ ": got " ++ show actual ++ ", expected " ++ show expected
 
-    let i = 0
-    unless (prodMor b `onSimplex` prodNormalise (m `twistOn` face a s 1, invMor b `onSimplex` (m `twistOn` face a s 0)) == face b (m `twistOn` s) 0) $
-      expectationFailure $ "Morphism did not commute with face " ++ show i ++ " of " ++ show g
+    let actual = face b (m `twistOn` s) 0
+        expected = prodMor b `onSimplex` prodNormalise (m `twistOn` face a s 1, invMor b `onSimplex` (m `twistOn` face a s 0))
+    unless (actual == expected) $
+      expectationFailure $ "Twist failed exceptional face 0 of " ++ show g ++ ": got " ++ show actual ++ ", expected " ++ show expected
 
-  -- sequence_ $ do
-  --   i <- [0 .. d]
+  let unitActual = m `twistOn` degen s 0
+      unitExpected = constantAt (basepoint b) d
+  unless (unitActual == unitExpected) $
+    expectationFailure $ "Twist failed unit degeneracy of " ++ show g ++ ": got " ++ show unitActual ++ ", expected " ++ show unitExpected
 
-  --   return $
-  --     unless (m `onSimplex` (degen s i) == degen (m `onSimplex` s) i) $
-  --       expectationFailure $ "Morphism did not commute with degen " ++ show i ++ " of " ++ show g
+  forM_ [1 .. d] $ \i -> do
+    let actual = m `twistOn` degen s i
+        expected = degen (m `twistOn` s) (i - 1)
+    unless (actual == expected) $
+      expectationFailure $ "Twist failed degeneracy " ++ show i ++ " of " ++ show g ++ ": got " ++ show actual ++ ", expected " ++ show expected
 
 checkTwistOn :: (SSet a, SGrp b, Show (GeomSimplex a), Show (GeomSimplex b)) => a -> b -> Twist a b -> [GeomSimplex a] -> Spec
 checkTwistOn a b m gs = do
-  let twistOn = twistOnFor a b
-
   it "should have valid images" $
     forM_ gs (\g -> m `twistOnGeom` g `shouldSatisfy` isSimplex b)
 
@@ -159,5 +162,5 @@ checkTwistOn a b m gs = do
           expectationFailure $ "Image " ++ show (m `twistOnGeom` g) ++ " of " ++ show g ++ " is the wrong dimension"
              )
 
-  it "should commute with faces and degeneracies" $
+  it "should satisfy the twisting identities" $
     forM_ gs (\g -> checkTwistFaces a b m g)

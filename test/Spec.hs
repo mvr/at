@@ -18,7 +18,9 @@ import Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
 import Math.Topology.SSet.NChains
+import Math.Topology.SSet.NSimplex
 import Math.Topology.SSet.Product as Product
+import Math.Topology.SSet.RPn
 import Math.Topology.SSet.Sphere
 import Math.Topology.SSet.TwistedProduct
 
@@ -67,13 +69,17 @@ spec = do
   -- describe "Abelian category problems for Cached AbGroup" $ AbelianCategoryProperties.spec (Proxy @AbGroupPres)
   AbGroupPresTest.spec
 
-  describe "hom complex" $
-    let c = NChains (Sphere 3)
-        d = NChains (Sphere 2)
-     in ChainComplexProperties.checkChainCondition (Hom c d) 10
+  describe "hom complex with nontrivial boundaries" $ do
+    let c = NChains (RPn 2)
+        h = Hom c c
+        bs = [0 .. 2] >>= CC.basis h
+    it "has a nonzero differential" $
+      fmap (CC.onBasis (CC.diff h)) bs `shouldSatisfy` any (/= 0)
+    ChainComplexProperties.checkChainCondition h 2
 
-  describe "products" $
+  describe "products" $ do
     describe "S³ × S²" $ testProduct 7 (Sphere 3) (Sphere 2)
+    describe "Δ² × Δ²" $ testProduct 4 (NSimplex 2) (NSimplex 2)
 
   describe "efficient K(ℤ/2,1)" $ do
     let p = KZmod2_1
@@ -202,7 +208,7 @@ spec = do
         n = 3
         ks = [-3 .. -1] ++ [1 .. 3]
         somekz1 :: Int -> [Simplex KZ1]
-        somekz1 d = someSimplices kz1 n (\d -> if d <= 3 then sequence (replicate d ks) else [])
+        somekz1 d = someSimplices kz1 d (\i -> if i <= 3 then sequence (replicate i ks) else [])
         somegeomkz2 :: Int -> [GeomSimplex (Wbar KZ1)]
         somegeomkz2 n = filter (isGeomSimplex kz2) $ fmap WbarSimplex $ sequence $ somekz1 <$> reverse [0 .. (n - 1)]
         somekz2 n = someSimplices kz2 n somegeomkz2
@@ -218,3 +224,15 @@ spec = do
 
     describe "SSet" $
       SSetProperties.checkOn x gs
+
+  describe "Universal principal fibration over K(ℤ/2,2)" $ do
+    let g = WbarDiscrete (Zmod 2)
+        b = Wbar g
+        twist = canonicalTwist g
+        x = totalSpace b g twist
+
+    describe "twist" $
+      SSetProperties.checkTwistOn b g twist ([0 .. 4] >>= geomBasis b)
+
+    describe "SSet" $
+      SSetProperties.check 4 x
