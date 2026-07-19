@@ -21,9 +21,9 @@ import Prelude hiding (id, return, (.))
 data TwistedTensor a b = TwistedTensor a b (Morphism a b)
 
 newtype TwistedBasis a = TwistedBasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
 
-perturbationForCochain :: (Coalgebra a, Algebra b, Eq (Basis a), Eq (Basis b)) => a -> b -> Morphism a b -> Morphism (Tensor a b) (Tensor a b)
+perturbationForCochain :: (Coalgebra a, Algebra b, Ord (Basis a), Ord (Basis b)) => a -> b -> Morphism a b -> Morphism (Tensor a b) (Tensor a b)
 perturbationForCochain a b tauMor = delta
   where
     (ClosedMorphism _ delta _) = (idA ⊗ mu) . assoc . ((idA ⊗ tau) ⊗ idB) . (del ⊗ idB)
@@ -39,10 +39,10 @@ perturbationForCochain a b tauMor = delta
 -- | Calculating the twisting cochain from a perturbation on a tensor
 -- product: franz:twisting
 -- C(B) η⊗1 −−→ C(G) ⊗ C(B) dt−d⊗ −−−→ C(G) ⊗ C(B) 1⊗ε −−→ C(G)
-cochainForPerturbation :: (Coalgebra a, Algebra b, Eq (Basis a), Eq (Basis b)) => a -> b -> Morphism (Tensor a b) (Tensor a b) -> Morphism a b
+cochainForPerturbation :: (Coalgebra a, Algebra b, Ord (Basis a), Ord (Basis b)) => a -> b -> Morphism (Tensor a b) (Tensor a b) -> Morphism a b
 cochainForPerturbation a b delta = undefined
 
-instance (Coalgebra a, Algebra b, Eq (Basis b), Eq (Basis a)) => ChainComplex (TwistedTensor a b) where
+instance (Coalgebra a, Algebra b, Ord (Basis b), Ord (Basis a)) => ChainComplex (TwistedTensor a b) where
   type Basis (TwistedTensor a b) = TwistedBasis (Basis (Tensor a b))
 
   isBasis (TwistedTensor a b _) (TwistedBasis (s, t)) = isBasis a s && isBasis b t
@@ -50,10 +50,10 @@ instance (Coalgebra a, Algebra b, Eq (Basis b), Eq (Basis a)) => ChainComplex (T
 
   diff (TwistedTensor a b tauMor) = coerce $ diff (Perturbed (Tensor a b) (perturbationForCochain a b tauMor))
 
-toTwisted :: (Coalgebra a, Algebra b, Eq (Basis a), Eq (Basis b)) => Perturbed (Tensor a b) -> TwistedTensor a b
+toTwisted :: (Coalgebra a, Algebra b, Ord (Basis a), Ord (Basis b)) => Perturbed (Tensor a b) -> TwistedTensor a b
 toTwisted (Perturbed (Tensor a b) delta) = TwistedTensor a b (cochainForPerturbation a b delta)
 
-fromTwisted :: (Coalgebra a, Algebra b, Eq (Basis a), Eq (Basis b)) => TwistedTensor a b -> Perturbed (Tensor a b)
+fromTwisted :: (Coalgebra a, Algebra b, Ord (Basis a), Ord (Basis b)) => TwistedTensor a b -> Perturbed (Tensor a b)
 fromTwisted (TwistedTensor a b tau) = Perturbed (Tensor a b) (perturbationForCochain a b tau)
 
 isoPerturbed :: forall a b. Morphism (Perturbed (Tensor a b)) (TwistedTensor a b)

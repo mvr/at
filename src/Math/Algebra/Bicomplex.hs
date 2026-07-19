@@ -24,7 +24,7 @@ instance Num Bidegree where
   abs = error "Bidegree: abs"
   signum = error "Bidegree: signum"
 
-class Eq (Bibasis a) => Bicomplex a where
+class Ord (Bibasis a) => Bicomplex a where
   type Bibasis a = s | s -> a
 
   isBibasis :: a -> Bibasis a -> Bool
@@ -48,7 +48,7 @@ validBicomb a (Combination bs) = and $ fmap (\(_, b) -> isBibasis a b) bs
 newtype Tot a = Tot a
 
 newtype TotBasis a = TotBasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show) via a
 
 instance (Bicomplex a) => ChainComplex (Tot a) where

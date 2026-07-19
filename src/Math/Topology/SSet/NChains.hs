@@ -20,7 +20,7 @@ instance Show a => Show (NChains a) where
   show (NChains a) = "N(" ++ show a ++ ")"
 
 newtype BasisSimplex a = BasisSimplex a
-  deriving (Eq) via a
+  deriving (Eq, Ord) via a
   deriving (Show) via a
 
 instance SSet a => CC.ChainComplex (NChains a) where

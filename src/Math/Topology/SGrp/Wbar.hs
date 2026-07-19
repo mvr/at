@@ -32,7 +32,7 @@ newtype Wbar g = Wbar g
 newtype WbarSimplex a = WbarSimplex a
   deriving (Show) via a
   deriving (Functor)
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 -- TODO: there are probably efficient algorithms for this in terms of bit fields.
 -- 1. Create a bit field marking which positions are the unit

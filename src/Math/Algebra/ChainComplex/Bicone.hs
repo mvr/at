@@ -14,7 +14,7 @@ import Prelude hiding (return)
 data Bicone b c d = Bicone b c d (Morphism b c) (Morphism d c)
 
 data BiconeBasis b c d = FromB b | FromC c | FromD d
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 instance (ChainComplex b, ChainComplex c, ChainComplex d) => ChainComplex (Bicone b c d) where
   type Basis (Bicone b c d) = BiconeBasis (Basis b) (Basis c) (Basis d)
@@ -39,13 +39,13 @@ instance (FiniteType b, FiniteType c, FiniteType d) => FiniteType (Bicone b c d)
 
 -- Can all be defined without reference to the differentials, so we
 -- use UMorphism.
-projLeft :: (Num deg, Eq b) => UMorphism deg (BiconeBasis b c d) b
+projLeft :: (Num deg, Ord b) => UMorphism deg (BiconeBasis b c d) b
 projLeft = Morphism 0 (\case FromB b -> singleComb b; _ -> 0)
 
-projRight :: (Num deg, Eq d) => UMorphism deg (BiconeBasis b c d) d
+projRight :: (Num deg, Ord d) => UMorphism deg (BiconeBasis b c d) d
 projRight = Morphism 0 (\case FromD d -> singleComb d; _ -> 0)
 
-projRedLeft :: (Eq b, Eq c, Eq d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) b
+projRedLeft :: (Ord b, Ord c, Ord d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) b
 projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morphism 0 g) (Morphism 1 h)
   where
     g b = singleComb (FromB b) - (FromD <$> g2 `onComb` (f1 `onBasis` b))
@@ -53,7 +53,7 @@ projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morp
     h (FromC c) = FromD <$> g2 `onBasis` c
     h (FromD d) = FromD <$> h2 `onBasis` d
 
-projRedRight :: (Eq b, Eq c, Eq d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) d
+projRedRight :: (Ord b, Ord c, Ord d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) d
 projRedRight (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projRight (Morphism 0 g) (Morphism 1 h)
   where
     g d = singleComb (FromD d) - (FromB <$> g1 `onComb` (f2 `onBasis` d))

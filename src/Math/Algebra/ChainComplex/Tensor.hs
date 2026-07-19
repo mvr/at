@@ -35,7 +35,7 @@ tensorCombination (Combination as) (Combination bs) = Combination $ do
   return (c * d, (a, b))
 
 tensorFunc ::
-  (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
+  (ChainComplex a1, ChainComplex a2, Ord (Basis b1), Ord (Basis b2)) =>
   a1 ->
   a2 ->
   Morphism a1 b1 ->
@@ -84,7 +84,7 @@ tensorReduction a1 a2 b1 b2 (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reductio
 
 -- Convenience:
 tensorFuncArr ::
-  (ChainComplex a1, ChainComplex a2, Eq (Basis b1), Eq (Basis b2)) =>
+  (ChainComplex a1, ChainComplex a2, Ord (Basis b1), Ord (Basis b2)) =>
   ClosedMorphism a1 b1 ->
   ClosedMorphism a2 b2 ->
   ClosedMorphism (Tensor a1 a2) (Tensor b1 b2)

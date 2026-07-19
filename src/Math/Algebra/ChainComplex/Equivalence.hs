@@ -8,7 +8,7 @@ import Math.Algebra.ChainComplex.Reduction
 import Prelude hiding (id, (.))
 
 data Equivalence a b = forall c.
-  (ChainComplex c, Eq (Basis c)) =>
+  (ChainComplex c, Ord (Basis c)) =>
   Equivalence
   { equivLeft :: a,
     equivLeftRed :: Reduction c a,
@@ -17,16 +17,16 @@ data Equivalence a b = forall c.
     equivRight :: b
   }
 
-equivalenceForward :: (Eq (Basis a), Eq (Basis b)) => Equivalence a b -> Morphism a b
+equivalenceForward :: (Ord (Basis a), Ord (Basis b)) => Equivalence a b -> Morphism a b
 equivalenceForward (Equivalence _ leftReduction _ rightReduction _) =
   reductionF rightReduction . reductionG leftReduction
 
-equivalenceBackward :: (Eq (Basis a), Eq (Basis b)) => Equivalence a b -> Morphism b a
+equivalenceBackward :: (Ord (Basis a), Ord (Basis b)) => Equivalence a b -> Morphism b a
 equivalenceBackward (Equivalence _ leftReduction _ rightReduction _) =
   reductionF leftReduction . reductionG rightReduction
 
 instance Semigroupoid Equivalence where
-  type Object Equivalence a = (ChainComplex a, Eq (Basis a))
+  type Object Equivalence a = (ChainComplex a, Ord (Basis a))
 
   (Equivalence b1 l1 x1 r1 c1) . (Equivalence a2 l2 x2 r2 b2) =
     Equivalence
@@ -45,11 +45,11 @@ isoToEquiv a b f g = Equivalence a id a (isoToReduction f g) b
 fromRedLeft :: ChainComplex a => a -> b -> Reduction a b -> Equivalence a b
 fromRedLeft a b r = Equivalence a id a r b
 
-composeLeft :: (Eq (Basis a), Eq (Basis a')) => a' -> Reduction a a' -> Equivalence a b -> Equivalence a' b
+composeLeft :: (Ord (Basis a), Ord (Basis a')) => a' -> Reduction a a' -> Equivalence a b -> Equivalence a' b
 composeLeft a' l' (Equivalence a l x r b) = Equivalence a' (l' . l) x r b
 
 perturbLeft ::
-  (Eq (Basis a), Eq (Basis b)) =>
+  (Ord (Basis a), Ord (Basis b)) =>
   Equivalence a b ->
   Morphism a a ->
   Equivalence (Perturbed a) (Perturbed b)
@@ -59,7 +59,7 @@ perturbLeft (Equivalence a l x r b) m =
    in Equivalence a' l' x' r' b'
 
 perturbRight ::
-  (Eq (Basis a), Eq (Basis b)) =>
+  (Ord (Basis a), Ord (Basis b)) =>
   Equivalence a b ->
   Morphism b b ->
   Equivalence (Perturbed a) (Perturbed b)

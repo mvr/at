@@ -20,7 +20,7 @@ import Prelude hiding (Bounded)
 data FormalDegen a
   = NonDegen a
   | Degen !Int (FormalDegen a)
-  deriving (Eq, Functor)
+  deriving (Eq, Ord, Functor)
   deriving (Constrained.Functor (->) (->)) via (Constrained.Wrapped FormalDegen)
 
 instance Show a => Show (FormalDegen a) where
@@ -85,7 +85,7 @@ unDegen (Degen i s) (j : js)
 
 type Simplex a = FormalDegen (GeomSimplex a)
 
-class Eq (GeomSimplex a) => SSet a where
+class Ord (GeomSimplex a) => SSet a where
   -- NOTE: Maybe this shouldn't be an associated type, instead just
   -- another parameter to the typeclass
 

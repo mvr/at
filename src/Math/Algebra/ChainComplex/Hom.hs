@@ -15,7 +15,7 @@ data Hom a b = Hom a b
 
 -- Looks weird, but I think this is right, for bounded b.
 data HomBasis a b = HomBasis a b
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show)
 
 instance (FiniteType a, ChainComplex b) => ChainComplex (Hom a b) where
@@ -51,7 +51,7 @@ hommap m = Morphism 0 $ \(HomBasis s t) -> HomBasis s <$> m `onBasis` t
 instance Constrained.Functor (UMorphism Int) (UMorphism Int) (HomBasis a) where
   fmap m = Morphism 0 $ \(HomBasis s t) -> HomBasis s <$> m `onBasis` t
 
-homcounit :: (Eq (Basis a)) => Morphism (Tensor (Hom a b) a) b
+homcounit :: Ord (Basis a) => Morphism (Tensor (Hom a b) a) b
 homcounit = Morphism 0 $ \(HomBasis s t, s') -> if s == s' then singleComb t else Combination []
 
 homunit :: (Bounded b) => Morphism a (Hom b (Tensor a b))

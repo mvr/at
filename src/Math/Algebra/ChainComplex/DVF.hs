@@ -45,7 +45,7 @@ isCritical a b
 
 newtype CriticalComplex a = CriticalComplex a
 newtype CriticalBasis a = CriticalBasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show) via a
 
 -- Could be done as a use of the perturbation lemma, but I think these
@@ -81,7 +81,7 @@ nullCodiff a = Morphism 1 $ \b -> case vf a b of
   Source tau i -> Combination [(incidenceCoef i, tau)]
   _ -> Combination []
 
-h :: (DVF a, Eq (Basis a)) => a -> Morphism a a -> Morphism a a
+h :: (DVF a, Ord (Basis a)) => a -> Morphism a a -> Morphism a a
 h a d = Morphism 1 $ \b -> case vf a b of
   Source tau i -> d'_vb - h a d `onComb` ((d `onComb` d'_vb) - singleComb b)
     where

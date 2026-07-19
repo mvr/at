@@ -2,8 +2,9 @@ module Math.Algebra.Combination where
 
 import Control.Category.Constrained (join, return)
 import qualified Control.Category.Constrained as Constrained
-import Data.List (find)
-import Data.Maybe (fromMaybe)
+import Data.Foldable (toList)
+import qualified Data.Map.Strict as Map
+import Data.Tuple (swap)
 import Prelude hiding (id, return, (.))
 
 -- | Z-linear combinations
@@ -17,11 +18,8 @@ instance Applicative Combination where
     (ac, a) <- as
     return (fc * ac, f a)
 
-instance Eq b => Eq (Combination b) where
-  c == c' = null (coeffs (c - c'))
-
--- TODO: obviously make this a hashmap, possibly with special cases
--- for very small combinations? Unless hashmap alreayd does this.
+instance Ord b => Eq (Combination b) where
+  Combination cs == Combination cs' = normalise cs == normalise cs'
 
 showAddTerm :: Show b => (Int, b) -> String
 showAddTerm (0, b) = error "showTerm: 0 coefficient"
@@ -43,22 +41,17 @@ instance Show b => Show (Combination b) where
   show (Combination [t]) = showSoloTerm t
   show (Combination (t : cs)) = show cs ++ showAddTerm t
 
-coeffOf :: (Eq b) => Combination b -> b -> Int
-coeffOf (Combination l) b = fromMaybe 0 $ fst <$> find (\(c, b') -> b == b') l
+coeffOf :: Ord b => Combination b -> b -> Int
+coeffOf (Combination terms) b = Map.findWithDefault 0 b (termMap terms)
 
-merge :: (Foldable t, Eq b, Num a, Eq a) => [(a, b)] -> t (a, b) -> [(a, b)]
-merge cs cs' = foldl (flip insert) cs cs'
-  where
-    insert (0, b) cs' = cs'
-    insert (i, b) [] = [(i, b)]
-    insert (i, b) ((j, b') : cs')
-      | b == b' && i + j == 0 = cs'
-      | b == b' = (i + j, b) : cs'
-      | otherwise = (j, b') : insert (i, b) cs'
+termMap :: (Ord b, Num a) => [(a, b)] -> Map.Map b a
+termMap terms = Map.fromListWith (+) (fmap swap terms)
 
--- Whatever
-normalise :: (Eq b, Num a, Eq a) => [(a, b)] -> [(a, b)]
-normalise = foldr (\c -> merge [c]) []
+merge :: (Foldable t, Ord b, Num a, Eq a) => [(a, b)] -> t (a, b) -> [(a, b)]
+merge terms terms' = normalise (terms ++ toList terms')
+
+normalise :: (Ord b, Num a, Eq a) => [(a, b)] -> [(a, b)]
+normalise terms = fmap swap (Map.toAscList (Map.filter (/= 0) (termMap terms)))
 
 (.*) :: Int -> Combination b -> Combination b
 0 .* (Combination bs) = Combination []
@@ -68,21 +61,21 @@ singleComb :: b -> Combination b
 singleComb a = Combination [(1, a)]
 
 -- TODO: generalise via Constrained.Traversable
--- traverseComb :: (Eq b) => (a -> Combination b) -> [a] -> Combination [b]
+-- traverseComb :: (Ord b) => (a -> Combination b) -> [a] -> Combination [b]
 -- traverseComb f [] = 0
 -- traverseComb f (a:as) = liftA2 (:)
 
-instance Constrained.Functor (Constrained.Sub Eq (->)) (->) Combination where
+instance Constrained.Functor (Constrained.Sub Ord (->)) (->) Combination where
   fmap (Constrained.Sub f) (Combination cs) = Combination $ normalise $ fmap (fmap f) cs
 
-instance Constrained.Functor (Constrained.Sub Eq (->)) (Constrained.Sub Eq (->)) Combination where
+instance Constrained.Functor (Constrained.Sub Ord (->)) (Constrained.Sub Ord (->)) Combination where
   fmap f = Constrained.Sub $ Constrained.fmap f
 
-instance Constrained.Monad (Constrained.Sub Eq (->)) Combination where
+instance Constrained.Monad (Constrained.Sub Ord (->)) Combination where
   return = Constrained.Sub $ \a -> Combination [(1, a)]
   join = Constrained.Sub $ \(Combination cs) -> foldr (\(n, c1) c2 -> (n .* c1) + c2) 0 cs
 
-instance (Eq b) => Num (Combination b) where
+instance Ord b => Num (Combination b) where
   fromInteger 0 = Combination []
   fromInteger _ = error "Combination: fromInteger"
 

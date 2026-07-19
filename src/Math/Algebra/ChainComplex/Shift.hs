@@ -8,7 +8,7 @@ import Prelude hiding (id, return, (.))
 
 newtype Shift a = Shift a
 newtype ShiftBasis a = ShiftBasis a
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 instance (ChainComplex a) => ChainComplex (Shift a) where
   type Basis (Shift a) = ShiftBasis (Basis a)

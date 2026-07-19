@@ -53,11 +53,11 @@ import Math.Algebra.Combination
 newtype TensorSusp a = TensorSusp { unTensorSusp :: a }
 
 newtype TensorSuspBibasis a = TensorSuspBibasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show) via a
 
 newtype TensorSuspBasis a = TensorSuspBasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show) via a
 
 instance ChainComplex a => Bicomplex (TensorSusp a) where
@@ -116,11 +116,11 @@ tensorAlgReduction a b r@(Reduction f g h) = Reduction (tensorAlgFunc f) (tensor
 newtype Bar a = Bar a
 
 newtype BarBibasis a = BarBibasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show) via a
 
 newtype BarBasis a = BarBasis a
-  deriving (Eq)
+  deriving (Eq, Ord)
   deriving (Show) via a
 
 instance Algebra a => Bicomplex (Bar a) where

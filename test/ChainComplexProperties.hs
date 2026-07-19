@@ -7,24 +7,24 @@ import Math.Algebra.ChainComplex
 import Test.Hspec
 import Prelude hiding (id, (.))
 
-isEqOn :: (Num d, Eq a', Show a', Show a) => a -> UMorphism d a a' -> UMorphism d a a' -> Expectation
+isEqOn :: (Num d, Ord a', Show a', Show a) => a -> UMorphism d a a' -> UMorphism d a a' -> Expectation
 isEqOn b m m' =
   unless ((m `onBasis` b) == (m' `onBasis` b)) $
     expectationFailure $ "Images of " ++ show b ++ " are the non-equal " ++ show (m `onBasis` b) ++ " and " ++ show (m' `onBasis` b)
 
-isIdOn :: (Num d, Eq a, Show a) => a -> UMorphism d a a -> Expectation
+isIdOn :: (Num d, Ord a, Show a) => a -> UMorphism d a a -> Expectation
 isIdOn b m = isEqOn b m id
 
-isZeroOn :: (Num d, Eq a', Show a', Show a) => a -> UMorphism d a a' -> Expectation
+isZeroOn :: (Num d, Ord a', Show a', Show a) => a -> UMorphism d a a' -> Expectation
 isZeroOn b m = isEqOn b m 0
 
-isEqOnAll :: (Num d, Eq a', Show a', Show a) => (UMorphism d a a', UMorphism d a a') -> [a] -> Expectation
+isEqOnAll :: (Num d, Ord a', Show a', Show a) => (UMorphism d a a', UMorphism d a a') -> [a] -> Expectation
 isEqOnAll (m, m') bs = forM_ bs (\b -> isEqOn b m m')
 
-isIdOnAll :: (Num d, Eq a, Show a) => UMorphism d a a -> [a] -> Expectation
+isIdOnAll :: (Num d, Ord a, Show a) => UMorphism d a a -> [a] -> Expectation
 isIdOnAll m bs = forM_ bs (\b -> isIdOn b m)
 
-isZeroOnAll :: (Num d, Eq a', Show a', Show a) => UMorphism d a a' -> [a] -> Expectation
+isZeroOnAll :: (Num d, Ord a', Show a', Show a) => UMorphism d a a' -> [a] -> Expectation
 isZeroOnAll m bs = forM_ bs (\b -> isZeroOn b m)
 
 checkChainConditionOn :: (ChainComplex a, Show (Basis a)) => a -> String -> [Basis a] -> Spec

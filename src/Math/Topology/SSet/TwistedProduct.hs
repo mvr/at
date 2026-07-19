@@ -64,6 +64,7 @@ totalSpace b g tau = TwistedProduct g b g (prodMor g) tau
 newtype TwistedProductSimplex a g = TwistedProductSimplex a
 
 deriving instance (Eq a) => Eq (TwistedProductSimplex a g)
+deriving instance Ord a => Ord (TwistedProductSimplex a g)
 instance (Show a) => Show (TwistedProductSimplex a g) where
   show (TwistedProductSimplex a) = show a
 

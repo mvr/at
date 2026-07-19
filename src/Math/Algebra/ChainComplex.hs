@@ -17,7 +17,7 @@ import Math.ValueCategory (Arrow)
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
 
-class (Eq (Basis a)) => ChainComplex a where
+class Ord (Basis a) => ChainComplex a where
   type Basis a = s | s -> a
 
   isBasis :: a -> Basis a -> Bool
@@ -74,9 +74,9 @@ underlyingFunction :: UMorphism d a b -> (a -> Combination b)
 underlyingFunction = onBasis
 
 instance Constrained.Functor (UMorphism d) (->) Combination where
-  fmap m c = incl (join @(Constrained.Sub Eq (->))) $ fmap (m `onBasis`) c
+  fmap m c = incl (join @(Constrained.Sub Ord (->))) $ fmap (m `onBasis`) c
 
-onComb :: (Eq a, Eq b) => UMorphism d a b -> Combination a -> Combination b
+onComb :: (Ord a, Ord b) => UMorphism d a b -> Combination a -> Combination b
 onComb = Constrained.fmap
 
 morphismZeroOfDeg :: d -> UMorphism d a b
@@ -93,14 +93,14 @@ instance Show d => Show (UMorphism d a b) where
   show (Morphism d f) = "Morphism of degree " ++ show d
 
 instance Num d => Constrained.Semigroupoid (UMorphism d) where
-  type Object (UMorphism d) a = Eq a
+  type Object (UMorphism d) a = Ord a
 
-  (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (incl (join @(Constrained.Sub Eq (->))) . fmap f2 . f1)
+  (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (incl (join @(Constrained.Sub Ord (->))) . fmap f2 . f1)
 
 instance Num d => Constrained.Category (UMorphism d) where
   id = Morphism 0 (\x -> Combination [(1, x)])
 
-instance (Num d, Eq b) => Num (UMorphism d a b) where
+instance (Num d, Ord b) => Num (UMorphism d a b) where
   fromInteger 0 = morphismZero
   fromInteger _ = error "Morphism: fromInteger"
 
@@ -117,7 +117,7 @@ instance (Num d, Eq b) => Num (UMorphism d a b) where
 data ClosedMorphism a b = ClosedMorphism a (Morphism a b) b
 
 instance Constrained.Semigroupoid ClosedMorphism where
-  type Object ClosedMorphism o = Eq (Basis o)
+  type Object ClosedMorphism o = Ord (Basis o)
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
 data ChainGroup a = ChainGroup Int a
