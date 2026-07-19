@@ -16,7 +16,7 @@ instance (ChainComplex a) => ChainComplex (Shift a) where
   degree (Shift a) (ShiftBasis s) = degree a s + 1
   diff (Shift a) = Morphism (-1) go
     where
-      go (ShiftBasis s) = ShiftBasis <$> (diff a `onBasis` s)
+      go (ShiftBasis s) = - (ShiftBasis <$> (diff a `onBasis` s))
 
 instance (FiniteType a) => FiniteType (Shift a) where
   dim (Shift a) n = dim a (n - 1)

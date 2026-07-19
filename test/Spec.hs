@@ -17,6 +17,7 @@ import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
+import Math.Topology.SSet.Effective
 import Math.Topology.SSet.NChains
 import Math.Topology.SSet.NSimplex
 import Math.Topology.SSet.Product as Product
@@ -28,12 +29,16 @@ import qualified AbGroupPresTest
 import qualified AbelianCategoryProperties
 import qualified BicomplexProperties
 import qualified ChainComplexProperties
+import qualified DiskTest
 import qualified DVFProperties
 import qualified MatrixOpsTest
 import qualified ReductionProperties
 import qualified SGrpProperties
 import qualified SSetProperties
+import qualified ShiftTest
 import qualified SmithNormalFormTest
+import qualified TensorAlgReductionTest
+import qualified TensorTest
 
 main :: IO ()
 main = hspec spec
@@ -63,6 +68,10 @@ testProduct n a b = do
 spec :: Spec
 spec = do
   SmithNormalFormTest.spec
+  DiskTest.spec
+  TensorTest.spec
+  TensorAlgReductionTest.spec
+  ShiftTest.spec
   MatrixOpsTest.spec
 
   describe "Abelian category problems for AbGroup" $ AbelianCategoryProperties.spec (Proxy @AbGroupPres)
@@ -133,6 +142,34 @@ spec = do
       SSetProperties.check 4 p
     describe "DVF" $
       DVFProperties.check 4 (NChains p) -- This is actually not enough to uncover errors
+
+  describe "effective K(Z/2,3) model" $
+    ChainComplexProperties.checkChainCondition (model (Wbar (Wbar KZmod2_1))) 8
+
+  describe "lifted Wbar reduction for K(Z/2,1)" $
+    ReductionProperties.check
+      6
+      (TensorSusp (NChains (Wbar KZmod2_1)))
+      (TensorSusp (Bar (NChains KZmod2_1)))
+      (tensorAlgReduction
+        (NChains (Wbar KZmod2_1))
+        (Bar (NChains KZmod2_1))
+        (wbarReduction (Wbar KZmod2_1)))
+
+  describe "Wbar reduction for K(Z/2,1)" $
+    ReductionProperties.check
+      4
+      (NChains (Wbar KZmod2_1))
+      (Bar (NChains KZmod2_1))
+      (wbarReduction (Wbar KZmod2_1))
+
+  describe "Wbar reduction for K(Z/3,1)" $ do
+    let g = WbarDiscrete (Zmod 3)
+    ReductionProperties.check
+      4
+      (NChains (Wbar g))
+      (Bar (NChains g))
+      (wbarReduction (Wbar g))
 
   describe "Bar" $ do
     let a = Bar (NChains (WbarDiscrete (Zmod 3)))

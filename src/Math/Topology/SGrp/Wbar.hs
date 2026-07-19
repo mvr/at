@@ -13,7 +13,8 @@ import Data.Coerce
 import Prelude hiding (id, return, (.))
 
 import qualified Math.Algebra.Bicomplex as Bi
-import qualified Math.Algebra.ChainComplex as CC (Morphism, fmapBasis)
+import qualified Math.Algebra.ChainComplex as CC (Morphism, UMorphism (..), kozulRule)
+import Math.Algebra.Combination (singleComb)
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Algebra.ChainComplex.Equivalence
@@ -144,6 +145,13 @@ reconstructBar g (a:as) = WbarSimplex (a':nb')
         (b', a') = reconstructProduct (Wbar g) g (rest, a)
         nb' = unnormalise g b'
 
+barOrientation :: SSet g => g -> [GeomSimplex g] -> Int
+barOrientation g = go . fmap (geomSimplexDim g)
+  where
+    -- Sum_{i<j} d_i*(d_j+1), from crossing later suspended factors.
+    go [] = 0
+    go (d:ds) = d * (length ds + sum ds) + go ds
+
 criticalIso ::
   forall g.
   (Pointed g) =>
@@ -151,7 +159,9 @@ criticalIso ::
   CC.Morphism
     (CriticalComplex (NChains (Wbar g)))
     (Bar (NChains g))
-criticalIso g = CC.fmapBasis $ coerce @(GeomSimplex (Wbar g) -> _) (stripBar g)
+criticalIso g = CC.Morphism 0 $ coerce @(GeomSimplex (Wbar g) -> _) $ \s ->
+  let as = stripBar g s
+   in CC.kozulRule (barOrientation g as) (singleComb as)
 
 criticalIsoInv ::
   (SGrp g) =>
@@ -159,7 +169,8 @@ criticalIsoInv ::
   CC.Morphism
     (Bar (NChains g))
     (CriticalComplex (NChains (Wbar g)))
-criticalIsoInv g = CC.fmapBasis $ coerce $ reconstructBar g
+criticalIsoInv g = CC.Morphism 0 $ coerce $ \as ->
+  CC.kozulRule (barOrientation g as) (singleComb (reconstructBar g as))
 
 wbarReduction ::
   (SAb g, ZeroReduced g) =>

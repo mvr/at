@@ -69,9 +69,12 @@ instance ChainComplex a => Bicomplex (TensorSusp a) where
 
   vdiff (TensorSusp a) = Morphism (Bidegree (0, -1)) (coerce go)
     where
+      -- Homological suspension convention: d(sb) = -s(db).
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
-      go (b : bs) = fmap (: bs) (diff a `onBasis` b) + kozulRule (degree a b + 1) (fmap (b :) (go bs))
+      go (b : bs) =
+        - fmap (: bs) (diff a `onBasis` b)
+          + kozulRule (degree a b + 1) (fmap (b :) (go bs))
 
   hdiff _ = morphismZero
 
@@ -100,10 +103,14 @@ instance FiniteType a => Bi.FiniteType (TensorSusp a) where
 instance FiniteType a => FiniteType (TensorSusp a) where
   basis (TensorSusp a) i = TensorSuspBasis <$> basis (Tot (TensorSusp a)) i
 
-verth :: (ChainComplex a) => Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
-verth h gf [] = 0
-verth h gf (b:bs) = liftA2 (:) (h `onBasis` b) (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
-                    + fmap (b:) (verth h gf bs)
+verth :: ChainComplex a => a -> Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
+verth _ _ _ [] = 0
+verth a h gf (b : bs) =
+  - liftA2
+      (:)
+      (h `onBasis` b)
+      (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
+    + kozulRule (degree a b + 1) (fmap (b :) (verth a h gf bs))
 
 tensorAlgReduction ::
   (ChainComplex a, ChainComplex b) =>
@@ -111,7 +118,11 @@ tensorAlgReduction ::
   b ->
   Reduction a b ->
   Reduction (TensorSusp a) (TensorSusp b)
-tensorAlgReduction a b r@(Reduction f g h) = Reduction (tensorAlgFunc f) (tensorAlgFunc g) (Morphism 1 $ coerce $ verth h (g . f))
+tensorAlgReduction a b (Reduction f g h) =
+  Reduction
+    (tensorAlgFunc f)
+    (tensorAlgFunc g)
+    (Morphism 1 $ coerce $ verth a h (g . f))
 
 newtype Bar a = Bar a
 

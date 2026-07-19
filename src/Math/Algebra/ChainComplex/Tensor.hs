@@ -41,9 +41,9 @@ tensorFunc ::
   Morphism a1 b1 ->
   Morphism a2 b2 ->
   Morphism (Tensor a1 a2) (Tensor b1 b2)
-tensorFunc a1 a2 (Morphism deg f1) (Morphism _ f2) = Morphism deg ft
-  where
-    ft (x1, x2) = kozulRule (degree a1 x1 * degree a2 x2) (tensorCombination (f1 x1) (f2 x2))
+tensorFunc a1 _ (Morphism deg1 f1) (Morphism deg2 f2) =
+  Morphism (deg1 + deg2) $ \(x1, x2) ->
+    kozulRule (deg2 * degree a1 x1) (tensorCombination (f1 x1) (f2 x2))
 
 tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
 tensorAssoc = fmapBasis $ \((a, b), c) -> (a, (b, c))
