@@ -20,8 +20,7 @@ See the `examples/` folder.
 ```
 ...
 > let x = totalSpace s3 (Wbar kz1) fibration
-> putStr "π₄ S³ is: "
-> print (homology x !! 4)
+> putStrLn $ "π₄ S³ is: " ++ show (homology x !! 4)
 π₄ S³ is: ℤ/2
 ```
 

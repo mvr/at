@@ -60,7 +60,7 @@ instance (SGrp g) => SSet (Wbar g) where
   -- A non-degenerate simplex is a list of simplices of `g`
   -- (Wbar G)_n = G_n-1 x G_n-2 x ... x G_0
   -- meeting a slightly complicated condition on whether the list
-  -- contains a unit, and the things proceding it are all degeneracies
+  -- contains a unit and the things preceding that unit are degeneracies
   type GeomSimplex (Wbar g) = WbarSimplex [Simplex g]
 
   isGeomSimplex (Wbar g) (WbarSimplex ss) =

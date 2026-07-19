@@ -11,4 +11,4 @@ import Math.Topology.SSet.Effective
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
-  print (homology (Wbar (WbarDiscrete (Zmod 3))))
+  putStrLn $ "Homology of K(ℤ/3, 2) is: " ++ show (homology (Wbar (WbarDiscrete (Zmod 3))))
