@@ -10,10 +10,8 @@ import Data.Coerce
 import Prelude hiding (id, return, (.))
 
 import Math.Algebra.ChainComplex
-import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
-import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Combination
 
 -- Units of Z
@@ -105,7 +103,10 @@ dvfReduction a = Reduction (f a d) (g a d) (h a d)
 dvfEquivalence :: DVF a => a -> Equivalence a (CriticalComplex a)
 dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)
 
--- When does this actually work?
+-- A reduction transfers a strict algebra to an A-infinity algebra in
+-- general. These instances would require additional multiplicative
+-- compatibility conditions on the vector field.
+{-
 instance (Algebra a, DVF a) => Algebra (CriticalComplex a) where
   muMor (CriticalComplex a) = proj a . muMor a . (incl a ⊗ incl a)
     where
@@ -113,3 +114,4 @@ instance (Algebra a, DVF a) => Algebra (CriticalComplex a) where
   unitMor (CriticalComplex a) = proj a . unitMor a
 
 instance (CommAlgebra a, DVF a) => CommAlgebra (CriticalComplex a)
+-}
