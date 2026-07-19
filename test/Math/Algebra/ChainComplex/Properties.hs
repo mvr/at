@@ -1,5 +1,5 @@
 -- |
-module ChainComplexProperties where
+module Math.Algebra.ChainComplex.Properties where
 
 import Control.Category.Constrained (id, (.))
 import Control.Monad (forM_, unless)

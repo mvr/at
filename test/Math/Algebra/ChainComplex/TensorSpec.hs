@@ -1,4 +1,4 @@
-module TensorTest where
+module Math.Algebra.ChainComplex.TensorSpec where
 
 import Control.Category.Constrained (id)
 import Control.Monad (forM_)
@@ -10,7 +10,7 @@ import Math.Algebra.ChainComplex.Disk
 import Math.Algebra.ChainComplex.Tensor
 import Math.Algebra.Combination
 
-import qualified ReductionProperties
+import qualified Math.Algebra.ChainComplex.Reduction.Properties as ReductionProperties
 
 spec :: Spec
 spec = describe "tensor products" $ do

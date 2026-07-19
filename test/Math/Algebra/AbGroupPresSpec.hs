@@ -1,5 +1,6 @@
-module AbGroupPresTest where
+module Math.Algebra.AbGroupPresSpec where
 
+import Data.Proxy
 import Test.Hspec
 import Test.QuickCheck
 
@@ -10,10 +11,14 @@ import Math.Algebra.AbGroupPres.IsoClass
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
 
-import ArbitraryInstances ()
+import qualified Math.ValueCategory.Abelian.Properties as AbelianCategoryProperties
+import TestSupport.ArbitraryInstances ()
 
 spec :: Spec
 spec = do
+  describe "Abelian category problems for AbGroup" $
+    AbelianCategoryProperties.spec (Proxy @AbGroupPres)
+
   describe "AbGroup" $ do
     describe "isoClass" $ do
       it "survives class -> group -> class" $

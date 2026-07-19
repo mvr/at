@@ -1,5 +1,5 @@
 -- |
-module DVFProperties where
+module Math.Algebra.ChainComplex.DVF.Properties where
 
 import Test.Hspec
 

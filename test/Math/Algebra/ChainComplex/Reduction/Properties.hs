@@ -1,5 +1,5 @@
 -- |
-module ReductionProperties where
+module Math.Algebra.ChainComplex.Reduction.Properties where
 
 import Control.Category.Constrained (id, (.))
 import Math.Algebra.ChainComplex
@@ -7,7 +7,7 @@ import Math.Algebra.ChainComplex.Reduction
 import Test.Hspec
 import Prelude hiding (id, (.))
 
-import ChainComplexProperties
+import Math.Algebra.ChainComplex.Properties
 
 checkBottom :: (ChainComplex a, ChainComplex b, Show (Basis b), Show (Basis a)) => [Basis a] -> [Basis b] -> Reduction a b -> Spec
 checkBottom as bs (Reduction f g h) = do

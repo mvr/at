@@ -1,8 +1,8 @@
 -- |
-module SGrpProperties where
+module Math.Topology.SGrp.Properties where
 
 import Control.Monad (forM_)
-import qualified SSetProperties as SSet
+import qualified Math.Topology.SSet.Properties as SSet
 import Test.Hspec
 import Prelude hiding (id, (.))
 

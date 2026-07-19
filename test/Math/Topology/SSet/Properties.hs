@@ -1,5 +1,5 @@
 -- |
-module SSetProperties where
+module Math.Topology.SSet.Properties where
 
 import Control.Monad (forM_, unless, when)
 import Test.Hspec

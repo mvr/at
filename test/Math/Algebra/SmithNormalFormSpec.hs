@@ -1,4 +1,4 @@
-module SmithNormalFormTest where
+module Math.Algebra.SmithNormalFormSpec where
 
 import Test.Hspec
 import Test.QuickCheck
@@ -10,7 +10,7 @@ import qualified Data.Vector as V
 
 import Math.Algebra.SmithNormalForm
 
-import ArbitraryInstances ()
+import TestSupport.ArbitraryInstances ()
 
 isDiagonal :: (Eq a, Num a) => Matrix a -> Bool
 isDiagonal m = m == M.extendTo 0 r c (M.diagonal 0 (M.getDiag m))

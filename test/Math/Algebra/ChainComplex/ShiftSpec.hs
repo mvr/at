@@ -1,4 +1,4 @@
-module ShiftTest where
+module Math.Algebra.ChainComplex.ShiftSpec where
 
 import Test.Hspec
 
@@ -7,7 +7,7 @@ import Math.Algebra.ChainComplex.Disk
 import Math.Algebra.ChainComplex.Shift
 import Math.Algebra.Combination
 
-import qualified ChainComplexProperties
+import qualified Math.Algebra.ChainComplex.Properties as ChainComplexProperties
 
 spec :: Spec
 spec = describe "chain-complex shift" $ do

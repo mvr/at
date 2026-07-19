@@ -1,5 +1,5 @@
 -- |
-module BicomplexProperties where
+module Math.Algebra.Bicomplex.Properties where
 
 import Control.Category.Constrained ((.))
 import Control.Monad (forM_)
@@ -9,7 +9,7 @@ import Math.Algebra.Combination
 import Test.Hspec
 import Prelude hiding (id, (.))
 
-import ChainComplexProperties
+import Math.Algebra.ChainComplex.Properties
 
 checkChainConditions :: (Bicomplex a, Show (Bibasis a)) => a -> [Bibasis a] -> Spec
 checkChainConditions a as = do

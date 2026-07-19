@@ -1,4 +1,4 @@
-module AbelianCategoryProperties where
+module Math.ValueCategory.Abelian.Properties where
 
 import Data.Proxy
 import Test.Hspec

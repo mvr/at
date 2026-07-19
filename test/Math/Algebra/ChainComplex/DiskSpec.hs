@@ -1,10 +1,10 @@
-module DiskTest where
+module Math.Algebra.ChainComplex.DiskSpec where
 
 import Test.Hspec
 
 import Math.Algebra.ChainComplex.Disk
 
-import qualified ReductionProperties
+import qualified Math.Algebra.ChainComplex.Reduction.Properties as ReductionProperties
 
 spec :: Spec
 spec = describe "disk chain complexes" $ do

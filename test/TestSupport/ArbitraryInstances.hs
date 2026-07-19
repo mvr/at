@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module ArbitraryInstances where
+module TestSupport.ArbitraryInstances where
 
 import Data.List (sort)
 import Data.Matrix

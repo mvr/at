@@ -1,4 +1,4 @@
-module MatrixOpsTest where
+module Math.Algebra.AbGroupPres.MatrixOpsSpec where
 
 import Test.Hspec
 import Test.QuickCheck
@@ -7,7 +7,7 @@ import qualified Data.Matrix as M
 
 import Math.Algebra.AbGroupPres
 
-import ArbitraryInstances
+import TestSupport.ArbitraryInstances
 
 spec :: Spec
 spec = do
