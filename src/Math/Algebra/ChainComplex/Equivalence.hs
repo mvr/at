@@ -17,6 +17,14 @@ data Equivalence a b = forall c.
     equivRight :: b
   }
 
+equivalenceForward :: (Eq (Basis a), Eq (Basis b)) => Equivalence a b -> Morphism a b
+equivalenceForward (Equivalence _ leftReduction _ rightReduction _) =
+  reductionF rightReduction . reductionG leftReduction
+
+equivalenceBackward :: (Eq (Basis a), Eq (Basis b)) => Equivalence a b -> Morphism b a
+equivalenceBackward (Equivalence _ leftReduction _ rightReduction _) =
+  reductionF leftReduction . reductionG rightReduction
+
 instance Semigroupoid Equivalence where
   type Object Equivalence a = (ChainComplex a, Eq (Basis a))
 
