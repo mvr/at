@@ -188,8 +188,10 @@ data AbMorphism = AbMorphism
   deriving (Show)
 
 instance Eq (Arrow AbGroupPres) where
-  (Arrow d (AbMorphism f r) c) == (Arrow d' (AbMorphism f' r') c') =
-    (isJust $ solveMatrix (presentation c) (f - f'))
+  (Arrow d (AbMorphism _ r) c) == (Arrow d' (AbMorphism _ r') c') =
+    d == d'
+      && c == c'
+      && isJust (solveMatrix (reduced c) (r - r'))
 
 instance Semigroup AbMorphism where
   (AbMorphism f r) <> (AbMorphism f' r') = AbMorphism (f * f') (r * r')
