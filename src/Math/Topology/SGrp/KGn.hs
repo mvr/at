@@ -43,7 +43,7 @@ instance Algebra CircleComplex where
     where go (Left _, Left _) = singleComb (Left ())
           go (Left _, Right _) = singleComb (Right (ShiftBasis ()))
           go (Right _, Left _) = singleComb (Right (ShiftBasis ()))
-          go (Right _, Right _) = 2 .* singleComb (Right (ShiftBasis ()))
+          go (Right _, Right _) = 0
 
 instance DVF KZ1 where
   vf _ [] = Critical
