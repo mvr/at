@@ -120,12 +120,13 @@ spec = do
     let p = Wbar g
     it "normalisation should be invertible" $
       forM_ [0 .. 5] (\i -> forM_ (allSimplices p i) (\s -> Wbar.normalise g (Wbar.unnormalise g s) `shouldBe` s))
+    it "does not report a false outer degeneracy" $ do
+      let ss = [Degen 1 (NonDegen [1, 1]), Degen 1 (NonDegen [1]), Degen 0 (NonDegen []), NonDegen []]
+      Wbar.normalise g ss `shouldBe` NonDegen (WbarSimplex ss)
     describe "SSet" $
       SSetProperties.check 4 p
     describe "DVF" $
       DVFProperties.check 4 (NChains p) -- This is actually not enough to uncover errors
-
-  -- TODO: normalise wrong on normalise (WbarDiscrete (Zmod 3)) [Degen 1 (NonDegen [1,1]), Degen 1 (NonDegen [1]), Degen 0 (NonDegen []), NonDegen []]
 
   describe "Bar" $ do
     let a = Bar (NChains (WbarDiscrete (Zmod 3)))
