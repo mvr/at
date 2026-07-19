@@ -29,7 +29,7 @@ instance (FiniteType a, ChainComplex b) => ChainComplex (Hom a b) where
   diff (Hom a b) = Morphism (-1) $ \(HomBasis s t) ->
     let n = degree (Hom a b) (HomBasis s t)
      in fmap (HomBasis s) (diff b `onBasis` t)
-          + kozulRule (n + 1) (Combination $ fmap (\s' -> (diff a `onBasis` s' `coeffOf` s, HomBasis s' t)) (basis a (n + 1)))
+          + kozulRule (n + 1) (Combination $ fmap (\s' -> (diff a `onBasis` s' `coeffOf` s, HomBasis s' t)) (basis a (degree a s + 1)))
 
 instance (FiniteType a, FiniteType b, Bounded b) => FiniteType (Hom a b) where
   dim (Hom a b) n = sum $ (\y -> dim b y * dim a (y - n)) <$> amplitude b
