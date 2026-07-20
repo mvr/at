@@ -14,7 +14,7 @@ import Prelude hiding (return)
 data Bicone b c d = Bicone b c d (Morphism b c) (Morphism d c)
 
 data BiconeBasis b c d = FromB b | FromC c | FromD d
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 instance (ChainComplex b, ChainComplex c, ChainComplex d) => ChainComplex (Bicone b c d) where
   type Basis (Bicone b c d) = BiconeBasis (Basis b) (Basis c) (Basis d)

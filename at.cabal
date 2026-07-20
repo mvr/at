@@ -139,6 +139,7 @@ test-suite spec
     Math.Algebra.Bicomplex.Properties
     Math.Algebra.ChainComplex.Algebra.BarSpec
     Math.Algebra.ChainComplex.Algebra.Properties
+    Math.Algebra.ChainComplex.BiconeSpec
     Math.Algebra.ChainComplex.DiskSpec
     Math.Algebra.ChainComplex.DVF.Properties
     Math.Algebra.ChainComplex.HomSpec
@@ -151,8 +152,12 @@ test-suite spec
     Math.Topology.SGrp.KGnSpec
     Math.Topology.SGrp.WbarDiscreteSpec
     Math.Topology.SGrp.WbarSpec
+    Math.Topology.SSet.MooreSpec
     Math.Topology.SSet.Properties
     Math.Topology.SSet.ProductSpec
+    Math.Topology.SSet.RPnSpec
+    Math.Topology.SSet.SkeletonSpec
+    Math.Topology.SSet.SphereSpec
     Math.Topology.SSet.TwistedProductSpec
     Math.ValueCategory.Abelian.Properties
     TestSupport.ArbitraryInstances

@@ -7,6 +7,7 @@ import Math.Algebra.ChainComplex.DVF
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn ()
 import Math.Topology.SGrp.WbarDiscrete
+import Math.Topology.SSet
 import Math.Topology.SSet.NChains
 
 import qualified Math.Algebra.ChainComplex.DVF.Properties as DVFProperties
@@ -37,7 +38,14 @@ spec = do
   describe "K(ℤ/n,1)s" $
     forM_ [2, 3, 4, 5] $ \i ->
       describe ("K(ℤ/" ++ show i ++ ",1)") $ do
-        let p = WbarDiscrete (Zmod i)
+        let group = Zmod i
+            p = WbarDiscrete group
+        it "normalises and unnormalises invertibly" $
+          forM_ [0 .. 4] $ \degree -> do
+            forM_ (sequence (replicate degree (elements group))) $ \entries ->
+              unnormalise group (normalise group entries) `shouldBe` entries
+            forM_ (allSimplices p degree) $ \simplex ->
+              normalise group (unnormalise group simplex) `shouldBe` simplex
         describe "SSet" $
           SSetProperties.check 4 p
         describe "SGrp" $
