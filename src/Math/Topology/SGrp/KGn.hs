@@ -84,7 +84,7 @@ instance DVF (WbarDiscrete Zmod) where
   vf (WbarDiscrete (Zmod n)) [] = Critical
   vf (WbarDiscrete (Zmod n)) [1] = Critical
   vf (WbarDiscrete (Zmod n)) (1 : a1 : as)
-    | a1 == n - 1 = fmap (\x -> 1 : a1 : x) (vf (WbarDiscrete (Zmod n)) as)
+    | a1 == ZmodElement (n - 1) = fmap (\x -> 1 : a1 : x) (vf (WbarDiscrete (Zmod n)) as)
     | otherwise = Target (a1 + 1 : as) Neg
   vf (WbarDiscrete (Zmod n)) (a1 : as) = Source (1 : a1 - 1 : as) Neg
 

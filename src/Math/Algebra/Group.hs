@@ -24,16 +24,21 @@ instance Group Z where
 
 instance Abelian Z
 
--- likely always small
 newtype Zmod = Zmod Int
 
+newtype ZmodElement = ZmodElement Int
+  deriving (Eq, Ord, Show, Num)
+
+zmodElement :: (Integral a) => Zmod -> a -> ZmodElement
+zmodElement (Zmod n) x = ZmodElement (fromIntegral x `mod` n)
+
 instance Group Zmod where
-  type Element Zmod = Int
-  prod (Zmod n) x y = (x + y) `mod` n
-  unit _ = 0
-  inv (Zmod n) x = negate x `mod` n
+  type Element Zmod = ZmodElement
+  prod group (ZmodElement x) (ZmodElement y) = zmodElement group (x + y)
+  unit _ = ZmodElement 0
+  inv group (ZmodElement x) = zmodElement group (negate x)
 
 instance Abelian Zmod
 
 instance FiniteGroup Zmod where
-  elements (Zmod n) = [0 .. n -1]
+  elements (Zmod n) = ZmodElement <$> [0 .. n - 1]
