@@ -33,8 +33,11 @@ data Status a
   deriving (Constrained.Functor (->) (->)) via (Constrained.Wrapped Status)
 
 class ChainComplex a => DVF a where
-  -- TODO: Name??
   vf :: a -> Basis a -> Status (Basis a)
+
+  -- | A directly generated critical basis, when one is available.
+  criticalBasis :: a -> Int -> Maybe [Basis a]
+  criticalBasis _ _ = Nothing
 
 isCritical :: DVF a => a -> Basis a -> Bool
 isCritical a b
@@ -55,8 +58,10 @@ instance DVF a => ChainComplex (CriticalComplex a) where
   diff (CriticalComplex a) = dK a (diff a)
 
 instance (DVF a, FiniteType a) => FiniteType (CriticalComplex a) where
-  basis (CriticalComplex a) n = coerce $ filter (isCritical a) (basis a n)
-  -- TODO: add function to directly return the critical basis which in general is much smaller
+  basis (CriticalComplex a) n =
+    CriticalBasis <$> case criticalBasis a n of
+      Just critical -> critical
+      Nothing -> filter (isCritical a) (basis a n)
 
 proj :: DVF a => a -> Morphism a (CriticalComplex a)
 proj a = Morphism 0 $

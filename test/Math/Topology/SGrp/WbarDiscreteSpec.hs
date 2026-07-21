@@ -1,13 +1,15 @@
 module Math.Topology.SGrp.WbarDiscreteSpec where
 
-import Control.Monad (forM_)
+import Control.Monad (forM_, when)
 import Test.Hspec
 
+import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.DVF
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn ()
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
+import qualified Math.Topology.SSet.DVF as SSetDVF
 import Math.Topology.SSet.NChains
 
 import qualified Math.Algebra.ChainComplex.DVF.Properties as DVFProperties
@@ -52,3 +54,19 @@ spec = do
           SGrpProperties.check 4 p
         describe "DVF" $
           DVFProperties.check 4 (NChains p)
+        it "generates the critical basis directly" $
+          forM_ [-1 .. 4] $ \degree -> do
+            let chains = NChains p
+                alternating =
+                  take degree (cycle [1, ZmodElement (i - 1)])
+                generated
+                  | degree < 0 = []
+                  | otherwise = [alternating]
+                expected =
+                  CriticalBasis
+                    <$> filter (isCritical chains) (CC.basis chains degree)
+            SSetDVF.criticalGeomBasis p degree `shouldBe` Just generated
+            CC.basis (CriticalComplex chains) degree
+              `shouldBe` (CriticalBasis . BasisSimplex <$> generated)
+            when (degree >= 0) $
+              CC.basis (CriticalComplex chains) degree `shouldBe` expected

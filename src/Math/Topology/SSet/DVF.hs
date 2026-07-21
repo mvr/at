@@ -12,8 +12,12 @@ import Math.Topology.SSet
 import Math.Topology.SSet.NChains
 
 class SSet a => DVF a where
-  -- TODO: Name??
   vf :: a -> GeomSimplex a -> CC.Status (GeomSimplex a)
+
+  -- | A directly generated critical geometric basis, when one is available.
+  criticalGeomBasis :: a -> Int -> Maybe [GeomSimplex a]
+  criticalGeomBasis _ _ = Nothing
 
 instance DVF a => CC.DVF (NChains a) where
   vf (NChains a) (BasisSimplex b) = coerce $ vf a b
+  criticalBasis (NChains a) n = fmap (fmap BasisSimplex) (criticalGeomBasis a n)

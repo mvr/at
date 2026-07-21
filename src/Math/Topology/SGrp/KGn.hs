@@ -77,9 +77,6 @@ instance Effective KZ1 where
       (Sum () (Shift ()))
       (isoToReduction criticalIso criticalIsoInv . dvfReduction (NChains (WbarDiscrete Z)))
 
--- This seems to work... TODO: give a reduction from this to a chain
--- complex with one basis element in each dimension, no need to
--- generate all simplices and filter
 instance DVF (WbarDiscrete Zmod) where
   vf (WbarDiscrete (Zmod n)) [] = Critical
   vf (WbarDiscrete (Zmod n)) [1] = Critical
@@ -87,6 +84,10 @@ instance DVF (WbarDiscrete Zmod) where
     | a1 == ZmodElement (n - 1) = fmap (\x -> 1 : a1 : x) (vf (WbarDiscrete (Zmod n)) as)
     | otherwise = Target (a1 + 1 : as) Neg
   vf (WbarDiscrete (Zmod n)) (a1 : as) = Source (1 : a1 - 1 : as) Neg
+
+  criticalGeomBasis (WbarDiscrete (Zmod n)) degree
+    | degree < 0 = Just []
+    | otherwise = Just [take degree (cycle [1, ZmodElement (n - 1)])]
 
 instance Effective (WbarDiscrete Zmod) where
   type Model (WbarDiscrete Zmod) = CriticalComplex (NChains (WbarDiscrete Zmod))
