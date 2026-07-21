@@ -1,12 +1,16 @@
 module Math.Topology.SSet.TwistedProductSpec where
 
+import Control.Monad (forM_)
+import Data.Coerce (coerce)
 import Test.Hspec
 
+import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.Wbar
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
+import Math.Topology.SSet.NChains
 import qualified Math.Topology.SSet.Product as Product
 import Math.Topology.SSet.Sphere
 import Math.Topology.SSet.TwistedProduct
@@ -43,6 +47,13 @@ spec = do
       SSetProperties.checkTwistOn s2 kz1 fibration [Basepoint, Cell]
     describe "SSet" $
       SSetProperties.checkOn x gs
+    it "computes the perturbation directly" $ do
+      let oldPerturbation =
+            coerce (CC.diff (NChains x))
+              - CC.diff (NChains (Product.Product kz1 s2))
+      forM_ gs $ \(TwistedProductSimplex simplex) ->
+        CC.onBasis (twistedProductPerturbation x) (BasisSimplex simplex)
+          `shouldBe` CC.onBasis oldPerturbation (BasisSimplex simplex)
 
   describe "PrincipalFibration over S3" $ do
     let s3 = Sphere 3
@@ -84,6 +95,13 @@ spec = do
       SSetProperties.checkTwistOn s3 kz2 fibration [Basepoint, Cell]
     describe "SSet" $
       SSetProperties.checkOn x gs
+    it "computes the perturbation directly" $ do
+      let oldPerturbation =
+            coerce (CC.diff (NChains x))
+              - CC.diff (NChains (Product.Product kz2 s3))
+      forM_ gs $ \(TwistedProductSimplex simplex) ->
+        CC.onBasis (twistedProductPerturbation x) (BasisSimplex simplex)
+          `shouldBe` CC.onBasis oldPerturbation (BasisSimplex simplex)
 
   describe "Universal principal fibration over K(ℤ/2,2)" $ do
     let g = WbarDiscrete (Zmod 2)
@@ -95,3 +113,10 @@ spec = do
       SSetProperties.checkTwistOn b g twist ([0 .. 4] >>= geomBasis b)
     describe "SSet" $
       SSetProperties.check 4 x
+    it "computes the perturbation directly" $ do
+      let oldPerturbation =
+            coerce (CC.diff (NChains x))
+              - CC.diff (NChains (Product.Product g b))
+      forM_ ([0 .. 4] >>= geomBasis x) $ \(TwistedProductSimplex simplex) ->
+        CC.onBasis (twistedProductPerturbation x) (BasisSimplex simplex)
+          `shouldBe` CC.onBasis oldPerturbation (BasisSimplex simplex)

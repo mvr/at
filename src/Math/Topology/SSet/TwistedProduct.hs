@@ -33,6 +33,7 @@ import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.Combination (singleComb)
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
@@ -102,6 +103,26 @@ totalSpaceChainsIsoInv ::
     (Perturbed (NChains (Product f b)))
 totalSpaceChainsIsoInv = fmapBasis coerce
 
+-- | The twisting changes only the zeroth face of a product simplex.
+twistedProductPerturbation ::
+  (SSet f, SSet b, SGrp g) =>
+  TwistedProduct f b g ->
+  CC.Morphism (NChains (Product f b)) (NChains (Product f b))
+twistedProductPerturbation t@(TwistedProduct f b _ _ _) =
+  CC.Morphism (-1) $ \(BasisSimplex simplex) -> perturb simplex
+  where
+    perturb simplex@(s, _)
+      | simplexDim f s == 0 = 0
+      | otherwise = asChain twistedFace - asChain untwistedFace
+      where
+        twistedFace =
+          fmap (\(TwistedProductSimplex faceSimplex) -> faceSimplex) $
+            geomFace t (TwistedProductSimplex simplex) 0
+        untwistedFace = geomFace (Product f b) simplex 0
+
+    asChain (NonDegen simplex) = singleComb (BasisSimplex simplex)
+    asChain (Degen _ _) = 0
+
 instance
   ( Effective f,
     Effective b,
@@ -111,9 +132,8 @@ instance
   where
   type Model (TwistedProduct f b g) = Perturbed (Tensor (Model f) (Model b))
 
-  -- TODO: compute the difference directly, likely much faster
-  eff t@(TwistedProduct f b g act tau) =
+  eff t@(TwistedProduct f b _ _ _) =
     composeLeft (NChains t) (isoToReduction totalSpaceChainsIso totalSpaceChainsIsoInv) $
-    perturbLeft
+      perturbLeft
         (eff (Product f b))
-        (coerce (diff (NChains (TwistedProduct f b g act tau))) - diff (NChains (Product f b)))
+        (twistedProductPerturbation t)
