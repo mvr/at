@@ -182,14 +182,15 @@ evaluateCocycle ::
   CC.FundamentalCocycle model ->
   Simplex a ->
   Integer
-evaluateCocycle _ _ (Degen _ _) = 0
-evaluateCocycle projection cocycle (NonDegen simplex) =
-  fromIntegral $
-    coeffOf
-      ( CC.cocycleMorphism cocycle
-          `CC.onComb` (projection `CC.onBasis` BasisSimplex simplex)
-      )
-      ()
+evaluateCocycle projection cocycle (FormalDegen mask simplex)
+  | mask /= 0 = 0
+  | otherwise =
+      fromIntegral $
+        coeffOf
+          ( CC.cocycleMorphism cocycle
+              `CC.onComb` (projection `CC.onBasis` BasisSimplex simplex)
+          )
+          ()
 
 -- | The classifying map to K(A,n) = Wbar K(A,n-1) represented by a
 -- fundamental cocycle on the effective model of the source.

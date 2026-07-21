@@ -5,7 +5,6 @@ module Math.Topology.SSet where
 import qualified Control.Category.Constrained as Constrained
 import Control.Monad (ap)
 import Data.Bits
-import Data.Maybe (isJust)
 import Prelude hiding (Bounded)
 
 -- A formal degeneracy is stored as a bit mask, with pattern synonyms
@@ -64,14 +63,32 @@ underlyingGeom :: FormalDegen a -> a
 underlyingGeom (FormalDegen _ s) = s
 
 degen :: FormalDegen a -> Int -> FormalDegen a
-degen (FormalDegen mask a) i
+degen (FormalDegen mask a) i = FormalDegen (insertDegenBit mask i) a
+
+insertDegenBit :: Word -> Int -> Word
+insertDegenBit mask i
   | i < 0 || i >= finiteBitSize mask = error "degen: invalid index"
   | shiftedHigher `shiftR` 1 /= higher = error "degen: degeneracy mask overflow"
-  | otherwise = FormalDegen (lower .|. bit i .|. shiftedHigher) a
+  | otherwise = lower .|. bit i .|. shiftedHigher
   where
     lower = mask .&. (bit i - 1)
     higher = mask `xor` lower
     shiftedHigher = higher `shiftL` 1
+
+applyDegenMask :: Word -> FormalDegen a -> FormalDegen a
+applyDegenMask operations (FormalDegen mask a) = FormalDegen (go operations mask) a
+  where
+    go 0 result = result
+    go remaining result =
+      let i = countTrailingZeros remaining
+       in go (clearBit remaining i) (insertDegenBit result i)
+
+deleteDegenBit :: Word -> Int -> Word
+deleteDegenBit mask i = lower .|. shiftedHigher
+  where
+    lowerMask = bit i - 1
+    lower = mask .&. lowerMask
+    shiftedHigher = (mask `shiftR` 1) .&. complement lowerMask
 
 degenList :: FormalDegen a -> [Int]
 degenList (FormalDegen mask _) = maskIndices mask
@@ -135,27 +152,24 @@ class Ord (GeomSimplex a) => SSet a where
 -- TODO: for efficiency?
 -- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
 
-isSimplex' :: SSet a => a -> Simplex a -> Maybe Int
-isSimplex' a (NonDegen s) = if isGeomSimplex a s then Just (geomSimplexDim a s) else Nothing
-isSimplex' a (Degen i s) = do
-  nextdim <- isSimplex' a s
-  if i <= nextdim
-    then Just (nextdim + 1)
-    else Nothing
-
 isSimplex :: SSet a => a -> Simplex a -> Bool
-isSimplex a s = isJust (isSimplex' a s)
+isSimplex a (FormalDegen mask s) =
+  isGeomSimplex a s
+    && (mask == 0 || highestSetBit mask <= geomSimplexDim a s + popCount mask - 1)
 
 simplexDim :: SSet a => a -> Simplex a -> Int
-simplexDim a (NonDegen s) = geomSimplexDim a s
-simplexDim a (Degen i s) = 1 + simplexDim a s
+simplexDim a (FormalDegen mask s) = geomSimplexDim a s + popCount mask
 
 face :: SSet a => a -> Simplex a -> Int -> Simplex a
-face a (NonDegen s) i = geomFace a s i
-face a (Degen j s) i
-  | i < j = degen (face a s i) (j - 1)
-  | i > j + 1 = degen (face a s (i - 1)) j
-  | otherwise = s
+face a (FormalDegen mask s) i
+  -- d_i cancels s_i or s_(i-1); otherwise it passes through the
+  -- degeneracy word, whose removed position shifts all higher indices.
+  | testBit mask i = FormalDegen (deleteDegenBit mask i) s
+  | i > 0 && testBit mask (i - 1) = FormalDegen (deleteDegenBit mask (i - 1)) s
+  | otherwise =
+      applyDegenMask
+        (deleteDegenBit mask i)
+        (geomFace a s (i - popCount (mask .&. (bit i - 1))))
 
 -- | An injective map @[m] -> [n]@ in the simplex category, represented
 -- by the vertices of @[n]@ in its image.
@@ -231,8 +245,7 @@ newtype UMorphism a b = Morphism {onGeomSimplex :: a -> FormalDegen b}
 type Morphism a b = UMorphism (GeomSimplex a) (GeomSimplex b)
 
 onSimplex :: UMorphism a b -> FormalDegen a -> FormalDegen b
-onSimplex (Morphism f) (NonDegen s) = f s
-onSimplex m (Degen i s) = degen (onSimplex m s) i
+onSimplex (Morphism f) (FormalDegen mask s) = applyDegenMask mask (f s)
 
 instance Constrained.Semigroupoid UMorphism where
   f2 . (Morphism f1) = Morphism $ \s -> f2 `onSimplex` f1 s

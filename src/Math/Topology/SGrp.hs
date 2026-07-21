@@ -25,8 +25,7 @@ class (SSet a, Pointed a) => SGrp a where
 class SGrp a => SAb a
 
 isUnit :: Pointed g => g -> Simplex g -> Bool
-isUnit g (NonDegen s) = s == basepoint g
-isUnit g (Degen _ s) = isUnit g s
+isUnit g (FormalDegen _ s) = s == basepoint g
 
 instance (SGrp a, SGrp b) => SGrp (Product a b) where
   -- TODO: this does more normalising/unnormalising than necessary,

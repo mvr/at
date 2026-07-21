@@ -9,6 +9,7 @@
 module Math.Topology.SSet.Product where
 
 import Control.Category.Constrained (fmap, (.))
+import Data.Bits (clearBit, testBit)
 import Data.Coerce
 import Prelude hiding (fmap, id, return, (.))
 
@@ -48,9 +49,7 @@ prodUnnormalise :: Simplex (Product a b) -> (Simplex a, Simplex b)
 prodUnnormalise s = (s >>= fst, s >>= snd) -- nice!
 
 jointlyNonDegen :: (Simplex a, Simplex b) -> Bool
-jointlyNonDegen ss = case prodNormalise ss of
-  NonDegen _ -> True
-  Degen _ _ -> False
+jointlyNonDegen = not . isDegen . prodNormalise
 
 instance (SSet a, SSet b) => SSet (Product a b) where
   type GeomSimplex (Product a b) = (Simplex a, Simplex b)
@@ -105,8 +104,10 @@ data Direction = X | Y | Diag | End
 -- Walking backwards from (p,q) to (0,0)
 spathStep :: (Int, Simplex a, Simplex b) -> (Direction, (Int, Simplex a, Simplex b))
 spathStep (0, _, _) = (End, undefined)
-spathStep (q, Degen i s, t) | i + 1 == q = (X, (q - 1, s, t))
-spathStep (q, s, Degen j t) | j + 1 == q = (Y, (q - 1, s, t))
+spathStep (q, FormalDegen sMask s, t)
+  | testBit sMask (q - 1) = (X, (q - 1, FormalDegen (clearBit sMask (q - 1)) s, t))
+spathStep (q, s, FormalDegen tMask t)
+  | testBit tMask (q - 1) = (Y, (q - 1, s, FormalDegen (clearBit tMask (q - 1)) t))
 spathStep (q, s, t) = (Diag, (q - 1, s, t))
 
 spathUnstep :: Direction -> (Int, Simplex a, Simplex b) -> (Int, Simplex a, Simplex b)
