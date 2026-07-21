@@ -133,6 +133,33 @@ face a (Degen j s) i
   | i > j + 1 = degen (face a s (i - 1)) j
   | otherwise = s
 
+-- | An injective map @[m] -> [n]@ in the simplex category, represented
+-- by the vertices of @[n]@ in its image.
+data FaceOperator = FaceOperator Int [Int]
+  deriving (Eq, Ord, Show)
+
+identityFaceOperator :: Int -> FaceOperator
+identityFaceOperator dimension
+  | dimension < 0 = error "identityFaceOperator: negative dimension"
+  | otherwise = FaceOperator dimension [0 .. dimension]
+
+-- | Precompose a face operator with the indicated face map.
+faceOperatorFace :: FaceOperator -> Int -> FaceOperator
+faceOperatorFace (FaceOperator sourceDimension vertices) i
+  | i < 0 = error "faceOperatorFace: invalid face index"
+  | otherwise = case splitAt i vertices of
+      (before, _ : after) -> FaceOperator sourceDimension (before ++ after)
+      _ -> error "faceOperatorFace: invalid face index"
+
+applyFaceOperator :: SSet a => a -> FaceOperator -> Simplex a -> Simplex a
+applyFaceOperator a (FaceOperator sourceDimension vertices) simplex
+  | simplexDim a simplex /= sourceDimension =
+      error "applyFaceOperator: source dimension mismatch"
+  | otherwise = foldl (face a) simplex omittedVertices
+  where
+    omittedVertices =
+      [i | i <- [sourceDimension, sourceDimension - 1 .. 0], i `notElem` vertices]
+
 hasFace :: SSet a => a -> GeomSimplex a -> GeomSimplex a -> Bool
 hasFace a t s = NonDegen s `elem` geomFaces a t
 

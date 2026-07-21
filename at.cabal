@@ -76,6 +76,7 @@ library
     Math.Algebra.SmithNormalForm
     Math.Topology.SGrp
     Math.Topology.SGrp.KGn
+    Math.Topology.SGrp.KGn.Cocycle
     Math.Topology.SGrp.Wbar
     Math.Topology.SGrp.WbarDiscrete
     Math.Topology.SSet
@@ -89,6 +90,7 @@ library
     Math.Topology.SSet.Skeleton
     Math.Topology.SSet.Sphere
     Math.Topology.SSet.TwistedProduct
+    Math.Topology.SSet.Whitehead
     Math.ValueCategory
     Math.ValueCategory.Abelian
     Math.ValueCategory.Additive
@@ -128,6 +130,19 @@ executable Pi4S3
     mtl,
     vector
 
+executable Pi6S3
+  import: defaults
+  main-is: Pi6S3.hs
+  hs-source-dirs: examples
+  ghc-options:
+    -O2
+    -main-is Pi6S3
+  build-depends:
+    at,
+    matrix,
+    mtl,
+    vector
+
 test-suite spec
   import: defaults
   type: exitcode-stdio-1.0
@@ -142,16 +157,19 @@ test-suite spec
     Math.Algebra.ChainComplex.BiconeSpec
     Math.Algebra.ChainComplex.DiskSpec
     Math.Algebra.ChainComplex.DVF.Properties
+    Math.Algebra.ChainComplex.FundamentalCocycleSpec
     Math.Algebra.ChainComplex.HomSpec
     Math.Algebra.ChainComplex.Properties
     Math.Algebra.ChainComplex.Reduction.Properties
     Math.Algebra.ChainComplex.ShiftSpec
     Math.Algebra.ChainComplex.TensorSpec
+    Math.Algebra.GroupSpec
     Math.Algebra.SmithNormalFormSpec
     Math.Topology.SGrp.Properties
     Math.Topology.SGrp.KGnSpec
     Math.Topology.SGrp.WbarDiscreteSpec
     Math.Topology.SGrp.WbarSpec
+    Math.Topology.SSetSpec
     Math.Topology.SSet.MooreSpec
     Math.Topology.SSet.Properties
     Math.Topology.SSet.ProductSpec
@@ -159,6 +177,7 @@ test-suite spec
     Math.Topology.SSet.SkeletonSpec
     Math.Topology.SSet.SphereSpec
     Math.Topology.SSet.TwistedProductSpec
+    Math.Topology.SSet.WhiteheadSpec
     Math.ValueCategory.Abelian.Properties
     TestSupport.ArbitraryInstances
   ghc-options:

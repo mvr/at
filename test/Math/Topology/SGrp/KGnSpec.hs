@@ -8,6 +8,8 @@ import Math.Algebra.ChainComplex.Shift
 import Math.Algebra.ChainComplex.Sum
 import Math.Algebra.Combination
 import Math.Topology.SGrp.KGn
+import Math.Topology.SGrp.KGn.Cocycle
+import Math.Topology.SGrp.Wbar
 
 import qualified Math.Algebra.ChainComplex.Algebra.Properties as AlgebraProperties
 import qualified Math.Topology.SGrp.Properties as SGrpProperties
@@ -30,3 +32,8 @@ spec = do
       SSetProperties.check 4 KZmod2_1
     describe "SGrp" $
       SGrpProperties.check 4 KZmod2_1
+
+  describe "iterated Eilenberg-Mac Lane spaces" $
+    it "iterates from the degree of the supplied space" $
+      case iteratedEilenbergMacLane 3 (Wbar kz1) of
+        SomeEilenbergMacLane g -> emDegree g `shouldBe` 3

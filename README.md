@@ -18,10 +18,12 @@ Examples
 See the `examples/` folder.
 
 ```
-...
-> let x = totalSpace s3 (Wbar kz1) fibration
-> putStrLn $ "π₄ S³ is: " ++ show (homology x !! 4)
-π₄ S³ is: ℤ/2
+> homotopyGroup 4 (Sphere 3)
+Right ℤ/2
+
+> homotopyGroup 6 (Sphere 3)
+[ ... 30 seconds pass ... ]
+Right ℤ/(2^2) ⊕ ℤ/3
 ```
 
 ```
@@ -127,7 +129,7 @@ Plan
   - [x] Spheres
     - [ ] Treat `S¹` separately (not 1-reduced)
   - [x] Moore Spaces
-  - [ ] Projective Spaces
+  - [x] Real Projective Spaces
   - [ ] Lens Spaces
 - Eilenberg-MacLane Spaces
   - [x] [`K(ℤ,1)`](#ref-kendoc)
@@ -158,7 +160,7 @@ Plan
 #### Effective Homology
 - Classifying Spaces
   - [x] Direct Reduction of `K(ℤ,1)` to `S¹`
-  - [ ] [Of 0-reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
+  - [x] [Of 0-reduced Abelian sGrps](#ref-sergeraert%3Advf-slides)
   - [ ] Of General sGrps
 - Products
   - [x] Eilenberg-Zilber reduction
@@ -182,10 +184,10 @@ Plan
   - [x] `K(ℤ,1)`
     - [x] [Naive but easy](#ref-kms%3Apoly-em-spaces)
     - [ ] [Polynomial time but complicated](#ref-kms%3Apoly-em-spaces)
-  - [x] `K(ℤ/n,1)`?
+  - [x] `K(ℤ/n,1)`
   - [x] Classifying Spaces for 0-reduced sAb
 - Homotopy Groups
-  - [ ] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
+  - [x] [Whitehead Tower (for 1-reduced sSet)](#ref-real%3Ahomotopy-groups)
   - [ ] [Postnikov Tower?](#ref-ckmvw%3Apoly-homotopy-groups)
 - Cohomology Operations
   - [ ] [Over fields using  "minimal models"](#ref-gr%3Acohomology-ops)

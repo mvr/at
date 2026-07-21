@@ -8,12 +8,14 @@ import Control.Category.Constrained (id, incl, join, (.))
 import qualified Control.Category.Constrained as Constrained
 import Data.Coerce
 import qualified Data.Matrix as M
+import qualified Data.Vector as V
 import Prelude hiding (Bounded, id, return, (.))
 
 import Math.Algebra.AbGroupPres
 import Math.Algebra.Combination
 import Math.Algebra.Group
-import Math.ValueCategory (Arrow)
+import Math.Algebra.SmithNormalForm
+import Math.ValueCategory (Arrow, mor)
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
 
@@ -203,6 +205,56 @@ homologyGroups a = fmap (\(n, f,g) -> HomologyGroup n (homology f g) a) pairs
   where
     diffs = fmap (chainDiff a) [0 ..]
     pairs = zip3 [0 ..] (tail diffs) diffs
+
+-- | A coordinate of the fundamental cohomology class associated to a
+-- cyclic summand of a homology group.  'Nothing' denotes an infinite
+-- cyclic summand; 'Just n' denotes coefficients in Z/n.
+data FundamentalCocycle a = FundamentalCocycle
+  { cocycleOrder :: Maybe Integer,
+    cocycleMorphism :: Morphism a ()
+  }
+
+-- | Degree in which the cocycle is supported.
+cocycleDegree :: FundamentalCocycle a -> Int
+cocycleDegree = negate . morphismDegree . cocycleMorphism
+
+-- | Fundamental cocycles for the cyclic invariant factors of H_n(a).
+fundamentalCocycles :: FiniteType a => a -> Int -> Either String [FundamentalCocycle a]
+fundamentalCocycles a n
+  | isExact incoming outgoing = Right []
+  | otherwise = do
+      boundaryCoordinates <-
+        maybe
+          (Left "boundaries are not contained in cycles")
+          Right
+          (solveMatrix cycles boundaries)
+      let Triple leftChange _ smith _ _ = smithNormalForm boundaryCoordinates
+          diagonal = take cycleRank $ V.toList (M.getDiag smith) ++ repeat 0
+          nontrivialRows = filter ((/= 1) . snd) $ zip [1 ..] diagonal
+      traverse (makeCocycle leftChange) nontrivialRows
+  where
+    outgoing = chainDiff a n
+    incoming = chainDiff a (n + 1)
+
+    cycles = matrixKernel (fullMorphism (mor outgoing))
+    boundaries = fullMorphism (mor incoming)
+
+    cycleRank = M.ncols cycles
+
+    makeCocycle leftChange (i, order) = do
+      let cycleValues = M.fromList cycleRank 1 (V.toList (M.getRow i leftChange))
+      functional <-
+        maybe
+          (Left "fundamental cocycle does not extend to the full chain group")
+          Right
+          (solveMatrix (M.transpose cycles) cycleValues)
+      let functionalValues = zip (basis a n) (M.toList functional)
+          act b
+            | degree a b /= n = 0
+            | otherwise = case lookup b functionalValues of
+                Just value -> fromInteger value .* singleComb ()
+                Nothing -> error "fundamentalCocycles: invalid basis element"
+      Right $ FundamentalCocycle (if order == 0 then Nothing else Just order) (Morphism (negate n) act)
 
 neghomologies :: FiniteType a => a -> [AbGroupPres]
 neghomologies a = fmap (uncurry homology) pairs
