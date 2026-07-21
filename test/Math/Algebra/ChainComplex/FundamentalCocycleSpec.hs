@@ -30,7 +30,7 @@ instance CC.ChainComplex SkewComplex where
     Lower -> 0
     L -> singleComb Lower
     R -> singleComb Lower
-    Upper -> Combination [(p, L), (-p, R)]
+    Upper -> fromTerms [(p, L), (-p, R)]
 
 instance CC.FiniteType SkewComplex where
   basis _ 1 = [Lower]
@@ -78,7 +78,7 @@ spec = describe "fundamentalCocycles" $ do
     case cocycles of
       [cocycle] -> do
         CC.cocycleOrder cocycle `shouldBe` Nothing
-        abs (cocycleValue cocycle (Combination [(1, L), (-1, R)])) `shouldBe` 1
+        abs (cocycleValue cocycle (fromTerms [(1, L), (-1, R)])) `shouldBe` 1
         CC.cocycleMorphism cocycle `CC.onBasis` Lower `shouldBe` 0
         CC.cocycleMorphism cocycle `CC.onBasis` Upper `shouldBe` 0
       _ -> expectationFailure "expected exactly one integral cocycle"
@@ -86,8 +86,8 @@ spec = describe "fundamentalCocycles" $ do
   it "finds multiple torsion invariant factors and returns cocycles for them" $ do
     let complex = Sum (SkewComplex 2) (SkewComplex 4)
         cycleGenerators =
-          [ Combination [(1, Left L), (-1, Left R)],
-            Combination [(1, Right L), (-1, Right R)]
+          [ fromTerms [(1, Left L), (-1, Left R)],
+            fromTerms [(1, Right L), (-1, Right R)]
           ]
     cocycles <- expectCocycles complex 2
     sort (map CC.cocycleOrder cocycles) `shouldBe` [Just 2, Just 4]

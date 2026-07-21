@@ -73,8 +73,8 @@ instance ChainComplex a => Bicomplex (TensorSusp a) where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
       go (b : bs) =
-        - fmap (: bs) (diff a `onBasis` b)
-          + kozulRule (degree a b + 1) (fmap (b :) (go bs))
+        - mapCombination (: bs) (diff a `onBasis` b)
+          + kozulRule (degree a b + 1) (mapCombination (b :) (go bs))
 
   hdiff _ = morphismZero
 
@@ -87,7 +87,7 @@ tensorAlgFunc ::
   (ChainComplex a, ChainComplex b) =>
   Morphism a b ->
   Morphism (TensorSusp a) (TensorSusp b)
-tensorAlgFunc (Morphism deg f) = Morphism deg (coerce $ traverse @[] f)
+tensorAlgFunc (Morphism deg f) = Morphism deg (coerce $ traverseCombination f)
 
 instance FiniteType a => Bi.FiniteType (TensorSusp a) where
   bibasis (TensorSusp a) (hd, vd) = TensorSuspBibasis <$> go vd hd
@@ -106,11 +106,11 @@ instance FiniteType a => FiniteType (TensorSusp a) where
 verth :: ChainComplex a => a -> Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
 verth _ _ _ [] = 0
 verth a h gf (b : bs) =
-  - liftA2
+  - liftCombination2
       (:)
       (h `onBasis` b)
       (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
-    + kozulRule (degree a b + 1) (fmap (b :) (verth a h gf bs))
+    + kozulRule (degree a b + 1) (mapCombination (b :) (verth a h gf bs))
 
 tensorAlgReduction ::
   (ChainComplex a, ChainComplex b) =>
@@ -146,7 +146,7 @@ instance Algebra a => Bicomplex (Bar a) where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
       go [b1] = 0
-      go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (fmap (: bs) (muMor a `onBasis` (b1, b2)) + fmap (b1 :) (go (b2 : bs)))
+      go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (mapCombination (: bs) (muMor a `onBasis` (b1, b2)) + mapCombination (b1 :) (go (b2 : bs)))
 
 instance (Algebra a, FiniteType a) => Bi.FiniteType (Bar a) where
   bibasis (Bar a) = coerce (bibasis (TensorSusp a))
@@ -165,8 +165,8 @@ shuffle c [] [] = 0
 shuffle c as [] = singleComb as
 shuffle c [] bs = singleComb bs
 shuffle c (a : as) (b : bs) =
-  fmap (a :) (shuffle c as (b : bs))
-    + kozulRule eps (fmap (b :) (shuffle c (a : as) bs))
+  mapCombination (a :) (shuffle c as (b : bs))
+    + kozulRule eps (mapCombination (b :) (shuffle c (a : as) bs))
   where
     eps = (1 + degree c b) * (length (a : as) + sum (degree c <$> (a : as)))
 
@@ -180,7 +180,7 @@ barFunc ::
   (ChainComplex a, ChainComplex b) =>
   Morphism a b ->
   Morphism (Bar a) (Bar b)
-barFunc (Morphism deg f) = Morphism deg (coerce $ traverse @[] f)
+barFunc (Morphism deg f) = Morphism deg (coerce $ traverseCombination f)
 
 horizPerturbation :: (Algebra a) => a -> Morphism (TensorSusp a) (TensorSusp a)
 horizPerturbation a = Morphism (-1) $ coerce $ underlyingFunction $ hdiff (Bar a)

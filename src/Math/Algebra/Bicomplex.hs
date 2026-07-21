@@ -43,7 +43,7 @@ class Bicomplex a => FiniteType a where
 type Bimorphism a b = UMorphism Bidegree (Bibasis a) (Bibasis b)
 
 validBicomb :: Bicomplex a => a -> Combination (Bibasis a) -> Bool
-validBicomb a (Combination bs) = and $ fmap (\(_, b) -> isBibasis a b) bs
+validBicomb a combination = and $ fmap (\(_, b) -> isBibasis a b) (coeffs combination)
 
 newtype Tot a = Tot a
 
@@ -59,7 +59,7 @@ instance (Bicomplex a) => ChainComplex (Tot a) where
   degree (Tot a) (TotBasis b) =
     let (p, q) = bidegree a b in p + q
   diff (Tot a) = Morphism (-1) $ \(TotBasis b) ->
-    fmap TotBasis $ hdiff a `onBasis` b + vdiff a `onBasis` b
+    mapCombination TotBasis $ hdiff a `onBasis` b + vdiff a `onBasis` b
 
 instance (Bicomplex a, FiniteType a) => CC.FiniteType (Tot a) where
   basis (Tot a) d = do

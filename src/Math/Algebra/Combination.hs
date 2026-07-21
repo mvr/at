@@ -1,28 +1,38 @@
-module Math.Algebra.Combination where
+module Math.Algebra.Combination
+  ( Combination,
+    coeffs,
+    fromTerms,
+    zeroCombination,
+    coeffOf,
+    mapCombination,
+    bindCombination,
+    liftCombination2,
+    productCombination,
+    traverseCombination,
+    (.*),
+    singleComb,
+    normalise,
+  )
+where
 
 import Control.Category.Constrained (join, return)
 import qualified Control.Category.Constrained as Constrained
-import Data.Foldable (toList)
 import qualified Data.Map.Strict as Map
 import Data.Tuple (swap)
 import Prelude hiding (id, return, (.))
 
--- | Z-linear combinations
-newtype Combination b = Combination {coeffs :: [(Int, b)]}
-  deriving (Functor)
+-- | Z-linear combinations, stored in ascending basis order without zero terms.
+newtype Combination b = CanonicalCombination {coeffs :: [(Int, b)]}
+  deriving (Eq)
 
-instance Applicative Combination where
-  pure b = Combination [(1, b)]
-  (Combination fs) <*> (Combination as) = Combination $ do
-    (fc, f) <- fs
-    (ac, a) <- as
-    return (fc * ac, f a)
+fromTerms :: Ord b => [(Int, b)] -> Combination b
+fromTerms terms = CanonicalCombination (normalise terms)
 
-instance Ord b => Eq (Combination b) where
-  Combination cs == Combination cs' = normalise cs == normalise cs'
+zeroCombination :: Combination b
+zeroCombination = CanonicalCombination []
 
 showAddTerm :: Show b => (Int, b) -> String
-showAddTerm (0, b) = error "showTerm: 0 coefficient"
+showAddTerm (0, _) = error "showTerm: 0 coefficient"
 showAddTerm (1, b) = show b
 showAddTerm (-1, b) = " - " ++ show b
 showAddTerm (c, b)
@@ -30,57 +40,103 @@ showAddTerm (c, b)
   | otherwise = " + " ++ show c ++ "·" ++ show b
 
 showSoloTerm :: Show b => (Int, b) -> String
-showSoloTerm (0, b) = error "showSoloTerm: 0 coefficient"
+showSoloTerm (0, _) = error "showSoloTerm: 0 coefficient"
 showSoloTerm (1, b) = show b
 showSoloTerm (-1, b) = "-" ++ show b
 showSoloTerm (c, b) = show c ++ "·" ++ show b
 
 instance Show b => Show (Combination b) where
-  -- TODO: this reverses order, does anyone care?
-  show (Combination []) = "0"
-  show (Combination [t]) = showSoloTerm t
-  show (Combination (t : cs)) = show cs ++ showAddTerm t
+  show (CanonicalCombination []) = "0"
+  show (CanonicalCombination [t]) = showSoloTerm t
+  show (CanonicalCombination (t : cs)) = show (CanonicalCombination cs) ++ showAddTerm t
 
 coeffOf :: Ord b => Combination b -> b -> Int
-coeffOf (Combination terms) b = Map.findWithDefault 0 b (termMap terms)
+coeffOf (CanonicalCombination terms) target = go terms
+  where
+    go [] = 0
+    go ((coefficient, basis) : rest) = case compare target basis of
+      LT -> 0
+      EQ -> coefficient
+      GT -> go rest
 
 termMap :: (Ord b, Num a) => [(a, b)] -> Map.Map b a
 termMap terms = Map.fromListWith (+) (fmap swap terms)
 
-merge :: (Foldable t, Ord b, Num a, Eq a) => [(a, b)] -> t (a, b) -> [(a, b)]
-merge terms terms' = normalise (terms ++ toList terms')
-
 normalise :: (Ord b, Num a, Eq a) => [(a, b)] -> [(a, b)]
 normalise terms = fmap swap (Map.toAscList (Map.filter (/= 0) (termMap terms)))
 
+mapCombination :: Ord b => (a -> b) -> Combination a -> Combination b
+mapCombination f (CanonicalCombination terms) =
+  fromTerms (fmap (fmap f) terms)
+
+bindCombination :: Ord b => Combination a -> (a -> Combination b) -> Combination b
+bindCombination (CanonicalCombination terms) f =
+  fromTerms
+    [ (outerCoefficient * innerCoefficient, innerBasis)
+      | (outerCoefficient, outerBasis) <- terms,
+        (innerCoefficient, innerBasis) <- coeffs (f outerBasis)
+    ]
+
+liftCombination2 :: Ord c => (a -> b -> c) -> Combination a -> Combination b -> Combination c
+liftCombination2 f left right =
+  fromTerms
+    [ (leftCoefficient * rightCoefficient, f leftBasis rightBasis)
+      | (leftCoefficient, leftBasis) <- coeffs left,
+        (rightCoefficient, rightBasis) <- coeffs right
+    ]
+
+-- | Pair every term in two combinations. Lexicographic pair ordering
+-- preserves the canonical ordering of the inputs.
+productCombination :: Combination a -> Combination b -> Combination (a, b)
+productCombination (CanonicalCombination left) (CanonicalCombination right) =
+  CanonicalCombination
+    [ (leftCoefficient * rightCoefficient, (leftBasis, rightBasis))
+      | (leftCoefficient, leftBasis) <- left,
+        (rightCoefficient, rightBasis) <- right
+    ]
+
+traverseCombination :: Ord b => (a -> Combination b) -> [a] -> Combination [b]
+traverseCombination f = foldr (\a rest -> liftCombination2 (:) (f a) rest) (singleComb [])
+
 (.*) :: Int -> Combination b -> Combination b
-0 .* (Combination bs) = Combination []
-n .* (Combination bs) = Combination $ fmap (\(c, b) -> (n * c, b)) bs
+0 .* _ = zeroCombination
+n .* (CanonicalCombination terms) =
+  CanonicalCombination $ fmap (\(coefficient, basis) -> (n * coefficient, basis)) terms
+
+infixl 7 .*
 
 singleComb :: b -> Combination b
-singleComb a = Combination [(1, a)]
-
--- TODO: generalise via Constrained.Traversable
--- traverseComb :: (Ord b) => (a -> Combination b) -> [a] -> Combination [b]
--- traverseComb f [] = 0
--- traverseComb f (a:as) = liftA2 (:)
+singleComb a = CanonicalCombination [(1, a)]
 
 instance Constrained.Functor (Constrained.Sub Ord (->)) (->) Combination where
-  fmap (Constrained.Sub f) (Combination cs) = Combination $ normalise $ fmap (fmap f) cs
+  fmap (Constrained.Sub f) = mapCombination f
 
 instance Constrained.Functor (Constrained.Sub Ord (->)) (Constrained.Sub Ord (->)) Combination where
   fmap f = Constrained.Sub $ Constrained.fmap f
 
 instance Constrained.Monad (Constrained.Sub Ord (->)) Combination where
-  return = Constrained.Sub $ \a -> Combination [(1, a)]
-  join = Constrained.Sub $ \(Combination cs) -> foldr (\(n, c1) c2 -> (n .* c1) + c2) 0 cs
+  return = Constrained.Sub singleComb
+  join = Constrained.Sub $ \combinations -> bindCombination combinations (\combination -> combination)
 
 instance Ord b => Num (Combination b) where
-  fromInteger 0 = Combination []
+  fromInteger 0 = zeroCombination
   fromInteger _ = error "Combination: fromInteger"
 
-  (Combination cs) + (Combination cs') = Combination $ merge cs cs'
-  negate (Combination cs) = Combination $ fmap (\(n, c) -> (negate n, c)) cs
+  CanonicalCombination left + CanonicalCombination right =
+    CanonicalCombination (merge left right)
+    where
+      merge [] terms = terms
+      merge terms [] = terms
+      merge leftTerms@((leftCoefficient, leftBasis) : leftRest) rightTerms@((rightCoefficient, rightBasis) : rightRest) =
+        case compare leftBasis rightBasis of
+          LT -> (leftCoefficient, leftBasis) : merge leftRest rightTerms
+          GT -> (rightCoefficient, rightBasis) : merge leftTerms rightRest
+          EQ -> case leftCoefficient + rightCoefficient of
+            0 -> merge leftRest rightRest
+            coefficient -> (coefficient, leftBasis) : merge leftRest rightRest
+
+  negate (CanonicalCombination terms) =
+    CanonicalCombination $ fmap (\(coefficient, basis) -> (negate coefficient, basis)) terms
 
   (*) = error "Combination: (*)"
   abs = error "Combination: abs"

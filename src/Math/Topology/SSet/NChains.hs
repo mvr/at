@@ -32,7 +32,7 @@ instance SSet a => CC.ChainComplex (NChains a) where
 
   diff (NChains a) = CC.Morphism (-1) (coerce act)
     where
-      act v = sum [Combination [(c, s)] | (c, NonDegen s) <- zip signs $ geomFaces a v]
+      act v = fromTerms [(c, s) | (c, NonDegen s) <- zip signs $ geomFaces a v]
       signs = cycle [1, -1]
 
 instance FiniteType a => CC.FiniteType (NChains a) where
@@ -45,4 +45,4 @@ instance Bounded a => CC.Bounded (NChains a) where
 instance Functor UMorphism (CC.UMorphism Int) BasisSimplex where
   fmap m = CC.Morphism 0 $ \(BasisSimplex s) -> case m `onGeomSimplex` s of
     NonDegen t -> singleComb (BasisSimplex t)
-    Degen _ _ -> Combination []
+    Degen _ _ -> zeroCombination

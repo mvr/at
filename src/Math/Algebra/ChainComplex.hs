@@ -4,7 +4,7 @@
 -- | Chain complex of free \(ℤ\)-modules
 module Math.Algebra.ChainComplex where
 
-import Control.Category.Constrained (id, incl, join, (.))
+import Control.Category.Constrained (id, (.))
 import qualified Control.Category.Constrained as Constrained
 import Data.Coerce
 import qualified Data.Matrix as M
@@ -55,7 +55,7 @@ instance Bounded () where
   amplitude _ = [0]
 
 validComb :: ChainComplex a => a -> Chain a -> Bool
-validComb a (Combination bs) = and $ fmap (\(_, b) -> isBasis a b) bs
+validComb a combination = and $ fmap (\(_, b) -> isBasis a b) (coeffs combination)
 
 -- well, not really
 kozulRule :: Num b => Int -> b -> b
@@ -76,13 +76,13 @@ underlyingFunction :: UMorphism d a b -> (a -> Combination b)
 underlyingFunction = onBasis
 
 instance Constrained.Functor (UMorphism d) (->) Combination where
-  fmap m c = incl (join @(Constrained.Sub Ord (->))) $ fmap (m `onBasis`) c
+  fmap m combination = bindCombination combination (m `onBasis`)
 
 onComb :: (Ord a, Ord b) => UMorphism d a b -> Combination a -> Combination b
 onComb = Constrained.fmap
 
 morphismZeroOfDeg :: d -> UMorphism d a b
-morphismZeroOfDeg d = Morphism d (const (Combination []))
+morphismZeroOfDeg d = Morphism d (const zeroCombination)
 
 morphismZero :: Num d => UMorphism d a b
 morphismZero = morphismZeroOfDeg 0
@@ -97,10 +97,11 @@ instance Show d => Show (UMorphism d a b) where
 instance Num d => Constrained.Semigroupoid (UMorphism d) where
   type Object (UMorphism d) a = Ord a
 
-  (Morphism d2 f2) . (Morphism d1 f1) = Morphism (d1 + d2) (incl (join @(Constrained.Sub Ord (->))) . fmap f2 . f1)
+  (Morphism d2 f2) . (Morphism d1 f1) =
+    Morphism (d1 + d2) (\basis -> bindCombination (f1 basis) f2)
 
 instance Num d => Constrained.Category (UMorphism d) where
-  id = Morphism 0 (\x -> Combination [(1, x)])
+  id = Morphism 0 singleComb
 
 instance (Num d, Ord b) => Num (UMorphism d a b) where
   fromInteger 0 = morphismZero
@@ -140,7 +141,8 @@ toChainGrpElt a n cs = AbGroupPresElt $ M.fromList 1 (length r) (fmap (fromInteg
     r = basis a n
 
 fromChainGrpElt :: (FiniteType a) => a -> Int -> AbGroupPresElt -> Chain a
-fromChainGrpElt a n (AbGroupPresElt m) = Combination $ filter (\(c, _) -> c /= 0) $ zip (fromIntegral <$> M.toList m) (basis a n)
+fromChainGrpElt a n (AbGroupPresElt m) =
+  fromTerms $ zip (fromIntegral <$> M.toList m) (basis a n)
 
 chainGroup :: FiniteType a => a -> Int -> AbGroupPres
 -- chainGroup a n | n < 0 = zero

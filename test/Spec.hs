@@ -11,6 +11,7 @@ import qualified Math.Algebra.ChainComplex.FundamentalCocycleSpec
 import qualified Math.Algebra.ChainComplex.HomSpec
 import qualified Math.Algebra.ChainComplex.ShiftSpec
 import qualified Math.Algebra.ChainComplex.TensorSpec
+import qualified Math.Algebra.CombinationSpec
 import qualified Math.Algebra.GroupSpec
 import qualified Math.Algebra.SmithNormalFormSpec
 import qualified Math.Topology.SGrp.KGnSpec
@@ -31,6 +32,7 @@ main = hspec spec
 spec :: Spec
 spec = do
   Math.Algebra.SmithNormalFormSpec.spec
+  Math.Algebra.CombinationSpec.spec
   Math.Algebra.ChainComplex.FundamentalCocycleSpec.spec
   Math.Algebra.GroupSpec.spec
   Math.Topology.SSetSpec.spec

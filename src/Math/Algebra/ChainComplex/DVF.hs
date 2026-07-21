@@ -62,7 +62,7 @@ proj :: DVF a => a -> Morphism a (CriticalComplex a)
 proj a = Morphism 0 $
   coerce $ \b -> case vf a b of
     Critical -> singleComb b
-    _ -> Combination []
+    _ -> zeroCombination
 
 incl :: DVF a => a -> Morphism (CriticalComplex a) a
 incl a = fmapBasis coerce
@@ -70,21 +70,21 @@ incl a = fmapBasis coerce
 -- Called d_V
 nullDiff :: DVF a => a -> Morphism a a
 nullDiff a = Morphism (-1) $ \b -> case vf a b of
-  Target sigma i -> Combination [(incidenceCoef i, sigma)]
-  _ -> Combination []
+  Target sigma i -> incidenceCoef i .* singleComb sigma
+  _ -> zeroCombination
 
 -- Called d_V'
 nullCodiff :: DVF a => a -> Morphism a a
 nullCodiff a = Morphism 1 $ \b -> case vf a b of
-  Source tau i -> Combination [(incidenceCoef i, tau)]
-  _ -> Combination []
+  Source tau i -> incidenceCoef i .* singleComb tau
+  _ -> zeroCombination
 
 h :: (DVF a, Ord (Basis a)) => a -> Morphism a a -> Morphism a a
 h a d = Morphism 1 $ \b -> case vf a b of
   Source tau i -> d'_vb - h a d `onComb` ((d `onComb` d'_vb) - singleComb b)
     where
-      d'_vb = Combination [(incidenceCoef i, tau)]
-  _ -> Combination []
+      d'_vb = incidenceCoef i .* singleComb tau
+  _ -> zeroCombination
 
 f :: forall a. DVF a => a -> Morphism a a -> Morphism a (CriticalComplex a)
 f a d = proj a . (id - (d . h a d))

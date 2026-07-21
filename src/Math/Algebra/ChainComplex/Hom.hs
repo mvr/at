@@ -28,8 +28,8 @@ instance (FiniteType a, ChainComplex b) => ChainComplex (Hom a b) where
   -- This is obviously far less efficient than having a function Combination -> Combination
   diff (Hom a b) = Morphism (-1) $ \(HomBasis s t) ->
     let n = degree (Hom a b) (HomBasis s t)
-     in fmap (HomBasis s) (diff b `onBasis` t)
-          + kozulRule (n + 1) (Combination $ fmap (\s' -> (diff a `onBasis` s' `coeffOf` s, HomBasis s' t)) (basis a (degree a s + 1)))
+     in mapCombination (HomBasis s) (diff b `onBasis` t)
+          + kozulRule (n + 1) (fromTerms $ fmap (\s' -> (diff a `onBasis` s' `coeffOf` s, HomBasis s' t)) (basis a (degree a s + 1)))
 
 instance (FiniteType a, FiniteType b, Bounded b) => FiniteType (Hom a b) where
   dim (Hom a b) n = sum $ (\y -> dim b y * dim a (y - n)) <$> amplitude b
@@ -43,16 +43,16 @@ instance (FiniteType a, FiniteType b, Bounded b) => FiniteType (Hom a b) where
 homcontramap :: (FiniteType a, ChainComplex a', ChainComplex b) => a -> a' -> Morphism a a' -> Morphism (Hom a' b) (Hom a b)
 homcontramap a a' m = Morphism 0 $ \(HomBasis s' t) ->
   let abasis = basis a (degree a' s')
-   in Combination $ normalise $ fmap (\s -> (m `onBasis` s `coeffOf` s', HomBasis s t)) abasis
+   in fromTerms $ fmap (\s -> (m `onBasis` s `coeffOf` s', HomBasis s t)) abasis
 
-hommap :: Morphism b b' -> Morphism (Hom a b) (Hom a b')
-hommap m = Morphism 0 $ \(HomBasis s t) -> HomBasis s <$> m `onBasis` t
+hommap :: (Ord (Basis a), Ord (Basis b')) => Morphism b b' -> Morphism (Hom a b) (Hom a b')
+hommap m = Morphism 0 $ \(HomBasis s t) -> mapCombination (HomBasis s) (m `onBasis` t)
 
-instance Constrained.Functor (UMorphism Int) (UMorphism Int) (HomBasis a) where
-  fmap m = Morphism 0 $ \(HomBasis s t) -> HomBasis s <$> m `onBasis` t
+instance Ord a => Constrained.Functor (UMorphism Int) (UMorphism Int) (HomBasis a) where
+  fmap m = Morphism 0 $ \(HomBasis s t) -> mapCombination (HomBasis s) (m `onBasis` t)
 
 homcounit :: Ord (Basis a) => Morphism (Tensor (Hom a b) a) b
-homcounit = Morphism 0 $ \(HomBasis s t, s') -> if s == s' then singleComb t else Combination []
+homcounit = Morphism 0 $ \(HomBasis s t, s') -> if s == s' then singleComb t else zeroCombination
 
 homunit :: (Bounded b) => Morphism a (Hom b (Tensor a b))
 homunit = Morphism 0 $ \s -> undefined

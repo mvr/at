@@ -19,8 +19,8 @@ instance (ChainComplex a, ChainComplex b) => ChainComplex (Tensor a b) where
   diff (Tensor a b) = Morphism (-1) go
     where
       go (s, t) =
-        fmap (,t) (diff a `onBasis` s)
-          + kozulRule (degree a s) (fmap (s,) (diff b `onBasis` t))
+        mapCombination (,t) (diff a `onBasis` s)
+          + kozulRule (degree a s) (mapCombination (s,) (diff b `onBasis` t))
 
 -- TODO: this assumes that a and b are null below degree 0
 instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
@@ -29,10 +29,7 @@ instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
     [(s, t) | i <- [0 .. n], s <- basis a i, t <- basis b (n - i)]
 
 tensorCombination :: Combination a -> Combination b -> Combination (a, b)
-tensorCombination (Combination as) (Combination bs) = Combination $ do
-  (c, a) <- as
-  (d, b) <- bs
-  return (c * d, (a, b))
+tensorCombination = productCombination
 
 tensorFunc ::
   (ChainComplex a1, ChainComplex a2, Ord (Basis b1), Ord (Basis b2)) =>
