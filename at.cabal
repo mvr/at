@@ -164,7 +164,6 @@ test-suite spec
     Math.Algebra.ChainComplex.ShiftSpec
     Math.Algebra.ChainComplex.TensorSpec
     Math.Algebra.CombinationSpec
-    Math.Algebra.GroupSpec
     Math.Algebra.SmithNormalFormSpec
     Math.Topology.SGrp.Properties
     Math.Topology.SGrp.KGnSpec
