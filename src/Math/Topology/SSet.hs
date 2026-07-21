@@ -1,77 +1,101 @@
+{-# LANGUAGE PatternSynonyms #-}
+
 module Math.Topology.SSet where
 
 import qualified Control.Category.Constrained as Constrained
 import Control.Monad (ap)
+import Data.Bits
 import Data.Maybe (isJust)
 import Prelude hiding (Bounded)
 
--- NOTE: This should be made much more efficient. First, it could be
--- flattened so that in a degenerate simplex you have immediate access
--- to the underlying non-degenerate simplex. Also, the list of ints is
--- always strictly decreasing, and so could be stored as a bit mask as
--- is done in Kenzo.  Can use pattern synonyms to make this
--- indistinguishable from what is used currently, but a lot of the
--- algorithms could then be done using bit operations.
-
--- NOTE: Another idea for efficiency: the degeneracy operator should
--- be strict, but there should be a shortcut to determine whether a
--- simplex is degenerate or not without calculating the entire degeneracy
--- operator.
-data FormalDegen a
-  = NonDegen a
-  | Degen !Int (FormalDegen a)
+-- A formal degeneracy is stored as a bit mask, with pattern synonyms
+-- retaining the recursive interface used by the simplicial identities.
+data FormalDegen a = FormalDegen {-# UNPACK #-} !Word a
   deriving (Eq, Ord, Functor)
   deriving (Constrained.Functor (->) (->)) via (Constrained.Wrapped FormalDegen)
 
+pattern NonDegen :: a -> FormalDegen a
+pattern NonDegen a = FormalDegen 0 a
+
+pattern Degen :: Int -> FormalDegen a -> FormalDegen a
+pattern Degen i s <- (splitDegen -> Just (i, s))
+  where
+    Degen i (FormalDegen mask a)
+      | i < 0 || i >= finiteBitSize mask = error "Degen: invalid index"
+      | otherwise = FormalDegen (setBit mask i) a
+
+{-# COMPLETE NonDegen, Degen #-}
+
+highestSetBit :: Word -> Int
+highestSetBit mask = finiteBitSize mask - countLeadingZeros mask - 1
+
+splitDegen :: FormalDegen a -> Maybe (Int, FormalDegen a)
+splitDegen (FormalDegen 0 _) = Nothing
+splitDegen (FormalDegen mask a) =
+  let i = highestSetBit mask
+   in Just (i, FormalDegen (clearBit mask i) a)
+
+maskIndices :: Word -> [Int]
+maskIndices 0 = []
+maskIndices mask =
+  let i = highestSetBit mask
+   in i : maskIndices (clearBit mask i)
+
 instance Show a => Show (FormalDegen a) where
-  show (NonDegen a) = show a
-  show (Degen i a) = "s_" ++ show i ++ " " ++ show a
+  show (FormalDegen mask a) =
+    concatMap (\i -> "s_" ++ show i ++ " ") (maskIndices mask) ++ show a
 
 instance Applicative FormalDegen where
   pure = NonDegen
   (<*>) = ap
 
 instance Monad FormalDegen where
-  (NonDegen s) >>= f = f s
-  (Degen i s) >>= f = degen (s >>= f) i
+  FormalDegen mask s >>= f = applyMask mask (f s)
+    where
+      applyMask 0 result = result
+      applyMask remaining result =
+        let i = countTrailingZeros remaining
+         in applyMask (clearBit remaining i) (degen result i)
 
 isDegen :: FormalDegen a -> Bool
-isDegen (NonDegen _) = False
-isDegen (Degen _ _) = True
+isDegen (FormalDegen mask _) = mask /= 0
 
 underlyingGeom :: FormalDegen a -> a
-underlyingGeom (NonDegen s) = s
-underlyingGeom (Degen _ s) = underlyingGeom s
+underlyingGeom (FormalDegen _ s) = s
 
 degen :: FormalDegen a -> Int -> FormalDegen a
-degen (Degen j s) i | i <= j = Degen (j + 1) (degen s i)
-degen s i = Degen i s
+degen (FormalDegen mask a) i
+  | i < 0 || i >= finiteBitSize mask = error "degen: invalid index"
+  | shiftedHigher `shiftR` 1 /= higher = error "degen: degeneracy mask overflow"
+  | otherwise = FormalDegen (lower .|. bit i .|. shiftedHigher) a
+  where
+    lower = mask .&. (bit i - 1)
+    higher = mask `xor` lower
+    shiftedHigher = higher `shiftL` 1
 
 degenList :: FormalDegen a -> [Int]
-degenList (NonDegen _) = []
-degenList (Degen i s) = i : degenList s
+degenList (FormalDegen mask _) = maskIndices mask
 
 degenCount :: FormalDegen a -> Int
-degenCount (NonDegen _) = 0
-degenCount (Degen i s) = 1 + degenCount s
+degenCount (FormalDegen mask _) = popCount mask
 
 -- In this representation, we just need to check that the index is
 -- somewhere in the list. (Not necessarily the first thing)
 isImageOfDegen :: FormalDegen a -> Int -> Bool
-isImageOfDegen (NonDegen _) _ = False
-isImageOfDegen (Degen j s) i
-  | i == j = True
-  | i > j = False -- We missed it, it can't be further down.
-  | otherwise = isImageOfDegen s i
+isImageOfDegen (FormalDegen mask _) i = i >= 0 && testBit mask i
 
 constantAt :: a -> Int -> FormalDegen a
-constantAt a 0 = NonDegen a
-constantAt a n = Degen (n - 1) $ constantAt a (n -1)
+constantAt a n
+  | n < 0 || n > finiteBitSize (0 :: Word) = error "constantAt: invalid dimension"
+  | otherwise = FormalDegen (bit n - 1) a
 
 -- The following are dangerous and only make sense in certain situations.
 downshiftN :: Int -> FormalDegen a -> FormalDegen a
-downshiftN n (NonDegen s) = NonDegen s
-downshiftN n (Degen i s) = Degen (i + n) (downshiftN n s)
+downshiftN n (FormalDegen mask s)
+  | n < 0 || shifted `shiftR` n /= mask = error "downshiftN: invalid shift"
+  | otherwise = FormalDegen shifted s
+  where
+    shifted = mask `shiftL` n
 
 downshift :: FormalDegen a -> FormalDegen a
 downshift = downshiftN 1
