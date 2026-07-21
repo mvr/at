@@ -71,11 +71,18 @@ mapCombination f (CanonicalCombination terms) =
 
 bindCombination :: Ord b => Combination a -> (a -> Combination b) -> Combination b
 bindCombination (CanonicalCombination terms) f =
-  fromTerms
-    [ (outerCoefficient * innerCoefficient, innerBasis)
-      | (outerCoefficient, outerBasis) <- terms,
-        (innerCoefficient, innerBasis) <- coeffs (f outerBasis)
+  sumCombinations
+    [ outerCoefficient .* f outerBasis
+      | (outerCoefficient, outerBasis) <- terms
     ]
+
+sumCombinations :: Ord b => [Combination b] -> Combination b
+sumCombinations [] = zeroCombination
+sumCombinations [combination] = combination
+sumCombinations combinations = sumCombinations (mergePairs combinations)
+  where
+    mergePairs (left : right : rest) = left + right : mergePairs rest
+    mergePairs rest = rest
 
 liftCombination2 :: Ord c => (a -> b -> c) -> Combination a -> Combination b -> Combination c
 liftCombination2 f left right =

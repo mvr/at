@@ -28,6 +28,17 @@ spec = describe "Combination" $ do
     coeffs (bindCombination outer inner)
       `shouldBe` [(2, 1)]
 
+  it "binds many overlapping images like one-shot normalisation" $ do
+    let outer = fromTerms [(coefficient, basis) | basis <- [0 .. 127], let coefficient = basis `mod` 5 - 2]
+        inner basis = fromTerms [(1, basis `mod` 7), (-1, (basis + 1) `mod` 7)]
+        expected =
+          fromTerms
+            [ (outerCoefficient * innerCoefficient, innerBasis)
+              | (outerCoefficient, outerBasis) <- coeffs outer,
+                (innerCoefficient, innerBasis) <- coeffs (inner outerBasis)
+            ]
+    bindCombination outer inner `shouldBe` expected
+
   it "forms products in canonical pair order" $ do
     let left = fromTerms [(2, 'b'), (1, 'a')]
         right = fromTerms [(3, 2), (4, 1)] :: Combination Int
