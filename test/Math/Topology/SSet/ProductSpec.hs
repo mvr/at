@@ -42,7 +42,41 @@ checkProduct n a b = do
   describe "ezReduction" $
     ReductionProperties.check n (NChains p) (Tensor (NChains a) (NChains b)) (Product.ezReduction p)
 
+recursiveProdNormalise :: (Simplex a, Simplex b) -> Simplex (Product.Product a b)
+recursiveProdNormalise (Degen i s, Degen j t)
+  | i == j = degen (recursiveProdNormalise (s, t)) i
+  | i > j =
+      let p = recursiveProdNormalise (s, Degen j t)
+       in fmap (\(s', t') -> (Degen (i - degenCount p) s', t')) p
+  | otherwise =
+      let p = recursiveProdNormalise (Degen i s, t)
+       in fmap (\(s', t') -> (s', Degen (j - degenCount p) t')) p
+recursiveProdNormalise simplices = NonDegen simplices
+
 spec :: Spec
 spec = describe "products" $ do
+  it "normalises degeneracy masks like the recursive algorithm" $ do
+    let mismatches =
+          [ (leftMask, rightMask)
+            | leftMask <- [0 .. 255],
+              rightMask <- [0 .. 255],
+              let left = FormalDegen leftMask Cell :: Simplex Sphere
+                  right = FormalDegen rightMask Cell :: Simplex Sphere,
+              Product.prodNormalise (left, right) /= recursiveProdNormalise (left, right)
+          ]
+    mismatches `shouldBe` []
+
+  it "recognises jointly nondegenerate mask pairs directly" $ do
+    let mismatches =
+          [ (leftMask, rightMask)
+            | leftMask <- [0 .. 255],
+              rightMask <- [0 .. 255],
+              let left = FormalDegen leftMask Cell :: Simplex Sphere
+                  right = FormalDegen rightMask Cell :: Simplex Sphere,
+              Product.jointlyNonDegen (left, right)
+                /= not (isDegen (recursiveProdNormalise (left, right)))
+          ]
+    mismatches `shouldBe` []
+
   describe "S³ × S²" $ checkProduct 7 (Sphere 3) (Sphere 2)
   describe "Δ² × Δ²" $ checkProduct 4 (NSimplex 2) (NSimplex 2)

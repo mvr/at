@@ -9,7 +9,7 @@
 module Math.Topology.SSet.Product where
 
 import Control.Category.Constrained (fmap, (.))
-import Data.Bits (clearBit, testBit)
+import Data.Bits (clearBit, testBit, (.&.))
 import Data.Coerce
 import Prelude hiding (fmap, id, return, (.))
 
@@ -31,25 +31,30 @@ data Product a b = Product a b
 instance (Show a, Show b) => Show (Product a b) where
   show (Product a b) = show a ++ " × " ++ show b
 
--- NOTE: In bit-field form we can use "Parallel Bits Extract" or
--- similar to do this efficiently. Single x86 instruction!
--- https://stackoverflow.com/questions/21144237/standard-c11-code-equivalent-to-the-pext-haswell-instruction-and-likely-to-be
+extractCommonDegens :: Word -> Word -> (Word, Word, Word)
+extractCommonDegens left right = go common left right
+  where
+    common = left .&. right
+
+    go 0 left' right' = (common, left', right')
+    go remaining left' right' =
+      let i = highestSetBit remaining
+       in go
+            (clearBit remaining i)
+            (deleteDegenBit left' i)
+            (deleteDegenBit right' i)
+
 prodNormalise :: (Simplex a, Simplex b) -> Simplex (Product a b)
-prodNormalise (Degen i s, Degen j t)
-  | i == j = degen (prodNormalise (s, t)) i
-  | i > j =
-    let p = prodNormalise (s, Degen j t)
-     in fmap (\(s', t') -> (Degen (i - degenCount p) s', t')) p
-  | i < j =
-    let p = prodNormalise (Degen i s, t)
-     in fmap (\(s', t') -> (s', Degen (j - degenCount p) t')) p
-prodNormalise s = NonDegen s
+prodNormalise (FormalDegen leftMask left, FormalDegen rightMask right) =
+  let (common, residualLeft, residualRight) = extractCommonDegens leftMask rightMask
+   in FormalDegen common (FormalDegen residualLeft left, FormalDegen residualRight right)
 
 prodUnnormalise :: Simplex (Product a b) -> (Simplex a, Simplex b)
 prodUnnormalise s = (s >>= fst, s >>= snd) -- nice!
 
 jointlyNonDegen :: (Simplex a, Simplex b) -> Bool
-jointlyNonDegen = not . isDegen . prodNormalise
+jointlyNonDegen (FormalDegen leftMask _, FormalDegen rightMask _) =
+  leftMask .&. rightMask == 0
 
 instance (SSet a, SSet b) => SSet (Product a b) where
   type GeomSimplex (Product a b) = (Simplex a, Simplex b)
