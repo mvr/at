@@ -95,50 +95,52 @@ prodFunc m m' = Morphism $ \(s, t) -> prodNormalise (m `onSimplex` s, m' `onSimp
 instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status
 
--- TODO: in bit-field form this could be done by some efficient
--- twiddling
-data Direction = X | Y | Diag | End
+data Direction = X | Y | Diag
+
+data PathStep a b
+  = PathStep !Direction !Int !(Simplex a) !(Simplex b)
+  | PathEnd
 
 -- Walking backwards from (p,q) to (0,0)
-spathStep :: (Int, Simplex a, Simplex b) -> (Direction, (Int, Simplex a, Simplex b))
-spathStep (0, _, _) = (End, undefined)
-spathStep (q, FormalDegen sMask s, t)
-  | testBit sMask (q - 1) = (X, (q - 1, FormalDegen (clearBit sMask (q - 1)) s, t))
-spathStep (q, s, FormalDegen tMask t)
-  | testBit tMask (q - 1) = (Y, (q - 1, s, FormalDegen (clearBit tMask (q - 1)) t))
-spathStep (q, s, t) = (Diag, (q - 1, s, t))
+pathStep :: Int -> Simplex a -> Simplex b -> PathStep a b
+pathStep 0 _ _ = PathEnd
+pathStep q s@(FormalDegen sMask sGeom) t@(FormalDegen tMask tGeom)
+  | testBit sMask q' = PathStep X q' (FormalDegen (clearBit sMask q') sGeom) t
+  | testBit tMask q' = PathStep Y q' s (FormalDegen (clearBit tMask q') tGeom)
+  | otherwise = PathStep Diag q' s t
+  where
+    q' = q - 1
+{-# INLINE pathStep #-}
 
-spathUnstep :: Direction -> (Int, Simplex a, Simplex b) -> (Int, Simplex a, Simplex b)
-spathUnstep Diag (q, s, t) = (q + 1, s, t)
-spathUnstep X (q, s, t) = (q + 1, Degen q s, t)
-spathUnstep Y (q, s, t) = (q + 1, s, Degen q t)
-spathUnstep End (q, s, t) = undefined
+pathUnstep :: Direction -> (Int, Simplex a, Simplex b) -> (Int, Simplex a, Simplex b)
+pathUnstep Diag (q, s, t) = (q + 1, s, t)
+pathUnstep X (q, s, t) = (q + 1, Degen q s, t)
+pathUnstep Y (q, s, t) = (q + 1, s, Degen q t)
 
 incidenceFor :: Int -> Incidence
 incidenceFor x = if even x then Pos else Neg
 
--- Little worried about signs in here, likely off by 1
-statusStep :: (SSet a, SSet b) => Product a b -> (Int, Simplex a, Simplex b) -> Status (Int, Simplex a, Simplex b)
-statusStep prd qst = case spathStep qst of
+statusStep :: (Int, Simplex a, Simplex b) -> Status (Int, Simplex a, Simplex b)
+statusStep (q, s, t) = case pathStep q s t of
   -- Simplex is a target
-  (Y, qst')
-    | (X, (q'', s'', t'')) <- spathStep qst' ->
-      Target (spathUnstep Diag (q'', s'', t'')) (incidenceFor (q'' + 1))
+  PathStep Y q' s' t'
+    | PathStep X q'' s'' t'' <- pathStep q' s' t' ->
+      Target (pathUnstep Diag (q'', s'', t'')) (incidenceFor (q'' + 1))
   -- Simplex is a source
-  (Diag, (q', s', t')) ->
+  PathStep Diag q' s' t' ->
     Source
-      (spathUnstep Y $ spathUnstep X (q', s', t'))
+      (pathUnstep Y $ pathUnstep X (q', s', t'))
       (incidenceFor (q' + 1))
   -- Simplex is critical
-  (End, _) -> Critical
+  PathEnd -> Critical
   -- Keep searching
-  (d, qst') -> fmap (spathUnstep d) (statusStep prd qst')
+  PathStep direction q' s' t' ->
+    fmap (pathUnstep direction) (statusStep (q', s', t'))
 
-status :: (SSet a, SSet b) => Product a b -> (Simplex a, Simplex b) -> Status (Simplex a, Simplex b)
-status (Product a b) (s, t) =
+status :: SSet a => Product a b -> (Simplex a, Simplex b) -> Status (Simplex a, Simplex b)
+status (Product a _) (s, t) =
   fmap (\(_, s, t) -> (s, t)) $
     statusStep
-      (Product a b)
       ( simplexDim a s,
         s,
         t
