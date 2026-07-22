@@ -9,6 +9,7 @@
 module Math.Topology.SGrp.Wbar where
 
 import Control.Category.Constrained ((.))
+import Data.Bits
 import Data.Coerce
 import Prelude hiding (id, return, (.))
 
@@ -30,64 +31,191 @@ import Math.Topology.SSet.TwistedProduct
 newtype Wbar g = Wbar g
   deriving (Show)
 
-newtype WbarSimplex a = WbarSimplex a
-  deriving (Show) via a
-  deriving (Functor)
-  deriving (Eq, Ord)
+-- | Bar coordinates with unit entries omitted. Bit @p@ records that the
+-- coordinate at position @p@ is the dimension-appropriate unit. Valid values
+-- have no unit in the list and no mask bit beyond the represented dimension.
+data WbarSimplex a = WbarSimplex {-# UNPACK #-} !Word [a]
+  deriving (Show, Eq, Ord)
 
--- TODO: there are probably efficient algorithms for this in terms of bit fields.
--- 1. Create a bit field marking which positions are the unit
--- 2. Intersect this with the shifted degeneracy operators for each entry
--- 3. Delete all the surviving units and bit-extract every degeneracy operator appropriately
+wbarDimension :: WbarSimplex a -> Int
+wbarDimension (WbarSimplex unitMask entries) = popCount unitMask + length entries
 
-normalise :: (Pointed g) => g -> [Simplex g] -> Simplex (Wbar g)
-normalise g [] = NonDegen $ WbarSimplex []
-normalise g (s : ss) | isUnit g s = degen (normalise g ss) 0
-normalise g (s : ss) = downshift $ fmap (\(s, t) -> WbarSimplex (s : unnormalise g t)) p
+nullWbar :: WbarSimplex a -> Bool
+nullWbar (WbarSimplex unitMask entries) = unitMask == 0 && null entries
+
+wbarSimplex :: Pointed g => g -> [Simplex g] -> WbarSimplex (Simplex g)
+wbarSimplex g = go 0 0 []
   where
-    p = prodNormalise (s, normalise g ss)
+    go _ unitMask entries [] = WbarSimplex unitMask (reverse entries)
+    go position unitMask entries (s : ss)
+      | isUnit g s =
+          if position >= finiteBitSize unitMask
+            then error "wbarSimplex: unit position exceeds mask size"
+            else go (position + 1) (setBit unitMask position) entries ss
+      | otherwise = go (position + 1) unitMask (s : entries) ss
 
-insertUnit :: (Pointed g) => g -> Int -> [Simplex g] -> [Simplex g]
-insertUnit g 0 ss = constantAt (basepoint g) (length ss) : ss
-insertUnit g i (s : ss) = degen s (i - 1) : insertUnit g (i - 1) ss
-insertUnit g i _ = error "insertUnit: impossible"
+expandWbarSimplex :: Pointed g => g -> WbarSimplex (Simplex g) -> [Simplex g]
+expandWbarSimplex g bar@(WbarSimplex unitMask entries) = go 0 entries
+  where
+    dimension = wbarDimension bar
 
-unnormalise :: (Pointed g) => g -> Simplex (Wbar g) -> [Simplex g]
-unnormalise g (NonDegen (WbarSimplex gs)) = gs
-unnormalise g (Degen i s) = insertUnit g i (unnormalise g s)
+    go position remaining
+      | position == dimension = []
+      | testBit unitMask position =
+          constantAt (basepoint g) (dimension - position - 1) : go (position + 1) remaining
+    go position (s : ss) = s : go (position + 1) ss
+    go _ [] = error "expandWbarSimplex: invalid unit mask"
+
+normalise :: Pointed g => g -> [Simplex g] -> Simplex (Wbar g)
+normalise g ss = normaliseWbar (wbarSimplex g ss)
+
+normaliseWbar :: WbarSimplex (Simplex g) -> Simplex (Wbar g)
+normaliseWbar bar
+  | outerMask == 0 = NonDegen bar
+  | otherwise = FormalDegen outerMask (removeOuterDegens outerMask bar)
+  where
+    outerMask = outerDegenMask bar
+
+outerDegenMask :: WbarSimplex (Simplex g) -> Word
+outerDegenMask (WbarSimplex unitMask entries) = go unitMask maxBound entries
+  where
+    -- Candidate bit zero and the result are relative to this coordinate.
+    go 0 _ [] = 0
+    go _ 0 _ = 0
+    go units candidates remaining
+      | testBit units 0 =
+          (candidates .&. 1)
+            .|. (go (units `shiftR` 1) (candidates `shiftR` 1) remaining `shiftL` 1)
+    go units candidates (FormalDegen mask _ : rest) =
+      go (units `shiftR` 1) ((candidates `shiftR` 1) .&. mask) rest `shiftL` 1
+    go _ _ [] = error "outerDegenMask: invalid unit mask"
+
+removeOuterDegens :: Word -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
+removeOuterDegens 0 bar = bar
+removeOuterDegens outerMask (WbarSimplex unitMask entries) =
+  WbarSimplex (removeDegenMask outerMask unitMask) (go unitMask outerMask entries)
+  where
+    go 0 _ [] = []
+    go units outer remaining
+      | testBit units 0 = go (units `shiftR` 1) (outer `shiftR` 1) remaining
+    go units outer (FormalDegen mask s : rest) =
+      FormalDegen (removeDegenMask (outer `shiftR` 1) mask) s
+        : go (units `shiftR` 1) (outer `shiftR` 1) rest
+    go _ _ [] = error "removeOuterDegens: invalid unit mask"
+
+unnormaliseWbar :: Simplex (Wbar g) -> WbarSimplex (Simplex g)
+unnormaliseWbar (FormalDegen outerMask core@(WbarSimplex coreUnitMask entries))
+  | outerMask == 0 = core
+  | otherwise = uncurry WbarSimplex (go outerMask coreUnitMask entries)
+  where
+    go 0 0 [] = (0, [])
+    go outer units remaining
+      | testBit outer 0 = prependWbarUnit (go (outer `shiftR` 1) units remaining)
+      | testBit units 0 = prependWbarUnit (go (outer `shiftR` 1) (units `shiftR` 1) remaining)
+    go outer units (s : ss) =
+      prependWbarNonUnit
+        (applyDegenMask (outer `shiftR` 1) s)
+        (go (outer `shiftR` 1) (units `shiftR` 1) ss)
+    go _ _ [] = error "unnormaliseWbar: invalid unit mask"
+
+unnormalise :: Pointed g => g -> Simplex (Wbar g) -> [Simplex g]
+unnormalise g simplex = expandWbarSimplex g (unnormaliseWbar simplex)
+
+prependWbarUnit :: (Word, [a]) -> (Word, [a])
+prependWbarUnit (unitMask, entries) = (setBit (unitMask `shiftL` 1) 0, entries)
+
+prependWbarNonUnit :: a -> (Word, [a]) -> (Word, [a])
+prependWbarNonUnit s (unitMask, entries) = (unitMask `shiftL` 1, s : entries)
+
+prependWbarSimplex :: Pointed g => g -> Simplex g -> (Word, [Simplex g]) -> (Word, [Simplex g])
+prependWbarSimplex g s
+  | isUnit g s = prependWbarUnit
+  | otherwise = prependWbarNonUnit s
+
+consWbar :: Pointed g => g -> Simplex g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
+consWbar g s (WbarSimplex unitMask entries) =
+  uncurry WbarSimplex (prependWbarSimplex g s (unitMask, entries))
+
+consNonUnitWbar :: Simplex g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
+consNonUnitWbar s (WbarSimplex unitMask entries) =
+  WbarSimplex (unitMask `shiftL` 1) (s : entries)
+
+wbarFaceEntries :: SGrp g => g -> WbarSimplex (Simplex g) -> Int -> WbarSimplex (Simplex g)
+wbarFaceEntries g (WbarSimplex unitMask entries) i =
+  uncurry WbarSimplex (go unitMask entries i)
+  where
+    go units remaining 0
+      | testBit units 0 = (units `shiftR` 1, remaining)
+    go units (_ : rest) 0 = (units `shiftR` 1, rest)
+    go units remaining 1
+      | testBit units 0 = (units `shiftR` 1, remaining)
+    go units (s : rest) 1
+      | tailUnits == 0 && null rest = (0, [])
+      | testBit tailUnits 0 =
+          prependWbarSimplex g (face g s 0) (tailUnits `shiftR` 1, rest)
+      | s' : ss <- rest =
+          prependWbarSimplex
+            g
+            (prodMor g `onSimplex` prodNormalise (face g s 0, s'))
+            (tailUnits `shiftR` 1, ss)
+      | otherwise = error "wbarFaceEntries: invalid unit mask"
+      where
+        tailUnits = units `shiftR` 1
+    go units remaining faceIndex
+      | faceIndex > 1 && testBit units 0 =
+          prependWbarUnit (go (units `shiftR` 1) remaining (faceIndex - 1))
+    go units (s : ss) faceIndex
+      | faceIndex > 1 =
+          prependWbarSimplex
+            g
+            (face g s (faceIndex - 1))
+            (go (units `shiftR` 1) ss (faceIndex - 1))
+    go _ _ _ = error "wbarFaceEntries: invalid face index"
 
 instance (SGrp g) => SSet (Wbar g) where
-  -- A non-degenerate simplex is a list of simplices of `g`
+  -- A non-degenerate simplex is a unit mask and a list of nonunit simplices
+  -- of `g`.
   -- (Wbar G)_n = G_n-1 x G_n-2 x ... x G_0
   -- meeting a slightly complicated condition on whether the list
   -- contains a unit and the things preceding that unit are degeneracies
-  type GeomSimplex (Wbar g) = WbarSimplex [Simplex g]
+  type GeomSimplex (Wbar g) = WbarSimplex (Simplex g)
 
-  isGeomSimplex (Wbar g) (WbarSimplex ss) =
-    all (\(i, s) -> simplexDim g s == i) (zip (reverse [0..length ss-1]) ss)
-    && normalise g ss == NonDegen (WbarSimplex ss)
-    && all (isSimplex g) ss
+  isGeomSimplex (Wbar g) bar@(WbarSimplex unitMask entries) =
+    (unitMask == 0 || highestSetBit unitMask < dimension)
+      && validEntries 0 entries
+      && outerDegenMask bar == 0
+    where
+      dimension = wbarDimension bar
 
-  geomSimplexDim _ (WbarSimplex ss) = length ss
+      validEntries position remaining
+        | position == dimension = null remaining
+        | testBit unitMask position = validEntries (position + 1) remaining
+      validEntries position (s : ss) =
+        simplexDim g s == dimension - position - 1
+          && not (isUnit g s)
+          && isSimplex g s
+          && validEntries (position + 1) ss
+      validEntries _ [] = False
 
-  geomFace _ (WbarSimplex []) _ = undefined
+  geomSimplexDim _ = wbarDimension
+
+  geomFace _ bar _ | nullWbar bar = undefined
   -- TODO: need to make sure this matches with Kenzo's conventions,
   -- multiplying on which side (for abelian groups of course it
   -- doesn't matter)
-  geomFace (Wbar g) (WbarSimplex ss) i = normalise g (underlying ss i)
-    where
-      underlying ss i
-        | i == 0 = tail ss
-        | i == 1 && length ss == 1 = []
-        | i == 1 =
-          let (s : s' : rest) = ss
-           in (prodMor g `onSimplex` prodNormalise (face g s 0, s')) : rest
-        | otherwise =
-          let (s : rest) = ss
-           in (face g s (i - 1)) : underlying rest (i - 1)
+  geomFace (Wbar g) bar i = normaliseWbar (wbarFaceEntries g bar i)
+
+  geomNonDegenFaces (Wbar g) bar
+    | nullWbar bar = []
+    | otherwise =
+        [ (i, faceBar)
+          | i <- [0 .. wbarDimension bar],
+            let faceBar = wbarFaceEntries g bar i,
+            outerDegenMask faceBar == 0
+        ]
 
 instance SGrp g => Pointed (Wbar g) where
-  basepoint (Wbar g) = WbarSimplex []
+  basepoint (Wbar g) = WbarSimplex 0 []
 
 instance (SGrp g) => ZeroReduced (Wbar g)
 
@@ -95,17 +223,39 @@ instance (SGrp g, ZeroReduced g) => OneReduced (Wbar g) -- Not a typo!
 
 instance (SGrp g, ZeroReduced g, FiniteType g) => FiniteType (Wbar g) where
   geomBasis (Wbar g) n =
-    filter (isGeomSimplex (Wbar g)) $ fmap WbarSimplex $ sequence $ allSimplices g <$> reverse [0 .. (n - 1)]
+    filter (isGeomSimplex (Wbar g)) $ fmap (wbarSimplex g) $ sequence $ allSimplices g <$> reverse [0 .. (n - 1)]
+
+prodWbar :: SGrp g => g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
+prodWbar g (WbarSimplex leftUnits leftEntries) (WbarSimplex rightUnits rightEntries) =
+  uncurry WbarSimplex (go leftUnits leftEntries rightUnits rightEntries)
+  where
+    -- A valid tail with no stored entries consists entirely of units.
+    go _ [] rightMask right = (rightMask, right)
+    go leftMask left _ [] = (leftMask, left)
+    go leftMask left@(s : ss) rightMask right@(t : ts)
+      | leftIsUnit && rightIsUnit =
+          prependWbarUnit (go nextLeftMask left nextRightMask right)
+      | leftIsUnit =
+          prependWbarNonUnit t (go nextLeftMask left nextRightMask ts)
+      | rightIsUnit =
+          prependWbarNonUnit s (go nextLeftMask ss nextRightMask right)
+      | otherwise =
+          prependWbarSimplex
+            g
+            (prodMor g `onSimplex` prodNormalise (s, t))
+            (go nextLeftMask ss nextRightMask ts)
+      where
+        leftIsUnit = testBit leftMask 0
+        rightIsUnit = testBit rightMask 0
+        nextLeftMask = leftMask `shiftR` 1
+        nextRightMask = rightMask `shiftR` 1
 
 instance (SAb g) => SGrp (Wbar g) where
-  -- TODO: can be more efficient, everywhere there is a degeneracy
-  -- there is no need to actually compute the product.
   prodMor (Wbar g) = Morphism $ \(gs1, gs2) ->
-    normalise g $
-      (onSimplex (prodMor g) . prodNormalise)
-        <$> zip (unnormalise g gs1) (unnormalise g gs2)
+    normaliseWbar (prodWbar g (unnormaliseWbar gs1) (unnormaliseWbar gs2))
 
-  invMor (Wbar g) = Morphism $ NonDegen . fmap (fmap (invMor g `onSimplex`))
+  invMor (Wbar g) = Morphism $ \(WbarSimplex unitMask entries) ->
+    NonDegen (WbarSimplex unitMask (fmap (invMor g `onSimplex`) entries))
 
 instance (SAb g) => SAb (Wbar g)
 
@@ -119,31 +269,36 @@ instance (SAb g) => SAb (Wbar g)
 -- Other simplicial groups will need the more complicated method
 -- described in serre.lisp and cl-space-efhm.lisp
 
-upshift :: FormalDegen a -> FormalDegen a
-upshift (NonDegen s) = NonDegen s
-upshift (Degen 0 s) = s
-upshift (Degen i s) = Degen (i - 1) (upshift s)
-
 instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
-  vf (Wbar g) (WbarSimplex []) = Critical
-  vf (Wbar g) (WbarSimplex (s : ss)) | nss <- normalise g ss =
-    case vf (Product (Wbar g) g) (nss, s) of
-      Source (ts', t') i -> Source (WbarSimplex (t' : unnormalise g ts')) (flipIncidence i)
-      Target (ss', s') i -> Target (WbarSimplex (s' : unnormalise g ss')) (flipIncidence i)
-      Critical -> case vf (Wbar g) (underlyingGeom nss) of
-        Source nss' i -> Source (WbarSimplex (degen s 0 : unnormalise g (downshift (fmap (const nss') nss)))) (flipIncidence i)
-        Target ntt' i -> Target (WbarSimplex (upshift s : unnormalise g (upshift (fmap (const ntt') nss)))) (flipIncidence i)
-        Critical -> Critical
+  vf _ (WbarSimplex 0 []) = Critical
+  -- A positive-dimensional geometric simplex cannot start with a unit:
+  -- a leading unit is precisely its zeroth outer degeneracy.
+  vf (Wbar g) (WbarSimplex unitMask (s : ss))
+    | testBit unitMask 0 = error "Wbar.vf: invalid leading unit"
+    | nss <- normaliseWbar (WbarSimplex (unitMask `shiftR` 1) ss) =
+      case vf (Product (Wbar g) g) (nss, s) of
+        Source (ts', t') i -> Source (consWbar g t' (unnormaliseWbar ts')) (flipIncidence i)
+        Target (ss', s') i -> Target (consWbar g s' (unnormaliseWbar ss')) (flipIncidence i)
+        Critical -> case vf (Wbar g) (underlyingGeom nss) of
+          Source nss' i ->
+            Source
+              (consNonUnitWbar (degen s 0) (unnormaliseWbar (downshift (fmap (const nss') nss))))
+              (flipIncidence i)
+          Target ntt' i ->
+            Target
+              (consNonUnitWbar (upshift s) (unnormaliseWbar (upshift (fmap (const ntt') nss))))
+              (flipIncidence i)
+          Critical -> Critical
+  vf _ _ = error "Wbar.vf: invalid unit mask"
 
 stripBar :: Pointed g => g -> GeomSimplex (Wbar g) -> [GeomSimplex g]
-stripBar g (WbarSimplex as) = filter (/= basepoint g) $ fmap underlyingGeom as
+stripBar _ (WbarSimplex _ entries) = fmap underlyingGeom entries
 
 reconstructBar :: SGrp g => g -> [GeomSimplex g] -> GeomSimplex (Wbar g)
-reconstructBar _ [] = WbarSimplex []
-reconstructBar g (a:as) = WbarSimplex (a':nb')
+reconstructBar _ [] = WbarSimplex 0 []
+reconstructBar g (a:as) = consWbar g a' (unnormaliseWbar b')
   where rest = reconstructBar g as
         (b', a') = reconstructProduct (Wbar g) g (rest, a)
-        nb' = unnormalise g b'
 
 barOrientation :: SSet g => g -> [GeomSimplex g] -> Int
 barOrientation g = go . fmap (geomSimplexDim g)
@@ -192,6 +347,6 @@ instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where
 -- contractible.
 
 canonicalTwist :: (SGrp g) => g -> Twist (Wbar g) g
-canonicalTwist g = Twist $ \(WbarSimplex s) -> case length s of
-  0 -> basepointSimplex g
-  _ -> head s
+canonicalTwist g = Twist $ \(WbarSimplex _ entries) -> case entries of
+  [] -> basepointSimplex g
+  s : _ -> s

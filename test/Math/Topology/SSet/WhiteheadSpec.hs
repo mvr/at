@@ -38,7 +38,7 @@ spec = describe "Whitehead tower" $ do
       let s3 = Sphere 3
           kz2 = Wbar kz1
           cocycle = onlyCocycle (NChains s3) 3
-          expected = NonDegen $ WbarSimplex [NonDegen [1], NonDegen []]
+          expected = NonDegen $ wbarSimplex kz1 [NonDegen [1], NonDegen []]
       twistOnGeom (whiteheadTwist s3 kz2 cocycle) Cell `shouldBe` expected
 
     let productOfSpheres = Product.Product (Sphere 2) (Sphere 2)

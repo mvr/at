@@ -32,17 +32,10 @@ instance (Show a, Show b) => Show (Product a b) where
   show (Product a b) = show a ++ " × " ++ show b
 
 extractCommonDegens :: Word -> Word -> (Word, Word, Word)
-extractCommonDegens left right = go common left right
+extractCommonDegens left right =
+  (common, removeDegenMask common left, removeDegenMask common right)
   where
     common = left .&. right
-
-    go 0 left' right' = (common, left', right')
-    go remaining left' right' =
-      let i = highestSetBit remaining
-       in go
-            (clearBit remaining i)
-            (deleteDegenBit left' i)
-            (deleteDegenBit right' i)
 
 prodNormalise :: (Simplex a, Simplex b) -> Simplex (Product a b)
 prodNormalise (FormalDegen leftMask left, FormalDegen rightMask right) =

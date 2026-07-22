@@ -90,6 +90,16 @@ deleteDegenBit mask i = lower .|. shiftedHigher
     lower = mask .&. lowerMask
     shiftedHigher = (mask `shiftR` 1) .&. complement lowerMask
 
+-- | Delete the indicated positions from a degeneracy mask. Deleting from
+-- highest to lowest keeps the remaining operation indices valid.
+removeDegenMask :: Word -> Word -> Word
+removeDegenMask operations = go operations
+  where
+    go 0 mask = mask
+    go remaining mask =
+      let i = highestSetBit remaining
+       in go (clearBit remaining i) (deleteDegenBit mask i)
+
 degenList :: FormalDegen a -> [Int]
 degenList (FormalDegen mask _) = maskIndices mask
 
@@ -117,12 +127,8 @@ downshiftN n (FormalDegen mask s)
 downshift :: FormalDegen a -> FormalDegen a
 downshift = downshiftN 1
 
-unDegen :: FormalDegen a -> [Int] -> FormalDegen a
-unDegen s [] = s
-unDegen (NonDegen _) js = undefined -- shouldn't happen
-unDegen (Degen i s) (j : js)
-  | i == j = unDegen s js
-  | otherwise = Degen (i - length (j : js)) (unDegen s (j : js))
+upshift :: FormalDegen a -> FormalDegen a
+upshift (FormalDegen mask s) = FormalDegen (mask `shiftR` 1) s
 
 type Simplex a = FormalDegen (GeomSimplex a)
 

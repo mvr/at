@@ -24,8 +24,8 @@ spec = do
         classifying :: Morphism Sphere (Wbar KZ1)
         classifying = Morphism go
           where
-            go Cell = NonDegen $ WbarSimplex [NonDegen [1], NonDegen []]
-            go Basepoint = NonDegen $ WbarSimplex []
+            go Cell = NonDegen $ wbarSimplex kz1 [NonDegen [1], NonDegen []]
+            go Basepoint = NonDegen $ WbarSimplex 0 []
 
         fibration :: Twist Sphere KZ1
         fibration = pullback (Wbar kz1) kz1 (canonicalTwist kz1) classifying
@@ -63,12 +63,12 @@ spec = do
           where
             go Cell =
               NonDegen $
-                WbarSimplex
-                  [ NonDegen (WbarSimplex [NonDegen [1], NonDegen []]),
-                    Degen 0 (NonDegen (WbarSimplex [])),
-                    NonDegen (WbarSimplex [])
+                wbarSimplex kz2
+                  [ NonDegen (wbarSimplex kz1 [NonDegen [1], NonDegen []]),
+                    Degen 0 (NonDegen (WbarSimplex 0 [])),
+                    NonDegen (WbarSimplex 0 [])
                   ]
-            go Basepoint = NonDegen $ WbarSimplex []
+            go Basepoint = NonDegen $ WbarSimplex 0 []
 
         fibration = pullback kz3 kz2 (canonicalTwist kz2) classifying
         x = totalSpace s3 kz2 fibration
@@ -78,7 +78,7 @@ spec = do
         someKz1 d = someSimplices kz1 d (\i -> if i <= 3 then sequence (replicate i ks) else [])
         someGeomKz2 dimension =
           filter (isGeomSimplex kz2) $
-            fmap WbarSimplex $
+            fmap (wbarSimplex kz1) $
               sequence $
                 someKz1 <$> reverse [0 .. dimension - 1]
         someKz2 dimension = someSimplices kz2 dimension someGeomKz2
