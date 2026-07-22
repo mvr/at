@@ -106,14 +106,14 @@ removeOuterDegens outerMask (WbarSimplex unitMask entries) =
 unnormaliseWbar :: Simplex (Wbar g) -> WbarSimplex (Simplex g)
 unnormaliseWbar (FormalDegen outerMask core@(WbarSimplex coreUnitMask entries))
   | outerMask == 0 = core
-  | otherwise = uncurry WbarSimplex (go outerMask coreUnitMask entries)
+  | otherwise = go outerMask coreUnitMask entries
   where
-    go 0 0 [] = (0, [])
+    go 0 0 [] = WbarSimplex 0 []
     go outer units remaining
-      | testBit outer 0 = prependWbarUnit (go (outer `shiftR` 1) units remaining)
-      | testBit units 0 = prependWbarUnit (go (outer `shiftR` 1) (units `shiftR` 1) remaining)
+      | testBit outer 0 = consUnitWbar (go (outer `shiftR` 1) units remaining)
+      | testBit units 0 = consUnitWbar (go (outer `shiftR` 1) (units `shiftR` 1) remaining)
     go outer units (s : ss) =
-      prependWbarNonUnit
+      consNonUnitWbar
         (applyDegenMask (outer `shiftR` 1) s)
         (go (outer `shiftR` 1) (units `shiftR` 1) ss)
     go _ _ [] = error "unnormaliseWbar: invalid unit mask"
@@ -121,52 +121,46 @@ unnormaliseWbar (FormalDegen outerMask core@(WbarSimplex coreUnitMask entries))
 unnormalise :: Pointed g => g -> Simplex (Wbar g) -> [Simplex g]
 unnormalise g simplex = expandWbarSimplex g (unnormaliseWbar simplex)
 
-prependWbarUnit :: (Word, [a]) -> (Word, [a])
-prependWbarUnit (unitMask, entries) = (setBit (unitMask `shiftL` 1) 0, entries)
-
-prependWbarNonUnit :: a -> (Word, [a]) -> (Word, [a])
-prependWbarNonUnit s (unitMask, entries) = (unitMask `shiftL` 1, s : entries)
-
-prependWbarSimplex :: Pointed g => g -> Simplex g -> (Word, [Simplex g]) -> (Word, [Simplex g])
-prependWbarSimplex g s
-  | isUnit g s = prependWbarUnit
-  | otherwise = prependWbarNonUnit s
-
 consWbar :: Pointed g => g -> Simplex g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
-consWbar g s (WbarSimplex unitMask entries) =
-  uncurry WbarSimplex (prependWbarSimplex g s (unitMask, entries))
+consWbar g s
+  | isUnit g s = consUnitWbar
+  | otherwise = consNonUnitWbar s
 
 consNonUnitWbar :: Simplex g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
 consNonUnitWbar s (WbarSimplex unitMask entries) =
   WbarSimplex (unitMask `shiftL` 1) (s : entries)
 
+consUnitWbar :: WbarSimplex a -> WbarSimplex a
+consUnitWbar (WbarSimplex unitMask entries) =
+  WbarSimplex (setBit (unitMask `shiftL` 1) 0) entries
+
 wbarFaceEntries :: SGrp g => g -> WbarSimplex (Simplex g) -> Int -> WbarSimplex (Simplex g)
 wbarFaceEntries g (WbarSimplex unitMask entries) i =
-  uncurry WbarSimplex (go unitMask entries i)
+  go unitMask entries i
   where
     go units remaining 0
-      | testBit units 0 = (units `shiftR` 1, remaining)
-    go units (_ : rest) 0 = (units `shiftR` 1, rest)
+      | testBit units 0 = WbarSimplex (units `shiftR` 1) remaining
+    go units (_ : rest) 0 = WbarSimplex (units `shiftR` 1) rest
     go units remaining 1
-      | testBit units 0 = (units `shiftR` 1, remaining)
+      | testBit units 0 = WbarSimplex (units `shiftR` 1) remaining
     go units (s : rest) 1
-      | tailUnits == 0 && null rest = (0, [])
+      | tailUnits == 0 && null rest = WbarSimplex 0 []
       | testBit tailUnits 0 =
-          prependWbarSimplex g (face g s 0) (tailUnits `shiftR` 1, rest)
+          consWbar g (face g s 0) (WbarSimplex (tailUnits `shiftR` 1) rest)
       | s' : ss <- rest =
-          prependWbarSimplex
+          consWbar
             g
             (prodMor g `onSimplex` prodNormalise (face g s 0, s'))
-            (tailUnits `shiftR` 1, ss)
+            (WbarSimplex (tailUnits `shiftR` 1) ss)
       | otherwise = error "wbarFaceEntries: invalid unit mask"
       where
         tailUnits = units `shiftR` 1
     go units remaining faceIndex
       | faceIndex > 1 && testBit units 0 =
-          prependWbarUnit (go (units `shiftR` 1) remaining (faceIndex - 1))
+          consUnitWbar (go (units `shiftR` 1) remaining (faceIndex - 1))
     go units (s : ss) faceIndex
       | faceIndex > 1 =
-          prependWbarSimplex
+          consWbar
             g
             (face g s (faceIndex - 1))
             (go (units `shiftR` 1) ss (faceIndex - 1))
@@ -227,20 +221,20 @@ instance (SGrp g, ZeroReduced g, FiniteType g) => FiniteType (Wbar g) where
 
 prodWbar :: SGrp g => g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
 prodWbar g (WbarSimplex leftUnits leftEntries) (WbarSimplex rightUnits rightEntries) =
-  uncurry WbarSimplex (go leftUnits leftEntries rightUnits rightEntries)
+  go leftUnits leftEntries rightUnits rightEntries
   where
     -- A valid tail with no stored entries consists entirely of units.
-    go _ [] rightMask right = (rightMask, right)
-    go leftMask left _ [] = (leftMask, left)
+    go _ [] rightMask right = WbarSimplex rightMask right
+    go leftMask left _ [] = WbarSimplex leftMask left
     go leftMask left@(s : ss) rightMask right@(t : ts)
       | leftIsUnit && rightIsUnit =
-          prependWbarUnit (go nextLeftMask left nextRightMask right)
+          consUnitWbar (go nextLeftMask left nextRightMask right)
       | leftIsUnit =
-          prependWbarNonUnit t (go nextLeftMask left nextRightMask ts)
+          consNonUnitWbar t (go nextLeftMask left nextRightMask ts)
       | rightIsUnit =
-          prependWbarNonUnit s (go nextLeftMask ss nextRightMask right)
+          consNonUnitWbar s (go nextLeftMask ss nextRightMask right)
       | otherwise =
-          prependWbarSimplex
+          consWbar
             g
             (prodMor g `onSimplex` prodNormalise (s, t))
             (go nextLeftMask ss nextRightMask ts)
