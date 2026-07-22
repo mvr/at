@@ -70,6 +70,14 @@ mapCombination f (CanonicalCombination terms) =
   fromTerms (fmap (fmap f) terms)
 
 bindCombination :: Ord b => Combination a -> (a -> Combination b) -> Combination b
+bindCombination (CanonicalCombination []) _ = zeroCombination
+bindCombination (CanonicalCombination [(coefficient, basis)]) f = coefficient .* f basis
+bindCombination (CanonicalCombination [(leftCoefficient, leftBasis), (rightCoefficient, rightBasis)]) f =
+  leftCoefficient .* f leftBasis + rightCoefficient .* f rightBasis
+bindCombination (CanonicalCombination [first, second, third]) f =
+  apply first + apply second + apply third
+  where
+    apply (coefficient, basis) = coefficient .* f basis
 bindCombination (CanonicalCombination terms) f =
   sumCombinations
     [ outerCoefficient .* f outerBasis
