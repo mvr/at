@@ -107,6 +107,7 @@ traverseCombination f = foldr (\a rest -> liftCombination2 (:) (f a) rest) (sing
 
 (.*) :: Int -> Combination b -> Combination b
 0 .* _ = zeroCombination
+1 .* combination = combination
 n .* (CanonicalCombination terms) =
   CanonicalCombination $ fmap (\(coefficient, basis) -> (n * coefficient, basis)) terms
 
