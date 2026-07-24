@@ -1,5 +1,7 @@
 module Math.Algebra.CombinationSpec where
 
+import Data.Function (on)
+import Data.List (groupBy, sortOn)
 import Test.Hspec
 import Test.QuickCheck
 
@@ -10,6 +12,10 @@ spec = describe "Combination" $ do
   it "stores terms in canonical form" $ do
     coeffs (fromTerms [(2, 'b'), (1, 'a'), (-2, 'b'), (3, 'a'), (0, 'c')])
       `shouldBe` [(4, 'a')]
+
+  it "normalises arbitrary terms in ascending order" $
+    property $ \(terms :: [(Int, Int)]) ->
+      normalise terms == referenceNormalise terms
 
   it "linear addition agrees with normalising all terms together" $
     property $ \(left :: [(Int, Int)]) right ->
@@ -49,3 +55,14 @@ spec = describe "Combination" $ do
     let combination = fromTerms [(2, 1), (4, 3)] :: Combination Int
     map (coeffOf combination) [0 .. 4]
       `shouldBe` [0, 2, 0, 4, 0]
+
+referenceNormalise :: [(Int, Int)] -> [(Int, Int)]
+referenceNormalise terms =
+  concatMap combineGroup (groupBy ((==) `on` snd) (sortOn snd terms))
+  where
+    combineGroup group@((_, basis) : _)
+      | coefficient == 0 = []
+      | otherwise = [(coefficient, basis)]
+      where
+        coefficient = sum (fmap fst group)
+    combineGroup [] = []

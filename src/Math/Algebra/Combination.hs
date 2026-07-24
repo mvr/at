@@ -17,8 +17,6 @@ where
 
 import Control.Category.Constrained (join, return)
 import qualified Control.Category.Constrained as Constrained
-import qualified Data.Map.Strict as Map
-import Data.Tuple (swap)
 import Prelude hiding (id, return, (.))
 
 -- | Z-linear combinations, stored in ascending basis order without zero terms.
@@ -59,11 +57,27 @@ coeffOf (CanonicalCombination terms) target = go terms
       EQ -> coefficient
       GT -> go rest
 
-termMap :: (Ord b, Num a) => [(a, b)] -> Map.Map b a
-termMap terms = Map.fromListWith (+) (fmap swap terms)
-
 normalise :: (Ord b, Num a, Eq a) => [(a, b)] -> [(a, b)]
-normalise terms = fmap swap (Map.toAscList (Map.filter (/= 0) (termMap terms)))
+normalise [] = []
+normalise [(coefficient, basis)]
+  | coefficient == 0 = []
+  | otherwise = [(coefficient, basis)]
+normalise terms = foldl' insertTerm [] terms
+  where
+    insertTerm canonical (coefficient, basis)
+      | coefficient == 0 = canonical
+      | otherwise = insert canonical
+      where
+        insert [] = [(coefficient, basis)]
+        insert existing@((existingCoefficient, existingBasis) : rest) =
+          case compare basis existingBasis of
+            LT -> (coefficient, basis) : existing
+            EQ
+              | total == 0 -> rest
+              | otherwise -> (total, basis) : rest
+              where
+                total = coefficient + existingCoefficient
+            GT -> (existingCoefficient, existingBasis) : insert rest
 
 mapCombination :: Ord b => (a -> b) -> Combination a -> Combination b
 mapCombination f (CanonicalCombination terms) =
