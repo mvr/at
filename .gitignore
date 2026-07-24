@@ -1,4 +1,5 @@
 dist/
+dist-prof*/
 .hsenv/
 .stack-work/
 dist-newstyle/
