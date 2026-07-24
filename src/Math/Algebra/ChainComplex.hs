@@ -168,6 +168,9 @@ chainDiff a n
     images = fmap (onBasis (diff a)) dombasis
     findCoef (i, j) = fromIntegral $ coeffOf (images !! (j - 1)) (codbasis !! (i - 1))
 
+chainDiffs :: FiniteType a => a -> [Arrow AbGroupPres]
+chainDiffs a = fmap (chainDiff a) [0 ..]
+
 -- Only compute the group presentation once
 data HomologyGroup a = HomologyGroup Int AbGroupPres a
 
@@ -199,13 +202,13 @@ homologyGenerators (HomologyGroup n p a) = fmap HomologyClass chains
 homologies :: FiniteType a => a -> [AbGroupPres]
 homologies a = fmap (uncurry homology) pairs
   where
-    diffs = fmap (chainDiff a) [0 ..]
+    diffs = chainDiffs a
     pairs = zip (tail diffs) diffs
 
 homologyGroups :: FiniteType a => a -> [HomologyGroup a]
 homologyGroups a = fmap (\(n, f,g) -> HomologyGroup n (homology f g) a) pairs
   where
-    diffs = fmap (chainDiff a) [0 ..]
+    diffs = chainDiffs a
     pairs = zip3 [0 ..] (tail diffs) diffs
 
 -- | A coordinate of the fundamental cohomology class associated to a
@@ -222,7 +225,17 @@ cocycleDegree = negate . morphismDegree . cocycleMorphism
 
 -- | Fundamental cocycles for the cyclic invariant factors of H_n(a).
 fundamentalCocycles :: FiniteType a => a -> Int -> Either String [FundamentalCocycle a]
-fundamentalCocycles a n
+fundamentalCocycles a n =
+  fundamentalCocyclesWithDiffs a n (chainDiff a n) (chainDiff a (n + 1))
+
+fundamentalCocyclesWithDiffs ::
+  FiniteType a =>
+  a ->
+  Int ->
+  Arrow AbGroupPres ->
+  Arrow AbGroupPres ->
+  Either String [FundamentalCocycle a]
+fundamentalCocyclesWithDiffs a n outgoing incoming
   | isExact incoming outgoing = Right []
   | otherwise = do
       boundaryCoordinates <-
@@ -235,9 +248,6 @@ fundamentalCocycles a n
           nontrivialRows = filter ((/= 1) . snd) $ zip [1 ..] diagonal
       traverse (makeCocycle leftChange) nontrivialRows
   where
-    outgoing = chainDiff a n
-    incoming = chainDiff a (n + 1)
-
     cycles = matrixKernel (fullMorphism (mor outgoing))
     boundaries = fullMorphism (mor incoming)
 

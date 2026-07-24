@@ -24,6 +24,8 @@ import Math.Topology.SGrp.Wbar
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.TwistedProduct
+import Math.ValueCategory (Arrow)
+import qualified Math.ValueCategory.Abelian as Abelian
 import Math.ValueCategory.Additive (zero)
 
 whiteheadTwist ::
@@ -56,16 +58,30 @@ data HomotopyError
 
 data SomeSpace = forall a.
   (Effective a, CC.FiniteType (Model a)) =>
-  SomeSpace a
+  SomeSpace a (Model a) [Arrow AbGroupPres]
+
+someSpace ::
+  (Effective a, CC.FiniteType (Model a)) =>
+  a ->
+  SomeSpace
+someSpace a = SomeSpace a effectiveModel (CC.chainDiffs effectiveModel)
+  where
+    effectiveModel = model a
 
 killHomologyGroup :: Int -> SomeSpace -> Either HomotopyError SomeSpace
-killHomologyGroup degree space@(SomeSpace a) = do
-  cocycles <- first CocycleError $ CC.fundamentalCocycles (model a) degree
+killHomologyGroup degree space@(SomeSpace a effectiveModel differentials) = do
+  cocycles <-
+    first CocycleError $
+      CC.fundamentalCocyclesWithDiffs
+        effectiveModel
+        degree
+        (differentials !! degree)
+        (differentials !! (degree + 1))
   case cocycles of
     [] -> Right space
     cocycle : _ -> case coefficientSpace (fromIntegral <$> CC.cocycleOrder cocycle) (degree - 1) of
       SomeEilenbergMacLane g ->
-        killHomologyGroup degree $ SomeSpace (whiteheadStage a g cocycle)
+        killHomologyGroup degree $ someSpace (whiteheadStage a g cocycle)
 
 -- | Compute pi_2 through pi_n by successive Whitehead stages.
 homotopyGroupsThrough ::
@@ -75,10 +91,13 @@ homotopyGroupsThrough ::
   Either HomotopyError [(Int, AbGroupPres)]
 homotopyGroupsThrough target a
   | target < 2 = Left $ InvalidHomotopyDegree target
-  | otherwise = groupsFrom 2 (SomeSpace a)
+  | otherwise = groupsFrom 2 (someSpace a)
   where
-    groupsFrom degree space@(SomeSpace current) = do
-      let group = homology current !! degree
+    groupsFrom degree space@(SomeSpace _ _ differentials) = do
+      let group =
+            Abelian.homology
+              (differentials !! (degree + 1))
+              (differentials !! degree)
       if degree == target
         then Right [(degree, group)]
         else do
