@@ -61,6 +61,18 @@ instance (SSet a, SSet b) => SSet (Product a b) where
 
   geomFace (Product a b) (s, t) i = prodNormalise (face a s i, face b t i)
 
+  geomNonDegenFaces (Product a b) (s, t)
+    | dimension == 0 = []
+    | otherwise =
+        [ (i, (leftFace, rightFace))
+          | i <- [0 .. dimension],
+            let leftFace@(FormalDegen leftMask _) = face a s i,
+            let rightFace@(FormalDegen rightMask _) = face b t i,
+            leftMask .&. rightMask == 0
+        ]
+    where
+      dimension = simplexDim a s
+
 instance (Pointed a, Pointed b) => Pointed (Product a b) where
   basepoint (Product a b) = (NonDegen $ basepoint a, NonDegen $ basepoint b)
 

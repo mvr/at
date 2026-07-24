@@ -199,6 +199,15 @@ instance (SGrp g) => SSet (Wbar g) where
   -- doesn't matter)
   geomFace (Wbar g) bar i = normaliseWbar (wbarFaceEntries g bar i)
 
+  geomNonDegenFaces (Wbar g) bar
+    | nullWbar bar = []
+    | otherwise =
+        [ (i, faceBar)
+          | i <- [0 .. wbarDimension bar],
+            let faceBar = wbarFaceEntries g bar i,
+            outerDegenMask faceBar == 0
+        ]
+
 instance SGrp g => Pointed (Wbar g) where
   basepoint (Wbar g) = WbarSimplex 0 []
 

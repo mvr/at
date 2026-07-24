@@ -32,8 +32,8 @@ instance SSet a => CC.ChainComplex (NChains a) where
 
   diff (NChains a) = CC.Morphism (-1) (coerce act)
     where
-      act v = fromTerms [(c, s) | (c, NonDegen s) <- zip signs $ geomFaces a v]
-      signs = cycle [1, -1]
+      act v = fromTerms [(sign i, s) | (i, s) <- geomNonDegenFaces a v]
+      sign i = if even i then 1 else -1
 
 instance FiniteType a => CC.FiniteType (NChains a) where
   dim (NChains a) i = length (geomBasis a i)

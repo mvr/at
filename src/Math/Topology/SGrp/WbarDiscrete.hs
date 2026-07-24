@@ -25,6 +25,13 @@ unnormalise a (Degen i g) =
   let (before, after) = splitAt i (unnormalise a g)
    in before ++ [unit a] ++ after
 
+discreteFaceEntries :: Group a => a -> [Element a] -> Int -> [Element a]
+discreteFaceEntries _ (_ : ss) 0 = ss
+discreteFaceEntries _ [_] 1 = []
+discreteFaceEntries a (s : s' : ss) 1 = prod a s s' : ss
+discreteFaceEntries a (s : ss) i = s : discreteFaceEntries a ss (i - 1)
+discreteFaceEntries _ [] _ = error "discreteFaceEntries: invalid face index"
+
 instance (Group a, Ord (Element a)) => SSet (WbarDiscrete a) where
   -- A non-degenerate n-simplex is a list of n non-identity elements
   -- of `a`
@@ -35,13 +42,16 @@ instance (Group a, Ord (Element a)) => SSet (WbarDiscrete a) where
   geomSimplexDim _ ss = length ss
 
   geomFace _ [] _ = undefined
-  geomFace (WbarDiscrete a) ss i = normalise a (underlying ss i)
-    where
-      underlying ss 0 = tail ss
-      underlying [s] 1 = []
-      underlying (s : s' : ss) 1 = prod a s s' : ss
-      underlying (s : ss) i = s : underlying ss (i - 1)
-      underlying _ _ = error "WbarDiscrete geomFace: impossible" -- can't happen
+  geomFace (WbarDiscrete a) ss i = normalise a (discreteFaceEntries a ss i)
+
+  geomNonDegenFaces (WbarDiscrete a) ss
+    | null ss = []
+    | otherwise =
+        [ (i, entries)
+          | i <- [0 .. length ss],
+            let entries = discreteFaceEntries a ss i,
+            unit a `notElem` entries
+        ]
 
 instance (Group a, Ord (Element a)) => Pointed (WbarDiscrete a) where
   basepoint (WbarDiscrete a) = []

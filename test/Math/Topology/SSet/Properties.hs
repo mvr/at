@@ -63,6 +63,11 @@ checkDims a g =
   let d = geomSimplexDim a g
    in forM_ (geomFaces a g) (\s -> simplexDim a s `shouldBe` d - 1)
 
+checkNonDegenFaces :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
+checkNonDegenFaces a g =
+  geomNonDegenFaces a g
+    `shouldBe` [(i, s) | (i, NonDegen s) <- zip [0 ..] (geomFaces a g)]
+
 checkOn :: (SSet a, Show (GeomSimplex a)) => a -> [GeomSimplex a] -> Spec
 checkOn a gs = do
   it "should have the correct number of faces" $
@@ -76,6 +81,8 @@ checkOn a gs = do
     forM_ gs (checkFaces a)
   it "faces should have correct dimensions" $
     forM_ gs (checkDims a)
+  it "identifies the nondegenerate faces" $
+    forM_ gs (checkNonDegenFaces a)
   it "should satisfy the simplicial identities " $
     forM_ gs (checkIdentities a)
 
@@ -92,6 +99,8 @@ check n a = do
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkFaces a))
   it "faces should have correct dimensions" $
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkDims a))
+  it "identifies the nondegenerate faces" $
+    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkNonDegenFaces a))
   it "should satisfy the simplicial identities " $
     forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkIdentities a))
 

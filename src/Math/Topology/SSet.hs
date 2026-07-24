@@ -155,8 +155,11 @@ class Ord (GeomSimplex a) => SSet a where
     let d = geomSimplexDim a s
      in if d == 0 then [] else fmap (geomFace a s) [0 .. d]
 
--- TODO: for efficiency?
--- nonDegenFaces :: a -> GeomSimplex a -> [(Int, Simplex a)]
+  -- | Nondegenerate faces paired with their face indices. Instances may
+  -- avoid constructing faces that are known to be degenerate.
+  geomNonDegenFaces :: a -> GeomSimplex a -> [(Int, GeomSimplex a)]
+  geomNonDegenFaces a s =
+    [(i, t) | (i, NonDegen t) <- zip [0 ..] (geomFaces a s)]
 
 isSimplex :: SSet a => a -> Simplex a -> Bool
 isSimplex a (FormalDegen mask s) =
