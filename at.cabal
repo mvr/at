@@ -143,6 +143,19 @@ executable Pi6S3
     mtl,
     vector
 
+executable Pi7S3
+  import: defaults
+  main-is: Pi7S3.hs
+  hs-source-dirs: examples
+  ghc-options:
+    -O2
+    -main-is Pi7S3
+  build-depends:
+    at,
+    matrix,
+    mtl,
+    vector
+
 test-suite spec
   import: defaults
   type: exitcode-stdio-1.0
