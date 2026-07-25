@@ -59,7 +59,7 @@ instance (Bicomplex a) => ChainComplex (Tot a) where
   degree (Tot a) (TotBasis b) =
     let (p, q) = bidegree a b in p + q
   diff (Tot a) = Morphism (-1) $ \(TotBasis b) ->
-    mapCombination TotBasis $ hdiff a `onBasis` b + vdiff a `onBasis` b
+    mapMonotonic TotBasis $ hdiff a `onBasis` b + vdiff a `onBasis` b
 
 instance (Bicomplex a, FiniteType a) => CC.FiniteType (Tot a) where
   basis (Tot a) d = do

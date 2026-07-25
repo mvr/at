@@ -26,6 +26,11 @@ spec = describe "Combination" $ do
     coeffs (mapCombination (`mod` 2) combination)
       `shouldBe` [(4, 0), (3, 1)]
 
+  it "preserves canonical order under a monotonic map" $ do
+    let combination = fromTerms [(2, 3), (1, 1)] :: Combination Int
+    coeffs (mapMonotonic (+ 10) combination)
+      `shouldBe` [(1, 11), (2, 13)]
+
   it "multiplies coefficients and combines terms when binding" $ do
     let outer = fromTerms [(2, 'a'), (-1, 'b')]
         inner :: Char -> Combination Int

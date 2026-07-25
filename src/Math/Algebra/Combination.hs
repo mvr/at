@@ -5,6 +5,7 @@ module Math.Algebra.Combination
     zeroCombination,
     coeffOf,
     mapCombination,
+    mapMonotonic,
     bindCombination,
     liftCombination2,
     productCombination,
@@ -82,6 +83,12 @@ normalise terms = foldl' insertTerm [] terms
 mapCombination :: Ord b => (a -> b) -> Combination a -> Combination b
 mapCombination f (CanonicalCombination terms) =
   fromTerms (fmap (fmap f) terms)
+
+-- | Map a strictly monotonic function over a canonical combination.
+-- The caller must ensure that the function preserves the basis ordering.
+mapMonotonic :: (a -> b) -> Combination a -> Combination b
+mapMonotonic f (CanonicalCombination terms) =
+  CanonicalCombination (fmap (fmap f) terms)
 
 bindCombination :: Ord b => Combination a -> (a -> Combination b) -> Combination b
 bindCombination (CanonicalCombination []) _ = zeroCombination

@@ -73,8 +73,8 @@ instance ChainComplex a => Bicomplex (TensorSusp a) where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
       go (b : bs) =
-        - mapCombination (: bs) (diff a `onBasis` b)
-          + kozulRule (degree a b + 1) (mapCombination (b :) (go bs))
+        - mapMonotonic (: bs) (diff a `onBasis` b)
+          + kozulRule (degree a b + 1) (mapMonotonic (b :) (go bs))
 
   hdiff _ = morphismZero
 
@@ -110,7 +110,7 @@ verth a h gf (b : bs) =
       (:)
       (h `onBasis` b)
       (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
-    + kozulRule (degree a b + 1) (mapCombination (b :) (verth a h gf bs))
+    + kozulRule (degree a b + 1) (mapMonotonic (b :) (verth a h gf bs))
 
 tensorAlgReduction ::
   (ChainComplex a, ChainComplex b) =>
@@ -146,7 +146,7 @@ instance Algebra a => Bicomplex (Bar a) where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
       go [b1] = 0
-      go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (mapCombination (: bs) (muMor a `onBasis` (b1, b2)) + mapCombination (b1 :) (go (b2 : bs)))
+      go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (mapMonotonic (: bs) (muMor a `onBasis` (b1, b2)) + mapMonotonic (b1 :) (go (b2 : bs)))
 
 instance (Algebra a, FiniteType a) => Bi.FiniteType (Bar a) where
   bibasis (Bar a) = coerce (bibasis (TensorSusp a))
@@ -165,8 +165,8 @@ shuffle c [] [] = 0
 shuffle c as [] = singleComb as
 shuffle c [] bs = singleComb bs
 shuffle c (a : as) (b : bs) =
-  mapCombination (a :) (shuffle c as (b : bs))
-    + kozulRule eps (mapCombination (b :) (shuffle c (a : as) bs))
+  mapMonotonic (a :) (shuffle c as (b : bs))
+    + kozulRule eps (mapMonotonic (b :) (shuffle c (a : as) bs))
   where
     eps = (1 + degree c b) * (length (a : as) + sum (degree c <$> (a : as)))
 

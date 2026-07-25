@@ -19,8 +19,8 @@ instance (ChainComplex a, ChainComplex b) => ChainComplex (Tensor a b) where
   diff (Tensor a b) = Morphism (-1) go
     where
       go (s, t) =
-        mapCombination (,t) (diff a `onBasis` s)
-          + kozulRule (degree a s) (mapCombination (s,) (diff b `onBasis` t))
+        mapMonotonic (,t) (diff a `onBasis` s)
+          + kozulRule (degree a s) (mapMonotonic (s,) (diff b `onBasis` t))
 
 -- TODO: this assumes that a and b are null below degree 0
 instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
