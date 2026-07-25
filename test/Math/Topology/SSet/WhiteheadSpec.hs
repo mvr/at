@@ -128,6 +128,10 @@ spec = describe "Whitehead tower" $ do
     it "computes pi_5(S3) using K(Z/2,3)" $
       homotopyGroup 5 (Sphere 3) `shouldBe` Right (fromIsoClass $ IsoClass 0 [(2, 1)])
 
+    it "computes pi_6(S3)" $
+      homotopyGroup 6 (Sphere 3)
+        `shouldBe` Right (fromIsoClass $ IsoClass 0 [(2, 2), (3, 1)])
+
     it "kills both generators when computing pi_3(S2 x S2)" $
       homotopyGroup 3 (Product.Product (Sphere 2) (Sphere 2)) `shouldBe` Right (freeAbGroup 2)
 
