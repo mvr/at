@@ -91,9 +91,9 @@ memoiseOrd f = unsafePerformIO $ do
       Nothing -> do
         value <- evaluate (f key)
         atomicModifyIORef' cache $ \latest ->
-          case Map.lookup key latest of
-            Just existing -> (latest, existing)
-            Nothing -> (Map.insert key value latest, value)
+          case Map.insertLookupWithKey (\_ _ existing -> existing) key value latest of
+            (Just existing, updated) -> (updated, existing)
+            (Nothing, updated) -> (updated, value)
 {-# NOINLINE memoiseOrd #-}
 
 -- | Retain the image of each visited source basis element.
