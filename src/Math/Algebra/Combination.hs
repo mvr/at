@@ -6,6 +6,7 @@ module Math.Algebra.Combination
     coeffOf,
     mapCombination,
     mapMonotonic,
+    appendOrdered,
     bindCombination,
     liftCombination2,
     productCombination,
@@ -90,6 +91,15 @@ mapMonotonic :: (a -> b) -> Combination a -> Combination b
 mapMonotonic f (CanonicalCombination terms) =
   CanonicalCombination (fmap (fmap f) terms)
 
+-- | Concatenate canonical combinations whose basis ranges are disjoint and
+-- ordered. The caller must ensure that every basis in the left combination
+-- precedes every basis in the right combination.
+appendOrdered :: Combination b -> Combination b -> Combination b
+appendOrdered (CanonicalCombination []) right = right
+appendOrdered left (CanonicalCombination []) = left
+appendOrdered (CanonicalCombination left) (CanonicalCombination right) =
+  CanonicalCombination (left ++ right)
+
 bindCombination :: Ord b => Combination a -> (a -> Combination b) -> Combination b
 bindCombination (CanonicalCombination []) _ = zeroCombination
 bindCombination (CanonicalCombination [(coefficient, basis)]) f = coefficient .* f basis
@@ -131,8 +141,11 @@ productCombination (CanonicalCombination left) (CanonicalCombination right) =
         (rightCoefficient, rightBasis) <- right
     ]
 
-traverseCombination :: Ord b => (a -> Combination b) -> [a] -> Combination [b]
-traverseCombination f = foldr (\a rest -> liftCombination2 (:) (f a) rest) (singleComb [])
+traverseCombination :: (a -> Combination b) -> [a] -> Combination [b]
+traverseCombination f =
+  foldr
+    (\a rest -> mapMonotonic (uncurry (:)) (productCombination (f a) rest))
+    (singleComb [])
 
 (.*) :: Int -> Combination b -> Combination b
 0 .* _ = zeroCombination

@@ -31,6 +31,12 @@ spec = describe "Combination" $ do
     coeffs (mapMonotonic (+ 10) combination)
       `shouldBe` [(1, 11), (2, 13)]
 
+  it "appends disjoint ordered combinations" $ do
+    let left = fromTerms [(2, 3), (1, 1)] :: Combination Int
+        right = fromTerms [(4, 7), (3, 5)]
+    coeffs (appendOrdered left right)
+      `shouldBe` [(1, 1), (2, 3), (3, 5), (4, 7)]
+
   it "multiplies coefficients and combines terms when binding" $ do
     let outer = fromTerms [(2, 'a'), (-1, 'b')]
         inner :: Char -> Combination Int
@@ -55,6 +61,12 @@ spec = describe "Combination" $ do
         right = fromTerms [(3, 2), (4, 1)] :: Combination Int
     coeffs (productCombination left right)
       `shouldBe` [(4, ('a', 1)), (3, ('a', 2)), (8, ('b', 1)), (6, ('b', 2))]
+
+  it "traverses combinations in canonical list order" $ do
+    let choose False = fromTerms [(2, 'b'), (1, 'a')]
+        choose True = fromTerms [(3, 'c'), (-1, 'a')]
+    coeffs (traverseCombination choose [False, True])
+      `shouldBe` [(-1, "aa"), (3, "ac"), (-2, "ba"), (6, "bc")]
 
   it "looks up coefficients in the ordered representation" $ do
     let combination = fromTerms [(2, 1), (4, 3)] :: Combination Int

@@ -29,9 +29,15 @@ instance (ChainComplex b, ChainComplex c, ChainComplex d) => ChainComplex (Bicon
 
   diff (Bicone b c d f g) = Morphism (-1) go
     where
-      go (FromB s) = mapMonotonic FromB (diff b `onBasis` s) + mapMonotonic FromC (f `onBasis` s)
+      go (FromB s) =
+        appendOrdered
+          (mapMonotonic FromB (diff b `onBasis` s))
+          (mapMonotonic FromC (f `onBasis` s))
       go (FromC s) = - mapMonotonic FromC (diff c `onBasis` s)
-      go (FromD s) = mapMonotonic FromD (diff d `onBasis` s) + mapMonotonic FromC (g `onBasis` s)
+      go (FromD s) =
+        appendOrdered
+          (mapMonotonic FromC (g `onBasis` s))
+          (mapMonotonic FromD (diff d `onBasis` s))
 
 instance (FiniteType b, FiniteType c, FiniteType d) => FiniteType (Bicone b c d) where
   dim (Bicone b c d _ _) n = dim b n + dim c (n + 1) + dim d n
@@ -48,7 +54,10 @@ projRight = Morphism 0 (\case FromD d -> singleComb d; _ -> 0)
 projRedLeft :: (Ord b, Ord c, Ord d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) b
 projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morphism 0 g) (Morphism 1 h)
   where
-    g b = singleComb (FromB b) - mapMonotonic FromD (g2 `onComb` (f1 `onBasis` b))
+    g b =
+      appendOrdered
+        (singleComb (FromB b))
+        (negate (mapMonotonic FromD (g2 `onComb` (f1 `onBasis` b))))
     h (FromB b) = 0
     h (FromC c) = mapMonotonic FromD (g2 `onBasis` c)
     h (FromD d) = mapMonotonic FromD (h2 `onBasis` d)
@@ -56,7 +65,10 @@ projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morp
 projRedRight :: (Ord b, Ord c, Ord d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) d
 projRedRight (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projRight (Morphism 0 g) (Morphism 1 h)
   where
-    g d = singleComb (FromD d) - mapMonotonic FromB (g1 `onComb` (f2 `onBasis` d))
+    g d =
+      appendOrdered
+        (negate (mapMonotonic FromB (g1 `onComb` (f2 `onBasis` d))))
+        (singleComb (FromD d))
     h (FromB b) = mapMonotonic FromB (h1 `onBasis` b)
     h (FromC c) = mapMonotonic FromB (g1 `onBasis` c)
     h (FromD d) = 0
