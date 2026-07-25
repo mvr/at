@@ -166,6 +166,7 @@ reconstructProduct a b (s, t) =
   let n = geomSimplexDim a s
       m = geomSimplexDim b t
   in (downshiftN n (constantAt s m), constantAt t n)
+{-# INLINE reconstructProduct #-}
 
 criticalIso ::
   forall a b.

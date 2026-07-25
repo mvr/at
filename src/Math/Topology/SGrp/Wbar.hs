@@ -262,27 +262,37 @@ instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
   vf _ WNil = Critical
   -- A positive-dimensional geometric simplex cannot start with a unit:
   -- a leading unit is precisely its zeroth outer degeneracy.
-  vf (Wbar g) (WEntry entry entries)
-    | normalisedTail <- normaliseWbar entries =
-      case vf (Product (Wbar g) g) (normalisedTail, entry) of
-        Source (ts', t') i -> Source (consWbar g t' (unnormaliseWbar ts')) (flipIncidence i)
-        Target (ss', s') i -> Target (consWbar g s' (unnormaliseWbar ss')) (flipIncidence i)
-        Critical -> case vf (Wbar g) (underlyingGeom normalisedTail) of
-          Source entries' i ->
+  vf wbar@(Wbar g) (WEntry entry tail) =
+    -- Match the tail/head pair first, recursing on the tail only if critical.
+    case vf (Product wbar g) (normalisedTail, entry) of
+      Source matched incidence ->
+        Source (reassemble matched) (flipIncidence incidence)
+      Target matched incidence ->
+        Target (reassemble matched) (flipIncidence incidence)
+      Critical -> tailMatch
+    where
+      normalisedTail = normaliseWbar tail
+
+      reassemble (tail', entry') =
+        consWbar g entry' (unnormaliseWbar tail')
+
+      tailMatch =
+        case vf wbar (underlyingGeom normalisedTail) of
+          Source tail' incidence ->
             Source
-              ( WEntry
-                  (degen entry 0)
-                  (unnormaliseWbar (downshift (fmap (const entries') normalisedTail)))
-              )
-              (flipIncidence i)
-          Target entries' i ->
+              (reassembleCritical tail')
+              (flipIncidence incidence)
+          Target tail' incidence ->
             Target
-              ( WEntry
-                  (upshift entry)
-                  (unnormaliseWbar (upshift (fmap (const entries') normalisedTail)))
-              )
-              (flipIncidence i)
+              (reassembleCritical tail')
+              (flipIncidence incidence)
           Critical -> Critical
+
+      -- Critical product simplices are canonically reconstructed from their cores.
+      reassembleCritical tail' =
+        case reconstructProduct wbar g (tail', underlyingGeom entry) of
+          (tailSimplex, entrySimplex) ->
+            WEntry entrySimplex (unnormaliseWbar tailSimplex)
   vf _ (WUnit _) = error "Wbar.vf: invalid leading unit"
 
 stripBar :: Pointed g => g -> GeomSimplex (Wbar g) -> [GeomSimplex g]
