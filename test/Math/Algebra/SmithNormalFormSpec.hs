@@ -3,7 +3,7 @@ module Math.Algebra.SmithNormalFormSpec where
 import Test.Hspec
 import Test.QuickCheck
 
-import Data.List (dropWhileEnd, sort)
+import Data.List (dropWhileEnd)
 import Data.Matrix (Matrix)
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
@@ -33,24 +33,25 @@ spec = do
           let (Triple _ _ d _ _) = smithNormalForm m
            in isDiagonal d
 
-    it "has entries in order" $
+    it "has positive nonzero entries that divide their successors" $
       property $
         \m ->
           let (Triple _ _ d _ _) = smithNormalForm m
-              l = dropWhileEnd (== 0) $ V.toList (M.getDiag d)
-           in sort l == l
+              diagonal = dropWhileEnd (== 0) $ V.toList (M.getDiag d)
+           in all (> 0) diagonal
+                && and (zipWith (\x y -> y `mod` x == 0) diagonal (drop 1 diagonal))
 
     it "computes L inverse" $
       property $
         \m ->
           let (Triple li l _ _ _) = smithNormalForm m
-           in all (== 1) $ V.toList (M.getDiag (li * l))
+           in li * l == M.identity (M.nrows m)
 
     it "computes R inverse" $
       property $
         \m ->
           let (Triple _ _ _ r ri) = smithNormalForm m
-           in all (== 1) $ V.toList (M.getDiag (r * ri))
+           in r * ri == M.identity (M.ncols m)
 
     it "works for bad case 1" $
       let m = M.fromList 2 3 [1, 0, 0, 0, 0, 1]
