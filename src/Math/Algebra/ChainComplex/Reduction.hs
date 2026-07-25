@@ -58,10 +58,10 @@ perturb ::
 perturb a b (Reduction f g h) deltahat =
   (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f') (coerce g') (coerce h'))
   where
-    sigmaimp d = singleComb d - fmap sigma ( (h . deltahat) `onBasis` d)
+    sigmaimp d = singleComb d - fmap sigma ((h . deltahat) `onBasis` d)
     sigma = Morphism 0 sigmaimp
-    f' = f . (id - (deltahat . sigma . h))
-    g' = sigma . g
+    f' = memoiseMorphism $ f . (id - (deltahat . sigma . h))
+    g' = memoiseMorphism $ sigma . g
     h' = sigma . h
     delta = f . deltahat . g'
 
@@ -88,7 +88,7 @@ perturbBottom ::
 perturbBottom a b (Reduction f g h) delta =
   (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f) (coerce g) (coerce h))
   where
-    deltahat = g . delta . f
+    deltahat = memoiseMorphism $ g . delta . f
 
 -- | Use the EPL to set the differential of `b` to a particular
 -- morphism.

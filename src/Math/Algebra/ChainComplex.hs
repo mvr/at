@@ -6,10 +6,14 @@ module Math.Algebra.ChainComplex where
 
 import Control.Category.Constrained (id, (.))
 import qualified Control.Category.Constrained as Constrained
+import Control.Exception (evaluate)
 import Data.Coerce
+import Data.IORef
+import qualified Data.Map.Strict as Map
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
 import Prelude hiding (Bounded, id, return, (.))
+import System.IO.Unsafe (unsafePerformIO)
 
 import Math.Algebra.AbGroupPres
 import Math.Algebra.Combination
@@ -70,6 +74,32 @@ data UMorphism d a b = Morphism
   }
 
 type Morphism a b = UMorphism Int (Basis a) (Basis b)
+
+-- | Memoise a pure function for the lifetime of the returned closure.
+--
+-- The algorithms in this package build large morphisms out of recursive
+-- contractions.  Those contractions describe DAGs, but evaluating them as
+-- ordinary functions expands the DAG into a tree.  This helper lets the
+-- recursive morphisms retain one result per visited basis element instead.
+memoiseOrd :: Ord a => (a -> b) -> a -> b
+memoiseOrd f = unsafePerformIO $ do
+  cache <- newIORef Map.empty
+  pure $ \key -> unsafePerformIO $ do
+    current <- readIORef cache
+    case Map.lookup key current of
+      Just value -> pure value
+      Nothing -> do
+        value <- evaluate (f key)
+        atomicModifyIORef' cache $ \latest ->
+          case Map.lookup key latest of
+            Just existing -> (latest, existing)
+            Nothing -> (Map.insert key value latest, value)
+{-# NOINLINE memoiseOrd #-}
+
+-- | Retain the image of each visited source basis element.
+memoiseMorphism :: Ord a => UMorphism d a b -> UMorphism d a b
+memoiseMorphism (Morphism morphismDegree action) =
+  Morphism morphismDegree (memoiseOrd action)
 
 -- | Identical to `onBasis`, but sometimes clearer
 underlyingFunction :: UMorphism d a b -> (a -> Combination b)

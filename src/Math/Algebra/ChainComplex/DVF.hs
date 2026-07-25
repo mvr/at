@@ -84,26 +84,42 @@ nullCodiff a = Morphism 1 $ \b -> case vf a b of
   Source tau i -> incidenceCoef i .* singleComb tau
   _ -> zeroCombination
 
+hWith :: (DVF a, Ord (Basis a)) => a -> Morphism a a -> Morphism a a
+hWith a d = homotopy
+  where
+    homotopy = Morphism 1 $ memoiseOrd $ \b -> case vf a b of
+      Source tau i ->
+        d'_vb - homotopy `onComb` ((d `onComb` d'_vb) - singleComb b)
+        where
+          d'_vb = incidenceCoef i .* singleComb tau
+      _ -> zeroCombination
+
 h :: (DVF a, Ord (Basis a)) => a -> Morphism a a -> Morphism a a
-h a d = Morphism 1 $ \b -> case vf a b of
-  Source tau i -> d'_vb - h a d `onComb` ((d `onComb` d'_vb) - singleComb b)
-    where
-      d'_vb = incidenceCoef i .* singleComb tau
-  _ -> zeroCombination
+h = hWith
+
+fWith :: DVF a => a -> Morphism a a -> Morphism a a -> Morphism a (CriticalComplex a)
+fWith a d homotopy = proj a . (id - (d . homotopy))
+
+gWith :: DVF a => a -> Morphism a a -> Morphism a a -> Morphism (CriticalComplex a) a
+gWith a d homotopy = (id - (homotopy . d)) . incl a
+
+dKWith :: DVF a => a -> Morphism a a -> Morphism a a -> Morphism (CriticalComplex a) (CriticalComplex a)
+dKWith a d homotopy = proj a . (d - (d . homotopy . d)) . incl a
 
 f :: forall a. DVF a => a -> Morphism a a -> Morphism a (CriticalComplex a)
-f a d = proj a . (id - (d . h a d))
+f a d = fWith a d (hWith a d)
 
 g :: DVF a => a -> Morphism a a -> Morphism (CriticalComplex a) a
-g a d = (id - (h a d . d)) . incl a
+g a d = gWith a d (hWith a d)
 
 dK :: DVF a => a -> Morphism a a -> Morphism (CriticalComplex a) (CriticalComplex a)
-dK a d = proj a . (d - (d . h a d . d)) . incl a
+dK a d = dKWith a d (hWith a d)
 
 dvfReduction :: DVF a => a -> Reduction a (CriticalComplex a)
-dvfReduction a = Reduction (f a d) (g a d) (h a d)
+dvfReduction a = Reduction (fWith a d homotopy) (gWith a d homotopy) homotopy
   where
-    d = diff a
+    d = memoiseMorphism (diff a)
+    homotopy = hWith a d
 
 dvfEquivalence :: DVF a => a -> Equivalence a (CriticalComplex a)
 dvfEquivalence a = Equivalence a id a (dvfReduction a) (CriticalComplex a)

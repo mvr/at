@@ -40,7 +40,14 @@ tensorFunc ::
   Morphism (Tensor a1 a2) (Tensor b1 b2)
 tensorFunc a1 _ (Morphism deg1 f1) (Morphism deg2 f2) =
   Morphism (deg1 + deg2) $ \(x1, x2) ->
-    kozulRule (deg2 * degree a1 x1) (tensorCombination (f1 x1) (f2 x2))
+    kozulRule
+      (deg2 * degree a1 x1)
+      (tensorCombination (cachedF1 x1) (cachedF2 x2))
+  where
+    -- This combinator introduces Cartesian-product reuse that the factor
+    -- morphisms cannot anticipate.
+    cachedF1 = memoiseOrd f1
+    cachedF2 = memoiseOrd f2
 
 tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
 tensorAssoc = fmapBasis $ \((a, b), c) -> (a, (b, c))
