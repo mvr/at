@@ -8,7 +8,6 @@ module Math.Algebra.ChainComplex.Reduction where
 import Control.Category.Constrained
 import Data.Coerce
 import Math.Algebra.ChainComplex
-import Math.Algebra.Combination (singleComb)
 
 import Prelude hiding (id, (.), fmap)
 
@@ -58,12 +57,16 @@ perturb ::
 perturb a b (Reduction f g h) deltahat =
   (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f') (coerce g') (coerce h'))
   where
-    sigmaimp d = singleComb d - fmap sigma ((h . deltahat) `onBasis` d)
-    sigma = Morphism 0 sigmaimp
-    f' = memoiseMorphism $ f . (id - (deltahat . sigma . h))
-    g' = memoiseMorphism $ sigma . g
-    h' = sigma . h
-    delta = f . deltahat . g'
+    -- Write psi = (1 + deltahat h)^-1.  The right-hand formulas let the
+    -- transferred differential project during the recursion, instead of first
+    -- materialising sigma g for sigma = (1 + h deltahat)^-1.
+    deltaH = deltahat . h
+    f'imp d = f `onBasis` d - f' `onComb` (deltaH `onBasis` d)
+    h'imp d = h `onBasis` d - h' `onComb` (deltaH `onBasis` d)
+    f' = memoiseMorphism $ Morphism 0 f'imp
+    h' = Morphism 1 h'imp
+    g' = memoiseMorphism $ g - h' . deltahat . g
+    delta = f' . deltahat . g
 
 -- | Use the BPL to set the differential of `a` to a particular
 -- morphism. Again, the nilpotence condition of the BPL must be
