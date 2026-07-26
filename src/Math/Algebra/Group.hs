@@ -2,6 +2,9 @@
 -- the data of an element
 module Math.Algebra.Group where
 
+import Data.List (sortBy)
+import Data.Ord (comparing)
+
 class Group a where
   type Element a = s | s -> a
   prod :: a -> Element a -> Element a -> Element a
@@ -9,6 +12,28 @@ class Group a where
   inv :: a -> Element a -> Element a
 
 class (Group a) => Abelian a
+
+-- | Canonicalise a sparse list of values in an abelian group. Terms are
+-- sorted by key, repeated keys are combined, and unit-valued terms are
+-- omitted.
+normaliseGroupTerms ::
+  (Abelian a, Eq (Element a), Ord key) =>
+  a ->
+  [(key, Element a)] ->
+  [(key, Element a)]
+normaliseGroupTerms group = go . sortBy (comparing fst)
+  where
+    go [] = []
+    go ((key, value) : terms) =
+      let (sameKey, rest) = span ((== key) . fst) terms
+          total =
+            foldl'
+              (\accumulator (_, nextValue) -> prod group accumulator nextValue)
+              value
+              sameKey
+       in if total == unit group
+            then go rest
+            else (key, total) : go rest
 
 class (Group a) => FiniteGroup a where
   elements :: a -> [Element a]
