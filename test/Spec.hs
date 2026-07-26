@@ -15,6 +15,7 @@ import qualified Math.Algebra.CombinationSpec
 import qualified Math.Algebra.GroupSpec
 import qualified Math.Algebra.SmithNormalFormSpec
 import qualified Math.Topology.SGrp.KGnSpec
+import qualified Math.Topology.SGrp.KGn.DoldKanSpec
 import qualified Math.Topology.SGrp.WbarDiscreteSpec
 import qualified Math.Topology.SGrp.WbarSpec
 import qualified Math.Topology.SSetSpec
@@ -38,6 +39,7 @@ spec = do
   Math.Topology.SSetSpec.spec
   Math.Topology.SSet.WhiteheadSpec.spec
   Math.Topology.SGrp.KGnSpec.spec
+  Math.Topology.SGrp.KGn.DoldKanSpec.spec
   Math.Algebra.ChainComplex.BiconeSpec.spec
   Math.Algebra.ChainComplex.DiskSpec.spec
   Math.Algebra.ChainComplex.TensorSpec.spec

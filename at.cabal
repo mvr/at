@@ -77,6 +77,7 @@ library
     Math.Topology.SGrp
     Math.Topology.SGrp.KGn
     Math.Topology.SGrp.KGn.Cocycle
+    Math.Topology.SGrp.KGn.DoldKan
     Math.Topology.SGrp.Wbar
     Math.Topology.SGrp.WbarDiscrete
     Math.Topology.SSet
@@ -180,6 +181,7 @@ test-suite spec
     Math.Algebra.GroupSpec
     Math.Algebra.SmithNormalFormSpec
     Math.Topology.SGrp.Properties
+    Math.Topology.SGrp.KGn.DoldKanSpec
     Math.Topology.SGrp.KGnSpec
     Math.Topology.SGrp.WbarDiscreteSpec
     Math.Topology.SGrp.WbarSpec
