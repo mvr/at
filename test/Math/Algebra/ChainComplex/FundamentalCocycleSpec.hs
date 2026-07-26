@@ -49,14 +49,31 @@ spec :: Spec
 spec = do
   describe "Cochain" $
     it "extends basis values linearly over the coefficient group" $ do
-      let coefficients = Zmod 5
+      let c = Zmod 5
           cochain :: CC.Cochain SkewComplex Zmod
-          cochain = CC.Cochain 2 $ \basisElement -> case basisElement of
-            L -> zmodElement coefficients (2 :: Integer)
-            R -> zmodElement coefficients (4 :: Integer)
-            _ -> unit coefficients
-      CC.cochainOnChain coefficients cochain (fromTerms [(3, L), (-2, R)])
-        `shouldBe` zmodElement coefficients (-2 :: Integer)
+          cochain = CC.Cochain 2 $ \x -> case x of
+            L -> zmodElement c (2 :: Integer)
+            R -> zmodElement c (4 :: Integer)
+            _ -> unit c
+      CC.cochainOnChain c cochain (fromTerms [(3, L), (-2, R)])
+        `shouldBe` zmodElement c (-2 :: Integer)
+
+  describe "Cocycle" $ do
+    it "accepts a cochain that vanishes on boundaries" $ do
+      let cochain = CC.Cochain 2 $ \x -> case x of
+            BasisSimplex Sphere.Cell -> 1
+            _ -> 0
+      case CC.mkCocycle (NChains (Sphere.Sphere 2)) Z cochain of
+        Just _ -> pure ()
+        Nothing -> expectationFailure "expected a cocycle"
+
+    it "rejects a cochain that does not vanish on boundaries" $ do
+      let cochain = CC.Cochain 2 $ \x -> case x of
+            BasisSimplex Moore.N -> 1
+            _ -> 0
+      case CC.mkCocycle (NChains (Moore.Moore 2 2)) Z cochain of
+        Nothing -> pure ()
+        Just _ -> expectationFailure "expected a non-cocycle"
 
   fundamentalCocycleSpec
 
@@ -67,7 +84,7 @@ fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
     case cocycles of
       [cocycle] -> do
         CC.cocycleOrder cocycle `shouldBe` Nothing
-        CC.cocycleDegree cocycle `shouldBe` 3
+        CC.fundamentalCocycleDegree cocycle `shouldBe` 3
         abs (cocycleValue cocycle (singleComb (BasisSimplex Sphere.Cell))) `shouldBe` 1
       _ -> expectationFailure "expected exactly one integral cocycle"
 

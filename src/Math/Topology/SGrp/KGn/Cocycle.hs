@@ -211,5 +211,5 @@ cocycleClassifyingMap a g cocycle = Morphism $ \simplex ->
             ]
    in emSimplexFromCocycle target simplexDegree values
   where
-    degree = CC.cocycleDegree cocycle
+    degree = CC.fundamentalCocycleDegree cocycle
     projection = equivalenceForward (eff a)

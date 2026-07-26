@@ -256,6 +256,37 @@ cochainOnChain c cochain chain =
     addTerm total (a, x) = prod c total $
       scale c (fromIntegral a) (cochainOnBasis cochain x)
 
+-- | A cochain known to vanish on boundaries.
+newtype Cocycle a c = Cocycle
+  { cocycleCochain :: Cochain a c
+  }
+
+-- | Check the cocycle condition in the one degree that can contribute to
+-- the coboundary.
+mkCocycle ::
+  (FiniteType a, Abelian c, Eq (Element c)) =>
+  a ->
+  c ->
+  Cochain a c ->
+  Maybe (Cocycle a c)
+mkCocycle a c cochain
+  | n < 0 = Nothing
+  | all vanishesOnBoundary (basis a (n + 1)) = Just (Cocycle cochain)
+  | otherwise = Nothing
+  where
+    n = cochainDegree cochain
+    vanishesOnBoundary x =
+      cochainOnChain c cochain (diff a `onBasis` x) == unit c
+
+cocycleDegree :: Cocycle a c -> Int
+cocycleDegree = cochainDegree . cocycleCochain
+
+cocycleOnBasis :: Cocycle a c -> Basis a -> Element c
+cocycleOnBasis = cochainOnBasis . cocycleCochain
+
+cocycleOnChain :: Abelian c => c -> Cocycle a c -> Chain a -> Element c
+cocycleOnChain c = cochainOnChain c . cocycleCochain
+
 -- | A coordinate of the fundamental cohomology class associated to a
 -- cyclic summand of a homology group.  'Nothing' denotes an infinite
 -- cyclic summand; 'Just n' denotes coefficients in Z/n.
@@ -264,9 +295,9 @@ data FundamentalCocycle a = FundamentalCocycle
     cocycleMorphism :: Morphism a ()
   }
 
--- | Degree in which the cocycle is supported.
-cocycleDegree :: FundamentalCocycle a -> Int
-cocycleDegree = negate . morphismDegree . cocycleMorphism
+-- | Degree in which the fundamental cocycle is supported.
+fundamentalCocycleDegree :: FundamentalCocycle a -> Int
+fundamentalCocycleDegree = negate . morphismDegree . cocycleMorphism
 
 -- | Fundamental cocycles for the cyclic invariant factors of H_n(a).
 fundamentalCocycles :: FiniteType a => a -> Int -> [FundamentalCocycle a]
