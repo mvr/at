@@ -242,6 +242,20 @@ homologyGroups a = fmap (\(n, f,g) -> HomologyGroup n (homology f g) a) pairs
     diffs = chainDiffs a
     pairs = zip3 [0 ..] (tail diffs) diffs
 
+-- | A (not necessarily Z-valued) cochain, defined by its values on a chain basis.
+data Cochain a c = Cochain
+  { cochainDegree :: !Int,
+    cochainOnBasis :: Basis a -> Element c
+  }
+
+-- | Extend a cochain linearly to arbitrary chains.
+cochainOnChain :: Abelian c => c -> Cochain a c -> Chain a -> Element c
+cochainOnChain c cochain chain =
+  foldl' addTerm (unit c) (coeffs chain)
+  where
+    addTerm total (a, x) = prod c total $
+      scale c (fromIntegral a) (cochainOnBasis cochain x)
+
 -- | A coordinate of the fundamental cohomology class associated to a
 -- cyclic summand of a homology group.  'Nothing' denotes an infinite
 -- cyclic summand; 'Just n' denotes coefficients in Z/n.

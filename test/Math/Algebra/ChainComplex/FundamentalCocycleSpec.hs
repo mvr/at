@@ -7,6 +7,7 @@ import Test.Hspec
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Sum
 import Math.Algebra.Combination
+import Math.Algebra.Group
 import qualified Math.Topology.SSet.Moore as Moore
 import Math.Topology.SSet.NChains
 import qualified Math.Topology.SSet.Sphere as Sphere
@@ -45,7 +46,22 @@ expectCocycles :: CC.FiniteType a => a -> Int -> IO [CC.FundamentalCocycle a]
 expectCocycles complex degree = pure $ CC.fundamentalCocycles complex degree
 
 spec :: Spec
-spec = describe "fundamentalCocycles" $ do
+spec = do
+  describe "Cochain" $
+    it "extends basis values linearly over the coefficient group" $ do
+      let coefficients = Zmod 5
+          cochain :: CC.Cochain SkewComplex Zmod
+          cochain = CC.Cochain 2 $ \basisElement -> case basisElement of
+            L -> zmodElement coefficients (2 :: Integer)
+            R -> zmodElement coefficients (4 :: Integer)
+            _ -> unit coefficients
+      CC.cochainOnChain coefficients cochain (fromTerms [(3, L), (-2, R)])
+        `shouldBe` zmodElement coefficients (-2 :: Integer)
+
+  fundamentalCocycleSpec
+
+fundamentalCocycleSpec :: Spec
+fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
   it "finds the integral fundamental class of a sphere" $ do
     cocycles <- expectCocycles (NChains (Sphere.Sphere 3)) 3
     case cocycles of
