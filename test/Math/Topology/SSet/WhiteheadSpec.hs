@@ -23,7 +23,7 @@ import qualified Math.Topology.SSet.Properties as SSetProperties
 
 onlyCocycle :: CC.FiniteType a => a -> Int -> CC.FundamentalCocycle a
 onlyCocycle a degree = case CC.fundamentalCocycles a degree of
-  Right [cocycle] -> cocycle
+  [cocycle] -> cocycle
   _ -> error "expected exactly one fundamental cocycle"
 
 spec :: Spec
@@ -136,8 +136,7 @@ spec = describe "Whitehead tower" $ do
       homotopyGroup 3 (Product.Product (Sphere 2) (Sphere 2)) `shouldBe` Right (freeAbGroup 2)
 
 onlyCocycleForOrder :: (CC.FiniteType a) => a -> Int -> Maybe Integer -> CC.FundamentalCocycle a
-onlyCocycleForOrder a degree order = case CC.fundamentalCocycles a degree of
-  Right cocycles -> case filter ((== order) . CC.cocycleOrder) cocycles of
+onlyCocycleForOrder a degree order =
+  case filter ((== order) . CC.cocycleOrder) (CC.fundamentalCocycles a degree) of
     cocycle : _ -> cocycle
     [] -> error "expected a fundamental cocycle with the requested order"
-  Left err -> error err

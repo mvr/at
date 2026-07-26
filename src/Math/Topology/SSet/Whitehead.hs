@@ -10,8 +10,6 @@ module Math.Topology.SSet.Whitehead
   )
 where
 
-import Data.Bifunctor (first)
-
 import Math.Algebra.AbGroupPres
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Topology.SGrp.KGn.Cocycle
@@ -53,7 +51,6 @@ whiteheadStage a g cocycle =
 
 data HomotopyError
   = InvalidHomotopyDegree Int
-  | CocycleError String
   deriving (Eq, Show)
 
 data SomeSpace = forall a.
@@ -68,20 +65,16 @@ someSpace a = SomeSpace a effectiveModel (CC.chainDiffs effectiveModel)
   where
     effectiveModel = model a
 
-killHomologyGroup :: Int -> SomeSpace -> Either HomotopyError SomeSpace
-killHomologyGroup degree space@(SomeSpace a effectiveModel differentials) = do
-  cocycles <-
-    first CocycleError $
-      CC.fundamentalCocyclesWithDiffs
-        effectiveModel
-        degree
-        (differentials !! degree)
-        (differentials !! (degree + 1))
-  case cocycles of
-    [] -> Right space
+killHomologyGroup :: Int -> SomeSpace -> SomeSpace
+killHomologyGroup degree space@(SomeSpace a effectiveModel differentials) =
+  case CC.fundamentalCocyclesWithDiffs effectiveModel degree outgoing incoming of
+    [] -> space
     cocycle : _ -> case coefficientSpace (fromIntegral <$> CC.cocycleOrder cocycle) (degree - 1) of
       SomeEilenbergMacLane g ->
         killHomologyGroup degree $ someSpace (whiteheadStage a g cocycle)
+  where
+    outgoing = differentials !! degree
+    incoming = differentials !! (degree + 1)
 
 -- | Compute pi_2 through pi_n by successive Whitehead stages.
 homotopyGroupsThrough ::
@@ -101,7 +94,7 @@ homotopyGroupsThrough target a
       if degree == target
         then Right [(degree, group)]
         else do
-          next <- if group == zero then Right space else killHomologyGroup degree space
+          let next = if group == zero then space else killHomologyGroup degree space
           ((degree, group) :) <$> groupsFrom (degree + 1) next
 
 -- | Compute a single homotopy group of a 1-reduced simplicial set.

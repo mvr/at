@@ -42,9 +42,7 @@ cocycleValue :: CC.ChainComplex a => CC.FundamentalCocycle a -> CC.Chain a -> In
 cocycleValue cocycle chain = coeffOf (CC.cocycleMorphism cocycle `CC.onComb` chain) ()
 
 expectCocycles :: CC.FiniteType a => a -> Int -> IO [CC.FundamentalCocycle a]
-expectCocycles complex degree = case CC.fundamentalCocycles complex degree of
-  Left err -> expectationFailure err >> pure []
-  Right cocycles -> pure cocycles
+expectCocycles complex degree = pure $ CC.fundamentalCocycles complex degree
 
 spec :: Spec
 spec = describe "fundamentalCocycles" $ do
