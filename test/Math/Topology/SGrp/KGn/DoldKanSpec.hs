@@ -1,9 +1,11 @@
 module Math.Topology.SGrp.KGn.DoldKanSpec where
 
+import Control.Monad (forM_)
 import Test.Hspec
 
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn.DoldKan
+import Math.Topology.SGrp.KGn.NormalizedCocycle
 import Math.Topology.SSet
 
 import qualified Math.Topology.SGrp.Properties as SGrpProperties
@@ -137,3 +139,17 @@ spec = do
         `shouldBe` replicate 4 2
 
     SSetProperties.check 3 degreeZero
+
+  describe "normalized cocycle coordinates" $ do
+    it "recovers coordinate values from Dold-Kan summands" $ do
+      let values = CocycleValues 3 [([0, 1], one), ([1, 2], one)]
+      doldKanToCocycleValues kz2 (cocycleValuesToDoldKan kz2 values)
+        `shouldBe` values
+
+    it "recovers every Dold-Kan simplex from its coordinate values" $
+      forM_ ([0 .. 4] >>= allSimplices kz2) $ \s -> do
+        let simplexValues = unnormalise s
+        cocycleValuesToDoldKan
+          kz2
+          (doldKanToCocycleValues kz2 simplexValues)
+          `shouldBe` simplexValues
