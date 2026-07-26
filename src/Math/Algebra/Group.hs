@@ -11,7 +11,21 @@ class Group a where
   unit :: a -> Element a
   inv :: a -> Element a -> Element a
 
-class (Group a) => Abelian a
+  -- | Raise a group element to an integer power.
+  power :: a -> Integer -> Element a -> Element a
+  power a n x
+    | n < 0 = positive (negate n) (inv a x)
+    | otherwise = positive n x
+    where
+      positive 0 _ = unit a
+      positive n x
+        | even n = positive (n `quot` 2) (prod a x x)
+        | otherwise = prod a x (positive (n - 1) x)
+
+class (Group a) => Abelian a where
+  -- | Scale an element by an integer.
+  scale :: a -> Integer -> Element a -> Element a
+  scale = power
 
 -- | Canonicalise a sparse list of values in an abelian group. Terms are
 -- sorted by key, repeated keys are combined, and unit-valued terms are
@@ -46,6 +60,7 @@ instance Group Z where
   prod _ = (+)
   unit _ = 0
   inv _ = negate
+  power _ = (*)
 
 instance Abelian Z
 
@@ -62,6 +77,9 @@ instance Group Zmod where
   prod group (ZmodElement x) (ZmodElement y) = zmodElement group (x + y)
   unit _ = ZmodElement 0
   inv group (ZmodElement x) = zmodElement group (negate x)
+  power (Zmod modulus) exponent (ZmodElement x) =
+    ZmodElement $
+      fromInteger ((exponent * toInteger x) `mod` toInteger modulus)
 
 instance Abelian Zmod
 
