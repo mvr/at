@@ -250,11 +250,11 @@ data Cochain a c = Cochain
 
 -- | Extend a cochain linearly to arbitrary chains.
 cochainOnChain :: Abelian c => c -> Cochain a c -> Chain a -> Element c
-cochainOnChain c cochain chain =
+cochainOnChain c (Cochain _ f) chain =
   foldl' addTerm (unit c) (coeffs chain)
   where
     addTerm total (a, x) = prod c total $
-      scale c (fromIntegral a) (cochainOnBasis cochain x)
+      scale c (fromIntegral a) (f x)
 
 -- | A cochain known to vanish on boundaries.
 newtype Cocycle a c = Cocycle
@@ -269,23 +269,22 @@ mkCocycle ::
   c ->
   Cochain a c ->
   Maybe (Cocycle a c)
-mkCocycle a c cochain
+mkCocycle a c cochain@(Cochain n _)
   | n < 0 = Nothing
   | all vanishesOnBoundary (basis a (n + 1)) = Just (Cocycle cochain)
   | otherwise = Nothing
   where
-    n = cochainDegree cochain
     vanishesOnBoundary x =
       cochainOnChain c cochain (diff a `onBasis` x) == unit c
 
 cocycleDegree :: Cocycle a c -> Int
-cocycleDegree = cochainDegree . cocycleCochain
+cocycleDegree (Cocycle (Cochain n _)) = n
 
 cocycleOnBasis :: Cocycle a c -> Basis a -> Element c
-cocycleOnBasis = cochainOnBasis . cocycleCochain
+cocycleOnBasis (Cocycle (Cochain _ f)) = f
 
 cocycleOnChain :: Abelian c => c -> Cocycle a c -> Chain a -> Element c
-cocycleOnChain c = cochainOnChain c . cocycleCochain
+cocycleOnChain c (Cocycle cochain) = cochainOnChain c cochain
 
 -- | A coordinate of the fundamental cohomology class associated to a
 -- cyclic summand of a homology group.  'Nothing' denotes an infinite
@@ -297,7 +296,7 @@ data FundamentalCocycle a = FundamentalCocycle
 
 -- | Degree in which the fundamental cocycle is supported.
 fundamentalCocycleDegree :: FundamentalCocycle a -> Int
-fundamentalCocycleDegree = negate . morphismDegree . cocycleMorphism
+fundamentalCocycleDegree (FundamentalCocycle _ (Morphism n _)) = negate n
 
 -- | Fundamental cocycles for the cyclic invariant factors of H_n(a).
 fundamentalCocycles :: FiniteType a => a -> Int -> [FundamentalCocycle a]

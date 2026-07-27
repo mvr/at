@@ -48,7 +48,7 @@ data DoldKanSurjection = DoldKanSurjection
   deriving (Eq, Ord)
 
 instance Show DoldKanSurjection where
-  show = show . surjectionTransitions
+  show (DoldKanSurjection _ transitions) = show transitions
 
 -- | The monotone surjections @[q] ->> [n]@, represented by their transition
 -- positions.
@@ -62,8 +62,8 @@ strictlyIncreasing xs = and (zipWith (<) xs (drop 1 xs))
 
 -- | Evaluate an encoded surjection at one source vertex.
 doldKanSurjectionValue :: DoldKanSurjection -> Int -> Int
-doldKanSurjectionValue surjection vertex =
-  length (takeWhile (< vertex) (surjectionTransitions surjection))
+doldKanSurjectionValue (DoldKanSurjection _ transitions) vertex =
+  length (takeWhile (< vertex) transitions)
 
 -- | Evaluate an encoded surjection on all of its source vertices.
 doldKanSurjectionValues :: DoldKanSurjection -> [Int]
@@ -73,13 +73,11 @@ doldKanSurjectionValues (DoldKanSurjection q transitions) =
     runLengths = zipWith (-) (transitions ++ [q]) (-1 : transitions)
 
 isDoldKanSurjection :: DoldKanKGn c -> Int -> DoldKanSurjection -> Bool
-isDoldKanSurjection target q surjection =
-  surjectionSimplexDegree surjection == q
-    && length transitions == doldKanDegree target
+isDoldKanSurjection (DoldKanKGn n _) q (DoldKanSurjection q' transitions) =
+  q' == q
+    && length transitions == n
     && strictlyIncreasing transitions
     && all (\i -> i >= 0 && i < q) transitions
-  where
-    transitions = surjectionTransitions surjection
 
 -- | A vector in the standard surjection summands of one Dold--Kan simplex.
 data DoldKanSimplex e = DoldKanSimplex
@@ -99,13 +97,11 @@ isCanonicalDoldKanSimplex ::
   DoldKanKGn c ->
   DoldKanSimplex (Element c) ->
   Bool
-isCanonicalDoldKanSimplex target (DoldKanSimplex q summands) =
+isCanonicalDoldKanSimplex target@(DoldKanKGn _ c) (DoldKanSimplex q summands) =
   q >= 0
     && all (isDoldKanSurjection target q . fst) summands
     && strictlyIncreasing (fst <$> summands)
     && all ((/= unit c) . snd) summands
-  where
-    c = doldKanCoefficientGroup target
 
 -- | Construct a canonical sparse vector in one simplicial degree.
 doldKanSimplex ::
@@ -114,13 +110,13 @@ doldKanSimplex ::
   Int ->
   [(DoldKanSurjection, Element c)] ->
   DoldKanSimplex (Element c)
-doldKanSimplex target q summands
+doldKanSimplex target@(DoldKanKGn _ c) q summands
   | q < 0 = error "doldKanSimplex: negative simplex degree"
   | not (all (isDoldKanSurjection target q . fst) summands) =
       error "doldKanSimplex: incompatible surjection"
   | otherwise =
       DoldKanSimplex q $
-        normaliseGroupTerms (doldKanCoefficientGroup target) summands
+        normaliseGroupTerms c summands
 
 -- An element is in the image of s_i exactly when every surjection occurring
 -- with nonzero coefficient is constant on the edge [i,i+1].
@@ -129,7 +125,8 @@ commonRepeatPositions (DoldKanSimplex q summands) =
   filter isCommonRepeat [0 .. q - 1]
   where
     isCommonRepeat i =
-      all ((i `notElem`) . surjectionTransitions . fst) summands
+      all (repeatsAt i) summands
+    repeatsAt i (DoldKanSurjection _ transitions, _) = i `notElem` transitions
 
 reindexSurjection :: Int -> (Int -> Int) -> DoldKanSurjection -> DoldKanSurjection
 reindexSurjection q reindex (DoldKanSurjection _ transitions) =
@@ -156,10 +153,11 @@ unnormalise :: FormalDegen (DoldKanGeomSimplex e) -> DoldKanSimplex e
 unnormalise simplex =
   DoldKanSimplex expandedDegree $
     first (reindexSurjection expandedDegree liftTransition)
-      <$> simplexSummands core
+      <$> summands
   where
-    core = underlyingDoldKanSimplex (underlyingGeom simplex)
-    expandedDegree = simplexDegree core + degenCount simplex
+    DoldKanGeomSimplex (DoldKanSimplex coreDegree summands) =
+      underlyingGeom simplex
+    expandedDegree = coreDegree + degenCount simplex
     repeats = reverse (degenList simplex)
     liftTransition i = foldl' skipRepeat i repeats
     skipRepeat i repeat
@@ -186,7 +184,7 @@ instance (Abelian c, Ord (Element c)) => SSet (DoldKanKGn c) where
     isCanonicalDoldKanSimplex target simplex
       && null (commonRepeatPositions simplex)
 
-  geomSimplexDim _ = simplexDegree . underlyingDoldKanSimplex
+  geomSimplexDim _ (DoldKanGeomSimplex (DoldKanSimplex q _)) = q
 
   geomFace target (DoldKanGeomSimplex (DoldKanSimplex q summands)) i
     | q <= 0 = error "DoldKan.geomFace: face of a vertex"
@@ -205,15 +203,14 @@ instance
   (Abelian c, FiniteGroup c, Ord (Element c)) =>
   FiniteType (DoldKanKGn c)
   where
-  geomBasis target q
+  geomBasis target@(DoldKanKGn n c) q
     | q < 0 = []
     | otherwise =
         filter (isGeomSimplex target) $
           fromValues
             <$> sequence (replicate (length surjections) (elements c))
     where
-      c = doldKanCoefficientGroup target
-      surjections = doldKanSurjections (doldKanDegree target) q
+      surjections = doldKanSurjections n q
       fromValues values =
         DoldKanGeomSimplex $
           doldKanSimplex target q (filter ((/= unit c) . snd) (zip surjections values))
@@ -225,8 +222,8 @@ instance (Abelian c, Ord (Element c)) => SGrp.SGrp (DoldKanKGn c) where
      in normalise $
           doldKanSimplex target q (leftSummands ++ rightSummands)
 
-  invMor target =
+  invMor (DoldKanKGn _ c) =
     Morphism $
-      NonDegen . fmap (inv (doldKanCoefficientGroup target))
+      NonDegen . fmap (inv c)
 
 instance (Abelian c, Ord (Element c)) => SGrp.SAb (DoldKanKGn c)

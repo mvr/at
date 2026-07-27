@@ -75,7 +75,7 @@ cocycleValuesToDoldKan (DoldKanKGn n c) (CocycleValues q values) =
   DoldKanSimplex q $ foldl' solve [] (reverse $ doldKanSurjections n q)
   where
     valueAt coordinate = fromMaybe (unit c) (lookup coordinate values)
-    solve solved surj =
+    solve solved surj@(DoldKanSurjection _ coordinate) =
       let value =
             prod
               c
@@ -84,8 +84,6 @@ cocycleValuesToDoldKan (DoldKanKGn n c) (CocycleValues q values) =
        in if value == unit c
             then solved
             else (surj, value) : solved
-      where
-        coordinate = surjectionTransitions surj
 
 -- | Change from the standard surjection summands to independent
 -- normalized-face values by evaluating the section pairing.
