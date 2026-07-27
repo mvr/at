@@ -142,7 +142,7 @@ spec = do
 
   describe "normalized cocycle coordinates" $ do
     it "recovers coordinate values from Dold-Kan summands" $ do
-      let values = CocycleValues 3 [([0, 1], one), ([1, 2], one)]
+      let values = CocycleFaceValues 3 [([0, 1], one), ([1, 2], one)]
       doldKanToCocycleValues kz2 (cocycleValuesToDoldKan kz2 values)
         `shouldBe` values
 

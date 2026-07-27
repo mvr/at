@@ -3,7 +3,7 @@
 -- inverse Dold--Kan surjection summands.
 module Math.Topology.SGrp.KGn.NormalizedCocycle (
   CocycleCoordinate,
-  CocycleValues (..),
+  CocycleFaceValues (..),
   cocycleCoordinateVertices,
   cocycleValuesToDoldKan,
   doldKanToCocycleValues,
@@ -22,9 +22,9 @@ import Math.Topology.SGrp.KGn.DoldKan
 type CocycleCoordinate = [Int]
 
 -- | Independent normalized-face values in one simplicial degree.
-data CocycleValues e = CocycleValues
-  { cocycleValuesSimplexDegree :: !Int,
-    cocycleValuesCoordinates :: [(CocycleCoordinate, e)]
+data CocycleFaceValues e = CocycleFaceValues
+  { cocycleSimplexDegree :: !Int,
+    cocycleFaceValues :: [(CocycleCoordinate, e)]
   }
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
@@ -69,9 +69,9 @@ sectionSum c coordinate = foldl' add (unit c)
 cocycleValuesToDoldKan ::
   (Abelian c, Eq (Element c)) =>
   DoldKanKGn c ->
-  CocycleValues (Element c) ->
+  CocycleFaceValues (Element c) ->
   DoldKanSimplex (Element c)
-cocycleValuesToDoldKan (DoldKanKGn n c) (CocycleValues q values) =
+cocycleValuesToDoldKan (DoldKanKGn n c) (CocycleFaceValues q values) =
   DoldKanSimplex q $ foldl' solve [] (reverse $ doldKanSurjections n q)
   where
     valueAt coordinate = fromMaybe (unit c) (lookup coordinate values)
@@ -91,15 +91,13 @@ doldKanToCocycleValues ::
   (Abelian c, Eq (Element c)) =>
   DoldKanKGn c ->
   DoldKanSimplex (Element c) ->
-  CocycleValues (Element c)
+  CocycleFaceValues (Element c)
 doldKanToCocycleValues (DoldKanKGn n c) (DoldKanSimplex q s) =
-  CocycleValues q (mapMaybe nonzeroValue coordinates)
+  CocycleFaceValues q $
+    mapMaybe nonzeroValue (doldKanSurjections n q)
   where
-    coordinates =
-      surjectionTransitions <$> doldKanSurjections n q
-    nonzeroValue coordinate
-      | value == unit c = Nothing
-      | otherwise = Just (coordinate, value)
-      where
-        value = valueAt coordinate
-    valueAt coordinate = sectionSum c coordinate s
+    nonzeroValue (DoldKanSurjection _ coordinate) =
+      let value = sectionSum c coordinate s
+       in if value == unit c
+            then Nothing
+            else Just (coordinate, value)

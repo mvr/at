@@ -17,6 +17,8 @@ import Math.Topology.SGrp.KGn.DoldKan.Wbar (
 import Math.Topology.SGrp.Wbar
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet (geomBasis)
+import Math.Topology.SSet.NChains
+import Math.Topology.SSet.Sphere
 
 import qualified Math.Algebra.ChainComplex.Algebra.Properties as AlgebraProperties
 import qualified Math.Topology.SGrp.Properties as SGrpProperties
@@ -24,6 +26,11 @@ import qualified Math.Topology.SSet.Properties as SSetProperties
 
 circle :: CircleComplex
 circle = Sum () (Shift ())
+
+sphereCocycle :: Cocycle (NChains Sphere) Z
+sphereCocycle = Cocycle $ Cochain 2 $ \simplex -> case simplex of
+  BasisSimplex Cell -> 1
+  _ -> 0
 
 spec :: Spec
 spec = do
@@ -77,6 +84,22 @@ spec = do
         KZmod2_1
         (doldKanComparison KZmod2_1)
         ([0 .. 3] >>= geomBasis efficient1)
+
+  describe "cocycle Dold-Kan map" $ do
+    let sphere = Sphere 2
+
+    it "retains the simplex degree when evaluating a cocycle" $ do
+      evaluateCocycleFaces sphere Z sphereCocycle Cell
+        `shouldBe` CocycleFaceValues 2 [([0, 1], 1)]
+      evaluateCocycleFaces sphere Z sphereCocycle Basepoint
+        `shouldBe` CocycleFaceValues 0 []
+
+    it "commutes with faces" $
+      SSetProperties.checkMorphismFaces
+        sphere
+        (doldKanModel (Wbar kz1))
+        (cocycleDoldKanMap sphere Z sphereCocycle)
+        Cell
 
   describe "iterated Eilenberg-Mac Lane spaces" $
     it "iterates from the degree of the supplied space" $

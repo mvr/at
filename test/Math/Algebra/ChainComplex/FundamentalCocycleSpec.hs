@@ -59,6 +59,15 @@ spec = do
         `shouldBe` zmodElement c (-2 :: Integer)
 
   describe "Cocycle" $ do
+    it "pulls back along a chain map" $ do
+      let cocycle = CC.Cocycle $ CC.Cochain 2 $ \x -> case x of
+            BasisSimplex Sphere.Cell -> 1
+            _ -> 0
+          doubling = CC.Morphism 0 $ \x -> 2 .* singleComb x
+          pulledBack = CC.pullbackCocycle Z doubling cocycle
+      CC.cocycleOnBasis pulledBack (BasisSimplex Sphere.Cell)
+        `shouldBe` 2
+
     it "accepts a cochain that vanishes on boundaries" $ do
       let cochain = CC.Cochain 2 $ \x -> case x of
             BasisSimplex Sphere.Cell -> 1
@@ -74,6 +83,18 @@ spec = do
       case CC.mkCocycle (NChains (Moore.Moore 2 2)) Z cochain of
         Nothing -> pure ()
         Just _ -> expectationFailure "expected a non-cocycle"
+
+  describe "FundamentalCocycle" $
+    it "pulls back along a chain map" $ do
+      let cocycle :: CC.FundamentalCocycle (NChains Sphere.Sphere)
+          cocycle = CC.FundamentalCocycle Nothing $ CC.Morphism (-2) $ \x -> case x of
+            BasisSimplex Sphere.Cell -> singleComb ()
+            _ -> 0
+          doubling :: CC.Morphism (NChains Sphere.Sphere) (NChains Sphere.Sphere)
+          doubling = CC.Morphism 0 $ \x -> 2 .* singleComb x
+          pulledBack = CC.pullbackFundamentalCocycle doubling cocycle
+      cocycleValue pulledBack (singleComb $ BasisSimplex Sphere.Cell)
+        `shouldBe` 2
 
   fundamentalCocycleSpec
 

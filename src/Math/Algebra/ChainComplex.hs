@@ -288,6 +288,11 @@ cocycleOnBasis (Cocycle (Cochain _ f)) = f
 cocycleOnChain :: Abelian c => c -> Cocycle a c -> Chain a -> Element c
 cocycleOnChain c (Cocycle cochain) = cochainOnChain c cochain
 
+-- | Pull a cocycle back along a chain map.
+pullbackCocycle :: Abelian c => c -> Morphism a b -> Cocycle b c -> Cocycle a c
+pullbackCocycle c (Morphism d f) (Cocycle cochain@(Cochain n _)) =
+  Cocycle $ Cochain (n - d) $ \x -> cochainOnChain c cochain (f x)
+
 -- | A coordinate of the fundamental cohomology class associated to a
 -- cyclic summand of a homology group.  'Nothing' denotes an infinite
 -- cyclic summand; 'Just n' denotes coefficients in Z/n.
@@ -299,6 +304,15 @@ data FundamentalCocycle a = FundamentalCocycle
 -- | Degree in which the fundamental cocycle is supported.
 fundamentalCocycleDegree :: FundamentalCocycle a -> Int
 fundamentalCocycleDegree (FundamentalCocycle _ (Morphism n _)) = negate n
+
+-- | Pull a fundamental cocycle back along a chain map.
+pullbackFundamentalCocycle ::
+  (Ord (Basis a), Ord (Basis b)) =>
+  Morphism a b ->
+  FundamentalCocycle b ->
+  FundamentalCocycle a
+pullbackFundamentalCocycle f (FundamentalCocycle order cocycle) =
+  FundamentalCocycle order (cocycle . f)
 
 -- | Fundamental cocycles for the cyclic invariant factors of H_n(a).
 fundamentalCocycles :: FiniteType a => a -> Int -> [FundamentalCocycle a]

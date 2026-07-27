@@ -8,12 +8,16 @@ module Math.Topology.SGrp.KGn.Cocycle (
   SomeEilenbergMacLane (..),
   iteratedEilenbergMacLane,
   coefficientSpace,
+  CocycleCoordinate,
+  CocycleFaceValues (..),
+  evaluateCocycleFaces,
+  cocycleDoldKanMap,
   cocycleClassifyingMap,
 )
 where
 
 import Data.Bits (complement, countTrailingZeros, popCount)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence (equivalenceForward)
@@ -21,6 +25,18 @@ import Math.Algebra.Combination
 import Math.Algebra.Group
 import Math.Topology.SGrp
 import Math.Topology.SGrp.KGn (KZmod2_1 (..), kz1)
+import Math.Topology.SGrp.KGn.DoldKan (
+  DoldKanKGn (DoldKanKGn),
+  DoldKanSurjection (DoldKanSurjection),
+  doldKanSurjections,
+ )
+import qualified Math.Topology.SGrp.KGn.DoldKan as DoldKan
+import Math.Topology.SGrp.KGn.NormalizedCocycle (
+  CocycleCoordinate,
+  CocycleFaceValues (CocycleFaceValues),
+  cocycleCoordinateVertices,
+  cocycleValuesToDoldKan,
+ )
 import Math.Topology.SGrp.Wbar
 import qualified Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.WbarDiscrete
@@ -171,27 +187,80 @@ cocycleCoordinateOperators smallDegree highDegree
           source = fromMaybe (error "cocycleCoordinateOperators: missing recursive face") (lookup (key + 2 ^ i) previous)
        in (key, faceOperatorFace source faceIndex)
 
-cocycleCoordinateFaces :: SSet a => a -> Int -> Int -> GeomSimplex a -> [(Int, Simplex a)]
-cocycleCoordinateFaces a smallDegree highDegree simplex =
+bitmaskCoordinateFaces :: SSet a => a -> Int -> Int -> GeomSimplex a -> [(Int, Simplex a)]
+bitmaskCoordinateFaces a smallDegree highDegree simplex =
   [ (key, applyFaceOperator a operator (NonDegen simplex))
   | (key, operator) <- cocycleCoordinateOperators smallDegree highDegree
   ]
 
-evaluateCocycle ::
-  Ord (CC.Basis model) =>
-  CC.Morphism (NChains a) model ->
-  CC.FundamentalCocycle model ->
+cocycleCoordinateFaces ::
+  SSet a =>
+  a ->
+  Int ->
+  Int ->
+  GeomSimplex a ->
+  [(CocycleCoordinate, Simplex a)]
+cocycleCoordinateFaces a n q simplex =
+  coordinateFace <$> doldKanSurjections n q
+  where
+    coordinateFace (DoldKanSurjection _ coordinate) =
+      ( coordinate,
+        applyFaceOperator
+          a
+          (FaceOperator q (cocycleCoordinateVertices coordinate))
+          (NonDegen simplex)
+      )
+
+-- | Evaluate a cocycle on the independent normalized faces of each source
+-- simplex.
+evaluateCocycleFaces ::
+  ( SSet a,
+    Group c,
+    Eq (Element c)
+  ) =>
+  a ->
+  c ->
+  CC.Cocycle (NChains a) c ->
+  GeomSimplex a ->
+  CocycleFaceValues (Element c)
+evaluateCocycleFaces a c cocycle@(CC.Cocycle (CC.Cochain n _)) simplex =
+  CocycleFaceValues q $
+    mapMaybe evaluateFace (cocycleCoordinateFaces a n q simplex)
+  where
+    q = geomSimplexDim a simplex
+    evaluateFace (_, Degen _ _) = Nothing
+    evaluateFace (coordinate, NonDegen faceSimplex) =
+      let value = CC.cocycleOnBasis cocycle (BasisSimplex faceSimplex)
+       in if value == unit c
+            then Nothing
+            else Just (coordinate, value)
+
+-- | The inverse Dold--Kan image of a cocycle.
+cocycleDoldKanMap ::
+  ( Effective a,
+    Abelian c,
+    Eq (Element c)
+  ) => a -> c -> CC.Cocycle (Model a) c -> Morphism a (DoldKanKGn c)
+cocycleDoldKanMap a c cocycle = Morphism $ \simplex ->
+  DoldKan.normalise $
+    cocycleValuesToDoldKan
+      (DoldKanKGn n c)
+      (evaluateCocycleFaces a c sourceCocycle simplex)
+  where
+    sourceCocycle =
+      CC.pullbackCocycle c (equivalenceForward (eff a)) cocycle
+    n = CC.cocycleDegree sourceCocycle
+
+evaluateFundamentalCocycle ::
+  CC.FundamentalCocycle (NChains a) ->
   Simplex a ->
   Integer
-evaluateCocycle projection cocycle (FormalDegen mask simplex)
-  | mask /= 0 = 0
-  | otherwise =
-      fromIntegral $
-        coeffOf
-          ( CC.cocycleMorphism cocycle
-              `CC.onComb` (projection `CC.onBasis` BasisSimplex simplex)
-          )
-          ()
+evaluateFundamentalCocycle _ (Degen _ _) = 0
+evaluateFundamentalCocycle cocycle (NonDegen simplex) =
+  fromIntegral $
+    coeffOf
+      (CC.cocycleMorphism cocycle `CC.onBasis` BasisSimplex simplex)
+      ()
 
 -- | The classifying map to K(A,n) = Wbar K(A,n-1) represented by a
 -- fundamental cocycle on the effective model of the source.
@@ -202,15 +271,15 @@ cocycleClassifyingMap ::
   CC.FundamentalCocycle (Model a) ->
   Morphism a (Wbar g)
 cocycleClassifyingMap a g cocycle = Morphism $ \simplex ->
-  let target = Wbar g
-      simplexDegree = geomSimplexDim a simplex
+  let simplexDegree = geomSimplexDim a simplex
       values
         | simplexDegree < degree = []
         | otherwise =
-            [ (key, emCoefficientFromInteger target $ evaluateCocycle projection cocycle faceSimplex)
-            | (key, faceSimplex) <- cocycleCoordinateFaces a degree simplexDegree simplex
+            [ (key, emCoefficientFromInteger (Wbar g) $ evaluateFundamentalCocycle sourceCocycle faceSimplex)
+            | (key, faceSimplex) <- bitmaskCoordinateFaces a degree simplexDegree simplex
             ]
-   in emSimplexFromCocycle target simplexDegree values
+   in emSimplexFromCocycle (Wbar g) simplexDegree values
   where
-    degree = CC.fundamentalCocycleDegree cocycle
-    projection = equivalenceForward (eff a)
+    sourceCocycle =
+      CC.pullbackFundamentalCocycle (equivalenceForward (eff a)) cocycle
+    degree = CC.fundamentalCocycleDegree sourceCocycle
