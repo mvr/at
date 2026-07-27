@@ -12,7 +12,6 @@ module Math.Topology.SGrp.KGn where
 
 import Control.Category.Constrained ((.))
 import Data.Coerce
-import Math.Algebra.Combination
 import Math.Algebra.ChainComplex as CC hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Algebra
@@ -21,6 +20,7 @@ import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Shift
 import Math.Algebra.ChainComplex.Sum
+import Math.Algebra.Combination
 import Math.Algebra.Group
 import Math.Topology.SGrp
 import Math.Topology.SGrp.WbarDiscrete
@@ -40,10 +40,11 @@ type CircleComplex = () `Sum` Shift ()
 instance Algebra CircleComplex where
   unitMor _ = CC.Morphism 0 (const (singleComb (Left ())))
   muMor _ = CC.Morphism 0 go
-    where go (Left _, Left _) = singleComb (Left ())
-          go (Left _, Right _) = singleComb (Right (ShiftBasis ()))
-          go (Right _, Left _) = singleComb (Right (ShiftBasis ()))
-          go (Right _, Right _) = 0
+    where
+      go (Left _, Left _) = singleComb (Left ())
+      go (Left _, Right _) = singleComb (Right (ShiftBasis ()))
+      go (Right _, Left _) = singleComb (Right (ShiftBasis ()))
+      go (Right _, Right _) = 0
 
 instance DVF KZ1 where
   vf _ [] = Critical
@@ -132,7 +133,7 @@ complement :: Int -> [Int] -> [Int]
 complement (-1) [] = []
 complement n [] = n : complement (n - 1) []
 complement n (i : is)
-  | n == i = complement (n -1) is
+  | n == i = complement (n - 1) is
   | otherwise = n : complement (n - 1) (i : is)
 
 instance SGrp KZmod2_1 where

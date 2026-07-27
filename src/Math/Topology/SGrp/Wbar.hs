@@ -17,11 +17,11 @@ import Prelude hiding (id, return, (.))
 
 import qualified Math.Algebra.Bicomplex as Bi
 import qualified Math.Algebra.ChainComplex as CC (Morphism, UMorphism (..), kozulRule)
-import Math.Algebra.Combination (singleComb)
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.Combination (singleComb)
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
@@ -300,16 +300,17 @@ stripBar _ (WbarSimplex _ entries) = fmap underlyingGeom entries
 
 reconstructBar :: SGrp g => g -> [GeomSimplex g] -> GeomSimplex (Wbar g)
 reconstructBar _ [] = WNil
-reconstructBar g (a:as) = consWbar g a' (unnormaliseWbar b')
-  where rest = reconstructBar g as
-        (b', a') = reconstructProduct (Wbar g) g (rest, a)
+reconstructBar g (a : as) = consWbar g a' (unnormaliseWbar b')
+  where
+    rest = reconstructBar g as
+    (b', a') = reconstructProduct (Wbar g) g (rest, a)
 
 barOrientation :: SSet g => g -> [GeomSimplex g] -> Int
 barOrientation g = go . fmap (geomSimplexDim g)
   where
     -- Sum_{i<j} d_i*(d_j+1), from crossing later suspended factors.
     go [] = 0
-    go (d:ds) = d * (length ds + sum ds) + go ds
+    go (d : ds) = d * (length ds + sum ds) + go ds
 
 criticalIso ::
   forall g.
@@ -349,7 +350,6 @@ instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where
 -- corresponding to the fibre sequence \( G \hookrightarrow W G
 -- \twoheadrightarrow \bar W G\). The total space \(W G\) is
 -- contractible.
-
 canonicalTwist :: (SGrp g) => g -> Twist (Wbar g) g
 canonicalTwist g = Twist $ \bar -> case bar of
   WNil -> basepointSimplex g

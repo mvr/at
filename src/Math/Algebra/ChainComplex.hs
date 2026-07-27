@@ -13,8 +13,8 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Matrix as M
 import Data.Maybe (fromJust)
 import qualified Data.Vector as V
-import Prelude hiding (Bounded, id, return, (.))
 import System.IO.Unsafe (unsafePerformIO)
+import Prelude hiding (Bounded, id, return, (.))
 
 import Math.Algebra.AbGroupPres
 import Math.Algebra.Combination
@@ -187,10 +187,10 @@ chainDiff a n
   | rows == 0 = toZero (chainGroup a n)
   | cols == 0 = fromZero (chainGroup a (n - 1))
   | otherwise =
-    morphismFromFullMatrix
-      (chainGroup a n)
-      (chainGroup a (n - 1))
-      (M.matrix rows cols findCoef)
+      morphismFromFullMatrix
+        (chainGroup a n)
+        (chainGroup a (n - 1))
+        (M.matrix rows cols findCoef)
   where
     rows = dim a (n - 1)
     cols = dim a n
@@ -228,7 +228,8 @@ instance Constrained.Functor (UMorphism d) (->) UHomologyClass where
 
 homologyGenerators :: FiniteType a => HomologyGroup a -> [HomologyClass a]
 homologyGenerators (HomologyGroup n p a) = fmap HomologyClass chains
-  where chains = fmap (fromChainGrpElt a n . AbGroupPresElt . (fromReduced p *) . eltVector) (indGenerators p)
+  where
+    chains = fmap (fromChainGrpElt a n . AbGroupPresElt . (fromReduced p *) . eltVector) (indGenerators p)
 
 homologies :: FiniteType a => a -> [AbGroupPres]
 homologies a = fmap (uncurry homology) pairs
@@ -237,7 +238,7 @@ homologies a = fmap (uncurry homology) pairs
     pairs = zip (tail diffs) diffs
 
 homologyGroups :: FiniteType a => a -> [HomologyGroup a]
-homologyGroups a = fmap (\(n, f,g) -> HomologyGroup n (homology f g) a) pairs
+homologyGroups a = fmap (\(n, f, g) -> HomologyGroup n (homology f g) a) pairs
   where
     diffs = chainDiffs a
     pairs = zip3 [0 ..] (tail diffs) diffs
@@ -253,8 +254,9 @@ cochainOnChain :: Abelian c => c -> Cochain a c -> Chain a -> Element c
 cochainOnChain c (Cochain _ f) chain =
   foldl' addTerm (unit c) (coeffs chain)
   where
-    addTerm total (a, x) = prod c total $
-      scale c (fromIntegral a) (f x)
+    addTerm total (a, x) =
+      prod c total $
+        scale c (fromIntegral a) (f x)
 
 -- | A cochain known to vanish on boundaries.
 newtype Cocycle a c = Cocycle

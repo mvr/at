@@ -1,4 +1,3 @@
--- |
 module Math.Algebra.Bicomplex.Properties where
 
 import Control.Category.Constrained ((.))

@@ -51,8 +51,8 @@ spec = describe "Combination" $ do
         expected =
           fromTerms
             [ (outerCoefficient * innerCoefficient, innerBasis)
-              | (outerCoefficient, outerBasis) <- coeffs outer,
-                (innerCoefficient, innerBasis) <- coeffs (inner outerBasis)
+            | (outerCoefficient, outerBasis) <- coeffs outer,
+              (innerCoefficient, innerBasis) <- coeffs (inner outerBasis)
             ]
     bindCombination outer inner `shouldBe` expected
 

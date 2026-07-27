@@ -225,7 +225,7 @@ someSimplices a n f | n < 0 = []
 someSimplices a n f = fmap NonDegen (f n) ++ (degensOf =<< someSimplices a (n - 1) f)
   where
     degensOf s@(NonDegen g) = fmap (\i -> Degen i s) [0 .. simplexDim a s]
-    degensOf s@(Degen j _)  = fmap (\i -> Degen i s) [(j + 1) .. simplexDim a s]
+    degensOf s@(Degen j _) = fmap (\i -> Degen i s) [(j + 1) .. simplexDim a s]
 
 allSimplices :: (FiniteType a) => a -> Int -> [Simplex a]
 allSimplices a n = someSimplices a n (geomBasis a)

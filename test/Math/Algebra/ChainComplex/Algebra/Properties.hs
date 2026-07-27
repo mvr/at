@@ -2,8 +2,8 @@ module Math.Algebra.ChainComplex.Algebra.Properties where
 
 import Control.Category.Constrained (id, (.))
 import Control.Monad (forM_)
-import Prelude hiding (id, (.))
 import Test.Hspec
+import Prelude hiding (id, (.))
 
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Algebra

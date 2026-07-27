@@ -1,4 +1,3 @@
--- |
 module Math.Algebra.ChainComplex.Reduction.Properties where
 
 import Control.Category.Constrained (id, (.))

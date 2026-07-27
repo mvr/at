@@ -1,5 +1,5 @@
-{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -- | A principal \(G\)-bundle over \(A\), represented as a degree (-1) map of
 -- simplicial sets \(τ : A \to G\).
@@ -28,7 +28,7 @@ module Math.Topology.SSet.TwistedProduct where
 --
 
 import Data.Coerce
-import Math.Algebra.ChainComplex hiding (Morphism, FiniteType)
+import Math.Algebra.ChainComplex hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
@@ -44,7 +44,7 @@ import Prelude hiding (id, return, (.))
 
 type Action g f = Morphism (Product f g) f
 
-newtype Twist b g = Twist { twistOnGeom :: GeomSimplex b -> Simplex g }
+newtype Twist b g = Twist {twistOnGeom :: GeomSimplex b -> Simplex g}
 
 twistOnFor :: (SSet b, Pointed g) => b -> g -> Twist b g -> Simplex b -> Simplex g
 twistOnFor a g f (NonDegen s) = f `twistOnGeom` s
@@ -78,15 +78,15 @@ instance (SSet f, SSet b, SGrp g) => SSet (TwistedProduct f b g) where
 
   geomFace (TwistedProduct f b g act tau) (TwistedProductSimplex (s, t)) i
     | i == 0 =
-      TwistedProductSimplex
-        <$> prodNormalise
-          ( act `onSimplex` prodNormalise (face f s 0, twistOnFor b g tau t),
-            face b t 0
-          )
+        TwistedProductSimplex
+          <$> prodNormalise
+            ( act `onSimplex` prodNormalise (face f s 0, twistOnFor b g tau t),
+              face b t 0
+            )
     | otherwise = TwistedProductSimplex <$> prodNormalise (face f s i, face b t i)
 
 instance (FiniteType b, FiniteType f, SGrp g) => FiniteType (TwistedProduct f b g) where
-  geomBasis (TwistedProduct f b _ _ _) n = [ TwistedProductSimplex (s, t) | s <- allSimplices f n, t <- allSimplices b n, isGeomSimplex (Product f b) (s, t)]
+  geomBasis (TwistedProduct f b _ _ _) n = [TwistedProductSimplex (s, t) | s <- allSimplices f n, t <- allSimplices b n, isGeomSimplex (Product f b) (s, t)]
 
 instance (SSet f, SSet b, SGrp g) => DVF (TwistedProduct f b g) where
   vf (TwistedProduct f b g _ _) (TwistedProductSimplex s) = coerce $ status (Product f b) s

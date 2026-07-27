@@ -10,18 +10,18 @@
 -- A simplicial operator acts on a summand by composing its indexing
 -- surjection. Since @A[n]@ has zero differential, the summand is sent to zero
 -- when the composite is not surjective.
-module Math.Topology.SGrp.KGn.DoldKan
-  ( DoldKanKGn (..),
-    DoldKanSurjection (..),
-    DoldKanSimplex (..),
-    DoldKanGeomSimplex (..),
-    doldKanSimplex,
-    doldKanSurjections,
-    doldKanSurjectionValue,
-    doldKanSurjectionValues,
-    normalise,
-    unnormalise,
-  )
+module Math.Topology.SGrp.KGn.DoldKan (
+  DoldKanKGn (..),
+  DoldKanSurjection (..),
+  DoldKanSimplex (..),
+  DoldKanGeomSimplex (..),
+  doldKanSimplex,
+  doldKanSurjections,
+  doldKanSurjectionValue,
+  doldKanSurjectionValues,
+  normalise,
+  unnormalise,
+)
 where
 
 import Data.Bifunctor (first)

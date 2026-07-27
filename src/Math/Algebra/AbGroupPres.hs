@@ -6,11 +6,11 @@ import Data.Matrix (Matrix, (<|>))
 import qualified Data.Matrix as M
 import Data.Maybe (fromJust, isJust)
 import qualified Data.Vector as V
-import Math.Algebra.AbGroupPres.IsoClass
-  ( IsoClass (IsoClass),
-    elementaryDivisorsToInvariantFactors,
-    invariantFactorsToElementaryDivisors,
-  )
+import Math.Algebra.AbGroupPres.IsoClass (
+  IsoClass (IsoClass),
+  elementaryDivisorsToInvariantFactors,
+  invariantFactorsToElementaryDivisors,
+ )
 import Math.Algebra.Group
 import Math.Algebra.SmithNormalForm
 import Math.ValueCategory
@@ -28,7 +28,7 @@ instance Eq AbGroupPres where
   a == b = reduced a == reduced b
 
 -- Cokernel of the reduced matrix
-newtype AbGroupPresElt = AbGroupPresElt { eltVector :: (Matrix Integer) }
+newtype AbGroupPresElt = AbGroupPresElt {eltVector :: (Matrix Integer)}
 
 normaliseElt :: AbGroupPres -> Matrix Integer -> AbGroupPresElt
 normaliseElt (AbGroupPres _ d _ _) c = AbGroupPresElt $ M.fromList (M.nrows d) 1 $ fmap (uncurry doMod) pairs
@@ -73,7 +73,8 @@ fromIsoClass (IsoClass rank torsion) = AbGroupPres m m i i
     cols = max 1 (length invFactors)
     m =
       M.extendTo 0 rows cols $
-        M.diagonal 0 $ V.fromList invFactors
+        M.diagonal 0 $
+          V.fromList invFactors
     i = M.identity rows
 
 freeAbGroup :: Integer -> AbGroupPres

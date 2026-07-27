@@ -32,16 +32,16 @@ module Math.Algebra.ChainComplex.Algebra.Bar where
 -- case, the bar construction of a differential graded algebra with
 -- coefficients in a pair of differential graded modules. "
 
-import Data.Coerce ( coerce )
 import Control.Category.Constrained ((.))
+import Data.Coerce (coerce)
 import Prelude hiding ((.))
 
 import Math.Algebra.Bicomplex hiding (FiniteType)
 import qualified Math.Algebra.Bicomplex as Bi (FiniteType)
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Algebra
-import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Equivalence
+import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Combination
 
 -- To implement the action of `Bar` on reductions, we need a
@@ -50,7 +50,7 @@ import Math.Algebra.Combination
 -- of the suspension of the original `a`.
 -- TODO: this could be moved to its own file
 
-newtype TensorSusp a = TensorSusp { unTensorSusp :: a }
+newtype TensorSusp a = TensorSusp {unTensorSusp :: a}
 
 newtype TensorSuspBibasis a = TensorSuspBibasis a
   deriving (Eq, Ord)
@@ -73,7 +73,7 @@ instance ChainComplex a => Bicomplex (TensorSusp a) where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
       go (b : bs) =
-        - mapMonotonic (: bs) (diff a `onBasis` b)
+        -mapMonotonic (: bs) (diff a `onBasis` b)
           + kozulRule (degree a b + 1) (mapMonotonic (b :) (go bs))
 
   hdiff _ = morphismZero
@@ -106,10 +106,10 @@ instance FiniteType a => FiniteType (TensorSusp a) where
 verth :: ChainComplex a => a -> Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
 verth _ _ _ [] = 0
 verth a h gf (b : bs) =
-  - liftCombination2
-      (:)
-      (h `onBasis` b)
-      (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
+  -liftCombination2
+    (:)
+    (h `onBasis` b)
+    (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
     + kozulRule (degree a b + 1) (mapMonotonic (b :) (verth a h gf bs))
 
 tensorAlgReduction ::
@@ -138,8 +138,8 @@ instance Algebra a => Bicomplex (Bar a) where
   type Bibasis (Bar a) = BarBibasis [Basis a]
 
   isBibasis (Bar a) = coerce (isBibasis (TensorSusp a))
-  bidegree  (Bar a) = coerce (bidegree (TensorSusp a))
-  vdiff     (Bar a) = coerce (vdiff (TensorSusp a))
+  bidegree (Bar a) = coerce (bidegree (TensorSusp a))
+  vdiff (Bar a) = coerce (vdiff (TensorSusp a))
 
   hdiff (Bar a) = Morphism (Bidegree (-1, 0)) (coerce go)
     where
@@ -190,7 +190,8 @@ barEquiv ::
   Equivalence a b ->
   Equivalence (Bar a) (Perturbed (TensorSusp b))
 barEquiv (Equivalence a l x r b) = Equivalence (Bar (unTensorSusp (perturbedOrig newa))) (coerce newl) newx newr newb
-  where (newx, newa, newl) = perturbBottom (TensorSusp x) (TensorSusp a) (tensorAlgReduction x a l) (horizPerturbation a)
-        (_, newb, newr) = perturb (TensorSusp x) (TensorSusp b) (tensorAlgReduction x b r) (perturbedDiff newx)
+  where
+    (newx, newa, newl) = perturbBottom (TensorSusp x) (TensorSusp a) (tensorAlgReduction x a l) (horizPerturbation a)
+    (_, newb, newr) = perturb (TensorSusp x) (TensorSusp b) (tensorAlgReduction x b r) (perturbedDiff newx)
 
 -- TODO: universal twisting cochain a -> Bar a (should be same as the one induced by the twist on Wbar)

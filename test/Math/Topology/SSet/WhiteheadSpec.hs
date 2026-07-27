@@ -16,10 +16,10 @@ import Math.Topology.SSet.Effective
 import qualified Math.Topology.SSet.Moore as Moore
 import Math.Topology.SSet.NChains
 import qualified Math.Topology.SSet.Product as Product
+import qualified Math.Topology.SSet.Properties as SSetProperties
 import Math.Topology.SSet.Sphere
 import Math.Topology.SSet.TwistedProduct
 import Math.Topology.SSet.Whitehead
-import qualified Math.Topology.SSet.Properties as SSetProperties
 
 onlyCocycle :: CC.FiniteType a => a -> Int -> CC.FundamentalCocycle a
 onlyCocycle a degree = case CC.fundamentalCocycles a degree of

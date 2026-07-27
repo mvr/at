@@ -63,7 +63,8 @@ spec = do
           where
             go Cell =
               NonDegen $
-                wbarSimplex kz2
+                wbarSimplex
+                  kz2
                   [ NonDegen (wbarSimplex kz1 [NonDegen [1], NonDegen []]),
                     Degen 0 (NonDegen (WbarSimplex 0 [])),
                     NonDegen (WbarSimplex 0 [])

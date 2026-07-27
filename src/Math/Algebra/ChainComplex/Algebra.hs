@@ -10,4 +10,3 @@ class ChainComplex a => Algebra a where
 
 -- Can transfer algebra structure across reductions
 class Algebra a => CommAlgebra a
-

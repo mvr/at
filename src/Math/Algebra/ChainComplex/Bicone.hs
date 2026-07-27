@@ -33,7 +33,7 @@ instance (ChainComplex b, ChainComplex c, ChainComplex d) => ChainComplex (Bicon
         appendOrdered
           (mapMonotonic FromB (diff b `onBasis` s))
           (mapMonotonic FromC (f `onBasis` s))
-      go (FromC s) = - mapMonotonic FromC (diff c `onBasis` s)
+      go (FromC s) = -mapMonotonic FromC (diff c `onBasis` s)
       go (FromD s) =
         appendOrdered
           (mapMonotonic FromC (g `onBasis` s))

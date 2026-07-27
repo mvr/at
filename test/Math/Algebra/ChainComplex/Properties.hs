@@ -1,4 +1,3 @@
--- |
 module Math.Algebra.ChainComplex.Properties where
 
 import Control.Category.Constrained (id, (.))
@@ -10,7 +9,8 @@ import Prelude hiding (id, (.))
 isEqOn :: (Num d, Ord a', Show a', Show a) => a -> UMorphism d a a' -> UMorphism d a a' -> Expectation
 isEqOn b m m' =
   unless ((m `onBasis` b) == (m' `onBasis` b)) $
-    expectationFailure $ "Images of " ++ show b ++ " are the non-equal " ++ show (m `onBasis` b) ++ " and " ++ show (m' `onBasis` b)
+    expectationFailure $
+      "Images of " ++ show b ++ " are the non-equal " ++ show (m `onBasis` b) ++ " and " ++ show (m' `onBasis` b)
 
 isIdOn :: (Num d, Ord a, Show a) => a -> UMorphism d a a -> Expectation
 isIdOn b m = isEqOn b m id

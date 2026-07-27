@@ -2,7 +2,7 @@ indentation: 2
 comma-style: trailing
 record-brace-space: true
 indent-wheres: true
-diff-friendly-import-export: false
 respectful: true
 haddock-style: single-line
 newlines-between-decls: 1
+single-constraint-parens: auto

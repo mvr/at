@@ -48,9 +48,9 @@ instance (Group a, Ord (Element a)) => SSet (WbarDiscrete a) where
     | null ss = []
     | otherwise =
         [ (i, entries)
-          | i <- [0 .. length ss],
-            let entries = discreteFaceEntries a ss i,
-            unit a `notElem` entries
+        | i <- [0 .. length ss],
+          let entries = discreteFaceEntries a ss i,
+          unit a `notElem` entries
         ]
 
 instance (Group a, Ord (Element a)) => Pointed (WbarDiscrete a) where

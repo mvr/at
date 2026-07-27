@@ -1,4 +1,3 @@
--- |
 module Math.Topology.SGrp.Properties where
 
 import Control.Monad (forM_)

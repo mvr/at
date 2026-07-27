@@ -1,13 +1,13 @@
 -- | Degreewise coordinates for normalized cocycles on standard simplices,
 -- together with their change of coordinates to and from the standard
 -- inverse Dold--Kan surjection summands.
-module Math.Topology.SGrp.KGn.NormalizedCocycle
-  ( CocycleCoordinate,
-    CocycleValues (..),
-    cocycleCoordinateVertices,
-    cocycleValuesToDoldKan,
-    doldKanToCocycleValues,
-  )
+module Math.Topology.SGrp.KGn.NormalizedCocycle (
+  CocycleCoordinate,
+  CocycleValues (..),
+  cocycleCoordinateVertices,
+  cocycleValuesToDoldKan,
+  doldKanToCocycleValues,
+)
 where
 
 import Data.List (unsnoc)

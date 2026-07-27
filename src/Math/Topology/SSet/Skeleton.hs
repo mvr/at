@@ -1,6 +1,5 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- |
 module Math.Topology.SSet.Skeleton where
 
 import Prelude hiding (Bounded)

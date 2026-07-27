@@ -65,10 +65,10 @@ instance (SSet a, SSet b) => SSet (Product a b) where
     | dimension == 0 = []
     | otherwise =
         [ (i, (leftFace, rightFace))
-          | i <- [0 .. dimension],
-            let leftFace@(FormalDegen leftMask _) = face a s i,
-            let rightFace@(FormalDegen rightMask _) = face b t i,
-            leftMask .&. rightMask == 0
+        | i <- [0 .. dimension],
+          let leftFace@(FormalDegen leftMask _) = face a s i,
+          let rightFace@(FormalDegen rightMask _) = face b t i,
+          leftMask .&. rightMask == 0
         ]
     where
       dimension = simplexDim a s
@@ -137,7 +137,7 @@ statusStep (q, s, t) = case pathStep q s t of
   -- Simplex is a target
   PathStep Y q' s' t'
     | PathStep X q'' s'' t'' <- pathStep q' s' t' ->
-      Target (pathUnstep Diag (q'', s'', t'')) (incidenceFor (q'' + 1))
+        Target (pathUnstep Diag (q'', s'', t'')) (incidenceFor (q'' + 1))
   -- Simplex is a source
   PathStep Diag q' s' t' ->
     Source
@@ -165,7 +165,7 @@ reconstructProduct :: (SSet a, SSet b) => a -> b -> (GeomSimplex a, GeomSimplex 
 reconstructProduct a b (s, t) =
   let n = geomSimplexDim a s
       m = geomSimplexDim b t
-  in (downshiftN n (constantAt s m), constantAt t n)
+   in (downshiftN n (constantAt s m), constantAt t n)
 {-# INLINE reconstructProduct #-}
 
 criticalIso ::

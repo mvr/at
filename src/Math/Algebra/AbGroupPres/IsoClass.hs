@@ -1,10 +1,10 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Math.Algebra.AbGroupPres.IsoClass
-  ( IsoClass (..),
-    invariantFactorsToElementaryDivisors,
-    elementaryDivisorsToInvariantFactors,
-  )
+module Math.Algebra.AbGroupPres.IsoClass (
+  IsoClass (..),
+  invariantFactorsToElementaryDivisors,
+  elementaryDivisorsToInvariantFactors,
+)
 where
 
 import Data.Function (on)

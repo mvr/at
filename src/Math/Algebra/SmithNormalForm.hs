@@ -1,10 +1,10 @@
-module Math.Algebra.SmithNormalForm
-  ( Triple (..),
-    smithNormalForm,
-  )
+module Math.Algebra.SmithNormalForm (
+  Triple (..),
+  smithNormalForm,
+)
 where
 
-import Control.Monad (when, unless, forM_)
+import Control.Monad (forM_, unless, when)
 import Control.Monad.State
 import Data.List (foldl')
 import Data.Monoid (All (..))
@@ -54,10 +54,10 @@ swapCols :: Int -> Int -> Triple -> Triple
 swapCols i j (Triple li l m r ri) = Triple li l (M.switchCols i j m) (M.switchRows i j r) (M.switchCols i j ri)
 
 addRowMultiple :: Int -> Integer -> Int -> Triple -> Triple
-addRowMultiple i x j (Triple li l m r ri) = Triple (M.combineRows i x j li) (combineCols j (- x) i l) (M.combineRows i x j m) r ri
+addRowMultiple i x j (Triple li l m r ri) = Triple (M.combineRows i x j li) (combineCols j (-x) i l) (M.combineRows i x j m) r ri
 
 addColMultiple :: Int -> Integer -> Int -> Triple -> Triple
-addColMultiple i x j (Triple li l m r ri) = Triple li l (combineCols i x j m) (M.combineRows j (- x) i r) (combineCols i x j ri)
+addColMultiple i x j (Triple li l m r ri) = Triple li l (combineCols i x j m) (M.combineRows j (-x) i r) (combineCols i x j ri)
 
 negateRow :: Int -> Triple -> Triple
 negateRow i (Triple li l m r ri) = Triple (M.mapRow (const negate) i li) (M.mapCol (const negate) i l) (M.mapRow (const negate) i m) r ri
@@ -120,13 +120,13 @@ modifyEdging s = do
     when (M.getElem i s m /= 0) $
       modify $
         let q = M.getElem i s m `quot` mss
-         in addRowMultiple i (- q) s
+         in addRowMultiple i (-q) s
 
   forM_ [s + 1 .. M.ncols m] $ \j ->
     when (M.getElem s j m /= 0) $
       modify $
         let q = M.getElem s j m `quot` mss
-         in addColMultiple j (- q) s
+         in addColMultiple j (-q) s
 
 moveLeastEdgingToStart :: Int -> State Triple ()
 moveLeastEdgingToStart s = do
@@ -175,7 +175,7 @@ ensureAllDivide s = do
     modify $ addRowMultiple s 1 smallestR
     t <- get
     let q = M.getElem s smallestC (middle t) `quot` mss
-    modify $ addColMultiple smallestC (- q) s
+    modify $ addColMultiple smallestC (-q) s
     modify $ swapCols s smallestC
 
     nullifyEdging s

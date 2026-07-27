@@ -9,7 +9,7 @@ import Control.Category.Constrained
 import Data.Coerce
 import Math.Algebra.ChainComplex
 
-import Prelude hiding (id, (.), fmap)
+import Prelude hiding (fmap, id, (.))
 
 data UReduction a b = Reduction
   { reductionF :: UMorphism Int a b, -- degree 0
@@ -29,8 +29,10 @@ instance Category UReduction where
 isoToReduction :: Ord a => UMorphism Int a b -> UMorphism Int b a -> UReduction a b
 isoToReduction f g = Reduction f g 0
 
-data Perturbed a = Perturbed { perturbedOrig :: a,
-                               perturbedDiff :: Morphism a a }
+data Perturbed a = Perturbed
+  { perturbedOrig :: a,
+    perturbedDiff :: Morphism a a
+  }
 
 newtype PerturbedBasis a = PerturbedBasis a
   deriving (Eq, Ord, Show)

@@ -58,23 +58,23 @@ spec = describe "products" $ do
   it "normalises degeneracy masks like the recursive algorithm" $ do
     let mismatches =
           [ (leftMask, rightMask)
-            | leftMask <- [0 .. 255],
-              rightMask <- [0 .. 255],
-              let left = FormalDegen leftMask Cell :: Simplex Sphere
-                  right = FormalDegen rightMask Cell :: Simplex Sphere,
-              Product.prodNormalise (left, right) /= recursiveProdNormalise (left, right)
+          | leftMask <- [0 .. 255],
+            rightMask <- [0 .. 255],
+            let left = FormalDegen leftMask Cell :: Simplex Sphere
+                right = FormalDegen rightMask Cell :: Simplex Sphere,
+            Product.prodNormalise (left, right) /= recursiveProdNormalise (left, right)
           ]
     mismatches `shouldBe` []
 
   it "recognises jointly nondegenerate mask pairs directly" $ do
     let mismatches =
           [ (leftMask, rightMask)
-            | leftMask <- [0 .. 255],
-              rightMask <- [0 .. 255],
-              let left = FormalDegen leftMask Cell :: Simplex Sphere
-                  right = FormalDegen rightMask Cell :: Simplex Sphere,
-              Product.jointlyNonDegen (left, right)
-                /= not (isDegen (recursiveProdNormalise (left, right)))
+          | leftMask <- [0 .. 255],
+            rightMask <- [0 .. 255],
+            let left = FormalDegen leftMask Cell :: Simplex Sphere
+                right = FormalDegen rightMask Cell :: Simplex Sphere,
+            Product.jointlyNonDegen (left, right)
+              /= not (isDegen (recursiveProdNormalise (left, right)))
           ]
     mismatches `shouldBe` []
 

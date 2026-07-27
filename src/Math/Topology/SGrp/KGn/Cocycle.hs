@@ -3,22 +3,22 @@
 
 -- | The standard cocycle coordinates for Eilenberg-Mac Lane spaces,
 -- decoded into their iterated classifying-space models.
-module Math.Topology.SGrp.KGn.Cocycle
-  ( EilenbergMacLane (..),
-    SomeEilenbergMacLane (..),
-    iteratedEilenbergMacLane,
-    coefficientSpace,
-    cocycleClassifyingMap,
-  )
+module Math.Topology.SGrp.KGn.Cocycle (
+  EilenbergMacLane (..),
+  SomeEilenbergMacLane (..),
+  iteratedEilenbergMacLane,
+  coefficientSpace,
+  cocycleClassifyingMap,
+)
 where
 
 import Data.Bits (complement, countTrailingZeros, popCount)
 import Data.Maybe (fromMaybe)
 
-import Math.Algebra.Group
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence (equivalenceForward)
 import Math.Algebra.Combination
+import Math.Algebra.Group
 import Math.Topology.SGrp
 import Math.Topology.SGrp.KGn (KZmod2_1 (..), kz1)
 import Math.Topology.SGrp.Wbar
@@ -106,12 +106,13 @@ instance EilenbergMacLane g => EilenbergMacLane (Wbar g) where
 
 -- | An effective Eilenberg-Mac Lane space with its concrete iterated
 -- classifying-space type hidden.
-data SomeEilenbergMacLane = forall g.
-  ( EilenbergMacLane g,
-    Effective g,
-    CC.FiniteType (Model g)
-  ) =>
-  SomeEilenbergMacLane g
+data SomeEilenbergMacLane
+  = forall g.
+    ( EilenbergMacLane g,
+      Effective g,
+      CC.FiniteType (Model g)
+    ) =>
+    SomeEilenbergMacLane g
 
 iteratedEilenbergMacLane ::
   ( EilenbergMacLane g,
@@ -173,7 +174,7 @@ cocycleCoordinateOperators smallDegree highDegree
 cocycleCoordinateFaces :: SSet a => a -> Int -> Int -> GeomSimplex a -> [(Int, Simplex a)]
 cocycleCoordinateFaces a smallDegree highDegree simplex =
   [ (key, applyFaceOperator a operator (NonDegen simplex))
-    | (key, operator) <- cocycleCoordinateOperators smallDegree highDegree
+  | (key, operator) <- cocycleCoordinateOperators smallDegree highDegree
   ]
 
 evaluateCocycle ::
@@ -207,7 +208,7 @@ cocycleClassifyingMap a g cocycle = Morphism $ \simplex ->
         | simplexDegree < degree = []
         | otherwise =
             [ (key, emCoefficientFromInteger target $ evaluateCocycle projection cocycle faceSimplex)
-              | (key, faceSimplex) <- cocycleCoordinateFaces a degree simplexDegree simplex
+            | (key, faceSimplex) <- cocycleCoordinateFaces a degree simplexDegree simplex
             ]
    in emSimplexFromCocycle target simplexDegree values
   where

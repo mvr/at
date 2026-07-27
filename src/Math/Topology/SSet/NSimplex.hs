@@ -32,7 +32,7 @@ instance SSet NSimplex where
 choose :: Int -> [a] -> [[a]]
 choose 0 _ = [[]]
 choose i [] = []
-choose i (x : xs) = fmap (x :) (choose (i -1) xs) ++ choose i xs
+choose i (x : xs) = fmap (x :) (choose (i - 1) xs) ++ choose i xs
 
 instance FiniteType NSimplex where
   geomBasis (NSimplex d) i = NSimplexSimplex <$> choose (i + 1) [0 .. d]

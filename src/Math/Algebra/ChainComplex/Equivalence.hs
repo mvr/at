@@ -7,7 +7,8 @@ import Math.Algebra.ChainComplex.Bicone
 import Math.Algebra.ChainComplex.Reduction
 import Prelude hiding (id, (.))
 
-data Equivalence a b = forall c.
+data Equivalence a b
+  = forall c.
   (ChainComplex c, Ord (Basis c)) =>
   Equivalence
   { equivLeft :: a,

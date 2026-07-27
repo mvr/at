@@ -1,20 +1,20 @@
-module Math.Algebra.Combination
-  ( Combination,
-    coeffs,
-    fromTerms,
-    zeroCombination,
-    coeffOf,
-    mapCombination,
-    mapMonotonic,
-    appendOrdered,
-    bindCombination,
-    liftCombination2,
-    productCombination,
-    traverseCombination,
-    (.*),
-    singleComb,
-    normalise,
-  )
+module Math.Algebra.Combination (
+  Combination,
+  coeffs,
+  fromTerms,
+  zeroCombination,
+  coeffOf,
+  mapCombination,
+  mapMonotonic,
+  appendOrdered,
+  bindCombination,
+  liftCombination2,
+  productCombination,
+  traverseCombination,
+  (.*),
+  singleComb,
+  normalise,
+)
 where
 
 import Control.Category.Constrained (join, return)
@@ -112,7 +112,7 @@ bindCombination (CanonicalCombination [first, second, third]) f =
 bindCombination (CanonicalCombination terms) f =
   sumCombinations
     [ outerCoefficient .* f outerBasis
-      | (outerCoefficient, outerBasis) <- terms
+    | (outerCoefficient, outerBasis) <- terms
     ]
 
 sumCombinations :: Ord b => [Combination b] -> Combination b
@@ -127,8 +127,8 @@ liftCombination2 :: Ord c => (a -> b -> c) -> Combination a -> Combination b -> 
 liftCombination2 f left right =
   fromTerms
     [ (leftCoefficient * rightCoefficient, f leftBasis rightBasis)
-      | (leftCoefficient, leftBasis) <- coeffs left,
-        (rightCoefficient, rightBasis) <- coeffs right
+    | (leftCoefficient, leftBasis) <- coeffs left,
+      (rightCoefficient, rightBasis) <- coeffs right
     ]
 
 -- | Pair every term in two combinations. Lexicographic pair ordering
@@ -137,8 +137,8 @@ productCombination :: Combination a -> Combination b -> Combination (a, b)
 productCombination (CanonicalCombination left) (CanonicalCombination right) =
   CanonicalCombination
     [ (leftCoefficient * rightCoefficient, (leftBasis, rightBasis))
-      | (leftCoefficient, leftBasis) <- left,
-        (rightCoefficient, rightBasis) <- right
+    | (leftCoefficient, leftBasis) <- left,
+      (rightCoefficient, rightBasis) <- right
     ]
 
 traverseCombination :: (a -> Combination b) -> [a] -> Combination [b]

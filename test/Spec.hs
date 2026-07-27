@@ -14,11 +14,10 @@ import qualified Math.Algebra.ChainComplex.TensorSpec
 import qualified Math.Algebra.CombinationSpec
 import qualified Math.Algebra.GroupSpec
 import qualified Math.Algebra.SmithNormalFormSpec
-import qualified Math.Topology.SGrp.KGnSpec
 import qualified Math.Topology.SGrp.KGn.DoldKanSpec
+import qualified Math.Topology.SGrp.KGnSpec
 import qualified Math.Topology.SGrp.WbarDiscreteSpec
 import qualified Math.Topology.SGrp.WbarSpec
-import qualified Math.Topology.SSetSpec
 import qualified Math.Topology.SSet.MooreSpec
 import qualified Math.Topology.SSet.ProductSpec
 import qualified Math.Topology.SSet.RPnSpec
@@ -26,6 +25,7 @@ import qualified Math.Topology.SSet.SkeletonSpec
 import qualified Math.Topology.SSet.SphereSpec
 import qualified Math.Topology.SSet.TwistedProductSpec
 import qualified Math.Topology.SSet.WhiteheadSpec
+import qualified Math.Topology.SSetSpec
 
 main :: IO ()
 main = hspec spec

@@ -1,23 +1,23 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Whitehead-tower stages and homotopy groups of 1-reduced spaces.
-module Math.Topology.SSet.Whitehead
-  ( HomotopyError (..),
-    whiteheadTwist,
-    whiteheadStage,
-    homotopyGroupsThrough,
-    homotopyGroup,
-  )
+module Math.Topology.SSet.Whitehead (
+  HomotopyError (..),
+  whiteheadTwist,
+  whiteheadStage,
+  homotopyGroupsThrough,
+  homotopyGroup,
+)
 where
 
 import Math.Algebra.AbGroupPres
 import qualified Math.Algebra.ChainComplex as CC
-import Math.Topology.SGrp.KGn.Cocycle
-  ( EilenbergMacLane,
-    SomeEilenbergMacLane (..),
-    coefficientSpace,
-    cocycleClassifyingMap,
-  )
+import Math.Topology.SGrp.KGn.Cocycle (
+  EilenbergMacLane,
+  SomeEilenbergMacLane (..),
+  cocycleClassifyingMap,
+  coefficientSpace,
+ )
 import Math.Topology.SGrp.Wbar
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
@@ -53,9 +53,10 @@ data HomotopyError
   = InvalidHomotopyDegree Int
   deriving (Eq, Show)
 
-data SomeSpace = forall a.
-  (Effective a, CC.FiniteType (Model a)) =>
-  SomeSpace a (Model a) [Arrow AbGroupPres]
+data SomeSpace
+  = forall a.
+    (Effective a, CC.FiniteType (Model a)) =>
+    SomeSpace a (Model a) [Arrow AbGroupPres]
 
 someSpace ::
   (Effective a, CC.FiniteType (Model a)) =>

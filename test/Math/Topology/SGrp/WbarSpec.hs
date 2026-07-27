@@ -99,9 +99,10 @@ spec = do
         forM_ (allSimplices p degree) $ \left ->
           forM_ (allSimplices p degree) $ \right ->
             prodMor p `onSimplex` prodNormalise (left, right)
-              `shouldBe` Wbar.normalise g
+              `shouldBe` Wbar.normalise
+                g
                 [ prodMor g `onSimplex` prodNormalise pair
-                  | pair <- zip (Wbar.unnormalise g left) (Wbar.unnormalise g right)
+                | pair <- zip (Wbar.unnormalise g left) (Wbar.unnormalise g right)
                 ]
 
 recursiveNormalise :: Pointed g => g -> [Simplex g] -> Simplex (Wbar g)
