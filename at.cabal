@@ -78,6 +78,7 @@ library
     Math.Topology.SGrp.KGn
     Math.Topology.SGrp.KGn.Cocycle
     Math.Topology.SGrp.KGn.DoldKan
+    Math.Topology.SGrp.KGn.DoldKan.Wbar
     Math.Topology.SGrp.KGn.NormalizedCocycle
     Math.Topology.SGrp.Wbar
     Math.Topology.SGrp.WbarDiscrete
