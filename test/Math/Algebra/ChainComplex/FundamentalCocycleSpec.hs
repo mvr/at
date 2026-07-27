@@ -39,9 +39,6 @@ instance CC.FiniteType SkewComplex where
   basis _ 3 = [Upper]
   basis _ _ = []
 
-cocycleValue :: CC.ChainComplex a => CC.FundamentalCocycle a -> CC.Chain a -> Int
-cocycleValue cocycle chain = coeffOf (CC.cocycleMorphism cocycle `CC.onComb` chain) ()
-
 expectCocycles :: CC.FiniteType a => a -> Int -> IO [CC.FundamentalCocycle a]
 expectCocycles complex degree = pure $ CC.fundamentalCocycles complex degree
 
@@ -87,14 +84,17 @@ spec = do
   describe "FundamentalCocycle" $
     it "pulls back along a chain map" $ do
       let cocycle :: CC.FundamentalCocycle (NChains Sphere.Sphere)
-          cocycle = CC.FundamentalCocycle Nothing $ CC.Morphism (-2) $ \x -> case x of
-            BasisSimplex Sphere.Cell -> singleComb ()
+          cocycle = CC.IntegralFundamentalCocycle $ CC.Cocycle $ CC.Cochain 2 $ \x -> case x of
+            BasisSimplex Sphere.Cell -> 1
             _ -> 0
           doubling :: CC.Morphism (NChains Sphere.Sphere) (NChains Sphere.Sphere)
           doubling = CC.Morphism 0 $ \x -> 2 .* singleComb x
           pulledBack = CC.pullbackFundamentalCocycle doubling cocycle
-      cocycleValue pulledBack (singleComb $ BasisSimplex Sphere.Cell)
-        `shouldBe` 2
+      case pulledBack of
+        CC.IntegralFundamentalCocycle c ->
+          CC.cocycleOnBasis c (BasisSimplex Sphere.Cell) `shouldBe` 2
+        CC.ModularFundamentalCocycle _ _ ->
+          expectationFailure "expected an integral cocycle"
 
   fundamentalCocycleSpec
 
@@ -103,18 +103,18 @@ fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
   it "finds the integral fundamental class of a sphere" $ do
     cocycles <- expectCocycles (NChains (Sphere.Sphere 3)) 3
     case cocycles of
-      [cocycle] -> do
-        CC.cocycleOrder cocycle `shouldBe` Nothing
-        CC.fundamentalCocycleDegree cocycle `shouldBe` 3
-        abs (cocycleValue cocycle (singleComb (BasisSimplex Sphere.Cell))) `shouldBe` 1
+      [fundamental@(CC.IntegralFundamentalCocycle cocycle)] -> do
+        CC.fundamentalCocycleDegree fundamental `shouldBe` 3
+        abs (CC.cocycleOnChain Z cocycle (singleComb (BasisSimplex Sphere.Cell)))
+          `shouldBe` 1
       _ -> expectationFailure "expected exactly one integral cocycle"
 
   it "finds the torsion fundamental class of a Moore space" $ do
     cocycles <- expectCocycles (NChains (Moore.Moore 2 2)) 2
     case cocycles of
-      [cocycle] -> do
-        CC.cocycleOrder cocycle `shouldBe` Just 2
-        abs (cocycleValue cocycle (singleComb (BasisSimplex Moore.N))) `shouldBe` 1
+      [CC.ModularFundamentalCocycle c@(Zmod 2) cocycle] ->
+        CC.cocycleOnChain c cocycle (singleComb (BasisSimplex Moore.N))
+          `shouldBe` zmodElement c (1 :: Integer)
       _ -> expectationFailure "expected exactly one order-two cocycle"
 
   it "returns no classes when the homology group is zero" $ do
@@ -128,11 +128,11 @@ fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
   it "extends an integral class from a non-coordinate cycle subgroup" $ do
     cocycles <- expectCocycles (SkewComplex 0) 2
     case cocycles of
-      [cocycle] -> do
-        CC.cocycleOrder cocycle `shouldBe` Nothing
-        abs (cocycleValue cocycle (fromTerms [(1, L), (-1, R)])) `shouldBe` 1
-        CC.cocycleMorphism cocycle `CC.onBasis` Lower `shouldBe` 0
-        CC.cocycleMorphism cocycle `CC.onBasis` Upper `shouldBe` 0
+      [CC.IntegralFundamentalCocycle cocycle] -> do
+        abs (CC.cocycleOnChain Z cocycle (fromTerms [(1, L), (-1, R)]))
+          `shouldBe` 1
+        CC.cocycleOnBasis cocycle Lower `shouldBe` 0
+        CC.cocycleOnBasis cocycle Upper `shouldBe` 0
       _ -> expectationFailure "expected exactly one integral cocycle"
 
   it "finds multiple torsion invariant factors and returns cocycles for them" $ do
@@ -142,11 +142,19 @@ fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
             fromTerms [(1, Right L), (-1, Right R)]
           ]
     cocycles <- expectCocycles complex 2
-    sort (map CC.cocycleOrder cocycles) `shouldBe` [Just 2, Just 4]
+    let orders = [order | CC.ModularFundamentalCocycle (Zmod order) _ <- cocycles]
+    sort orders `shouldBe` [2, 4]
 
-    forM_ cocycles $ \cocycle -> case CC.cocycleOrder cocycle of
-      Nothing -> expectationFailure "expected a torsion cocycle"
-      Just order -> do
+    forM_ cocycles $ \fundamental -> case fundamental of
+      CC.IntegralFundamentalCocycle _ ->
+        expectationFailure "expected a torsion cocycle"
+      CC.ModularFundamentalCocycle c@(Zmod order) cocycle -> do
         forM_ (CC.basis complex 3) $ \b ->
-          fromIntegral (cocycleValue cocycle (CC.diff complex `CC.onBasis` b)) `mod` order `shouldBe` 0
-        foldl gcd order (map (fromIntegral . abs . cocycleValue cocycle) cycleGenerators) `shouldBe` 1
+          CC.cocycleOnChain c cocycle (CC.diff complex `CC.onBasis` b)
+            `shouldBe` unit c
+        let values =
+              [ value
+              | generator <- cycleGenerators,
+                let ZmodElement value = CC.cocycleOnChain c cocycle generator
+              ]
+        foldl gcd order values `shouldBe` 1

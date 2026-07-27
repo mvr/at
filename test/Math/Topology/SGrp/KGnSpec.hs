@@ -9,7 +9,7 @@ import Math.Algebra.ChainComplex.Sum
 import Math.Algebra.Combination
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn
-import Math.Topology.SGrp.KGn.Cocycle
+import Math.Topology.SGrp.KGn.DoldKan.Cocycle
 import Math.Topology.SGrp.KGn.DoldKan.Wbar (
   doldKanComparison,
   doldKanModel,
@@ -101,7 +101,9 @@ spec = do
         (cocycleDoldKanMap sphere Z sphereCocycle)
         Cell
 
-  describe "iterated Eilenberg-Mac Lane spaces" $
-    it "iterates from the degree of the supplied space" $
-      case iteratedEilenbergMacLane 3 (Wbar kz1) of
-        SomeEilenbergMacLane g -> emDegree g `shouldBe` 3
+    it "compares with the iterated Wbar model" $
+      SSetProperties.checkMorphismFaces
+        sphere
+        (Wbar kz1)
+        (cocycleClassifyingMap sphere kz1 sphereCocycle)
+        Cell

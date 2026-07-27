@@ -5,7 +5,7 @@ import Test.Hspec
 
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn.DoldKan
-import Math.Topology.SGrp.KGn.NormalizedCocycle
+import Math.Topology.SGrp.KGn.DoldKan.Cocycle
 import Math.Topology.SSet
 
 import qualified Math.Topology.SGrp.Properties as SGrpProperties

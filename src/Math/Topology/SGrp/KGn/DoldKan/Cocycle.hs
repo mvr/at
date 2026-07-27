@@ -1,20 +1,34 @@
--- | Degreewise coordinates for normalized cocycles on standard simplices,
--- together with their change of coordinates to and from the standard
--- inverse Dold--Kan surjection summands.
-module Math.Topology.SGrp.KGn.NormalizedCocycle (
+-- | Normalized cocycle coordinates and their Dold--Kan classifying maps.
+module Math.Topology.SGrp.KGn.DoldKan.Cocycle (
   CocycleCoordinate,
   CocycleFaceValues (..),
   cocycleCoordinateVertices,
+  evaluateCocycleFaces,
   cocycleValuesToDoldKan,
   doldKanToCocycleValues,
+  cocycleDoldKanMap,
+  cocycleClassifyingMap,
 )
 where
 
+import Control.Category.Constrained ((.))
 import Data.List (unsnoc)
 import Data.Maybe (fromMaybe, mapMaybe)
+import Prelude hiding ((.))
 
+import qualified Math.Algebra.ChainComplex as CC
+import Math.Algebra.ChainComplex.Equivalence (equivalenceForward)
 import Math.Algebra.Group
 import Math.Topology.SGrp.KGn.DoldKan
+import qualified Math.Topology.SGrp.KGn.DoldKan as DoldKan
+import Math.Topology.SGrp.KGn.DoldKan.Wbar (
+  DoldKanWbarModel (CoefficientGroup, emCoefficientGroup, emDegree),
+  doldKanComparison,
+ )
+import Math.Topology.SGrp.Wbar (Wbar (Wbar))
+import Math.Topology.SSet
+import Math.Topology.SSet.Effective
+import Math.Topology.SSet.NChains
 
 -- | An independent normalized @n@-face of a @q@-simplex. A coordinate
 -- @c = [c_0,...,c_(n-1)]@ denotes the face with vertices
@@ -33,6 +47,48 @@ cocycleCoordinateVertices :: CocycleCoordinate -> [Int]
 cocycleCoordinateVertices coordinate = case unsnoc coordinate of
   Nothing -> [0]
   Just (initial, final) -> initial ++ [final, final + 1]
+
+cocycleCoordinateFaces ::
+  SSet a =>
+  a ->
+  Int ->
+  Int ->
+  GeomSimplex a ->
+  [(CocycleCoordinate, Simplex a)]
+cocycleCoordinateFaces a n q simplex =
+  coordinateFace <$> doldKanSurjections n q
+  where
+    coordinateFace (DoldKanSurjection _ coordinate) =
+      ( coordinate,
+        applyFaceOperator
+          a
+          (FaceOperator q (cocycleCoordinateVertices coordinate))
+          (NonDegen simplex)
+      )
+
+-- | Evaluate a cocycle on the independent normalized faces of each source
+-- simplex.
+evaluateCocycleFaces ::
+  ( SSet a,
+    Group c,
+    Eq (Element c)
+  ) =>
+  a ->
+  c ->
+  CC.Cocycle (NChains a) c ->
+  GeomSimplex a ->
+  CocycleFaceValues (Element c)
+evaluateCocycleFaces a c cocycle@(CC.Cocycle (CC.Cochain n _)) simplex =
+  CocycleFaceValues q $
+    mapMaybe evaluateFace (cocycleCoordinateFaces a n q simplex)
+  where
+    q = geomSimplexDim a simplex
+    evaluateFace (_, Degen _ _) = Nothing
+    evaluateFace (coordinate, NonDegen faceSimplex) =
+      let value = CC.cocycleOnBasis cocycle (BasisSimplex faceSimplex)
+       in if value == unit c
+            then Nothing
+            else Just (coordinate, value)
 
 isSection :: CocycleCoordinate -> DoldKanSurjection -> Bool
 isSection coordinate (DoldKanSurjection _ transitions) =
@@ -101,3 +157,40 @@ doldKanToCocycleValues (DoldKanKGn n c) (DoldKanSimplex q s) =
        in if value == unit c
             then Nothing
             else Just (coordinate, value)
+
+-- | The inverse Dold--Kan image of a cocycle.
+cocycleDoldKanMap ::
+  ( Effective a,
+    Abelian c,
+    Eq (Element c)
+  ) =>
+  a ->
+  c ->
+  CC.Cocycle (Model a) c ->
+  Morphism a (DoldKanKGn c)
+cocycleDoldKanMap a c cocycle = Morphism $ \simplex ->
+  DoldKan.normalise $
+    cocycleValuesToDoldKan
+      (DoldKanKGn n c)
+      (evaluateCocycleFaces a c sourceCocycle simplex)
+  where
+    sourceCocycle =
+      CC.pullbackCocycle c (equivalenceForward (eff a)) cocycle
+    n = CC.cocycleDegree sourceCocycle
+
+-- | The classifying map to @K(A,n) = Wbar K(A,n-1)@ represented by a
+-- cocycle on the effective model of the source.
+cocycleClassifyingMap ::
+  (Effective a, DoldKanWbarModel g) =>
+  a ->
+  g ->
+  CC.Cocycle (Model a) (CoefficientGroup g) ->
+  Morphism a (Wbar g)
+cocycleClassifyingMap a g cocycle
+  | CC.cocycleDegree cocycle /= emDegree target =
+      error "cocycleClassifyingMap: cocycle and target degrees differ"
+  | otherwise =
+      doldKanComparison target
+        . cocycleDoldKanMap a (emCoefficientGroup target) cocycle
+  where
+    target = Wbar g

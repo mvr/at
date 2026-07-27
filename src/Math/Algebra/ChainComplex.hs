@@ -293,26 +293,28 @@ pullbackCocycle :: Abelian c => c -> Morphism a b -> Cocycle b c -> Cocycle a c
 pullbackCocycle c (Morphism d f) (Cocycle cochain@(Cochain n _)) =
   Cocycle $ Cochain (n - d) $ \x -> cochainOnChain c cochain (f x)
 
--- | A coordinate of the fundamental cohomology class associated to a
--- cyclic summand of a homology group.  'Nothing' denotes an infinite
--- cyclic summand; 'Just n' denotes coefficients in Z/n.
-data FundamentalCocycle a = FundamentalCocycle
-  { cocycleOrder :: Maybe Integer,
-    cocycleMorphism :: Morphism a ()
-  }
+-- | A fundamental cohomology class associated to a cyclic summand of a
+-- homology group, with coefficients in that summand.
+data FundamentalCocycle a
+  = IntegralFundamentalCocycle (Cocycle a Z)
+  | ModularFundamentalCocycle Zmod (Cocycle a Zmod)
 
 -- | Degree in which the fundamental cocycle is supported.
 fundamentalCocycleDegree :: FundamentalCocycle a -> Int
-fundamentalCocycleDegree (FundamentalCocycle _ (Morphism n _)) = negate n
+fundamentalCocycleDegree (IntegralFundamentalCocycle cocycle) =
+  cocycleDegree cocycle
+fundamentalCocycleDegree (ModularFundamentalCocycle _ cocycle) =
+  cocycleDegree cocycle
 
 -- | Pull a fundamental cocycle back along a chain map.
 pullbackFundamentalCocycle ::
-  (Ord (Basis a), Ord (Basis b)) =>
   Morphism a b ->
   FundamentalCocycle b ->
   FundamentalCocycle a
-pullbackFundamentalCocycle f (FundamentalCocycle order cocycle) =
-  FundamentalCocycle order (cocycle . f)
+pullbackFundamentalCocycle f (IntegralFundamentalCocycle cocycle) =
+  IntegralFundamentalCocycle (pullbackCocycle Z f cocycle)
+pullbackFundamentalCocycle f (ModularFundamentalCocycle c cocycle) =
+  ModularFundamentalCocycle c (pullbackCocycle c f cocycle)
 
 -- | Fundamental cocycles for the cyclic invariant factors of H_n(a).
 fundamentalCocycles :: FiniteType a => a -> Int -> [FundamentalCocycle a]
@@ -346,10 +348,15 @@ fundamentalCocyclesWithDiffs a n outgoing incoming
       let cycleValues = M.fromList cycleRank 1 (V.toList (M.getRow i leftChange))
           functional = fromJust $ solveMatrix (M.transpose cycles) cycleValues
           functionalValues = zip (basis a n) (M.toList functional)
-          act b
+          integerValue b
             | degree a b /= n = 0
-            | otherwise = fromInteger (fromJust $ lookup b functionalValues) .* singleComb ()
-       in FundamentalCocycle (if order == 0 then Nothing else Just order) (Morphism (negate n) act)
+            | otherwise = fromJust $ lookup b functionalValues
+       in if order == 0
+            then IntegralFundamentalCocycle $ Cocycle (Cochain n integerValue)
+            else
+              let c = Zmod (fromIntegral order)
+               in ModularFundamentalCocycle c $
+                    Cocycle (Cochain n (zmodElement c . integerValue))
 
 neghomologies :: FiniteType a => a -> [AbGroupPres]
 neghomologies a = fmap (uncurry homology) pairs
