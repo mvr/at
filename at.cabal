@@ -75,6 +75,7 @@ library
     Math.Algebra.Group
     Math.Algebra.SmithNormalForm
     Math.Topology.SGrp
+    Math.Topology.SGrp.Constant
     Math.Topology.SGrp.KGn
     Math.Topology.SGrp.KGn.DoldKan
     Math.Topology.SGrp.KGn.DoldKan.Cocycle
