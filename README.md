@@ -198,7 +198,7 @@ Plan
 - [ ] Docs for everything
 - [ ] Move this list to Github issues
 - [ ] Consolidate some files? Eg. Sum, Shift into ChainComplex
-- [ ] Use bit operations eg from
+- [x] Use bit operations eg from
       [bits-extra](https://github.com/haskell-works/bits-extra) for
       degeneracy operators.
 - [ ] Short-circuits: e.g. composing with zero/id for
@@ -213,7 +213,7 @@ Plan
       sparse matrices better
 - [ ] Check homology of `K(G,n)` calculations against known results
       <!-- eg [Clement's thesis](#ref-clement%3Athesis) -->
-- [ ] Add methods to produce representatives of homology classes
+- [x] Add methods to produce representatives of homology classes
 - [ ] Rewrite `Bar` to be a perturbed `TensorCoalgebra`?
 - [ ] Rename `basepoint` to `geomBasepoint` say
 
