@@ -40,6 +40,13 @@ class Bicomplex a => FiniteType a where
   -- * `all isSimplex (basis n)`
   bibasis :: a -> (Int, Int) -> [Bibasis a]
 
+  -- | The finite list of bidegrees to inspect when totalising in a given
+  -- degree. The default covers first-quadrant bicomplexes.
+  totalBidegrees :: a -> Int -> [(Int, Int)]
+  totalBidegrees _ d
+    | d < 0 = []
+    | otherwise = [(d - vd, vd) | vd <- [0 .. d]]
+
 type Bimorphism a b = UMorphism Bidegree (Bibasis a) (Bibasis b)
 
 validBicomb :: Bicomplex a => a -> Combination (Bibasis a) -> Bool
@@ -63,6 +70,5 @@ instance (Bicomplex a) => ChainComplex (Tot a) where
 
 instance (Bicomplex a, FiniteType a) => CC.FiniteType (Tot a) where
   basis (Tot a) d = do
-    vd <- [0 .. d]
-    let hd = d - vd
-    TotBasis <$> bibasis a (hd, vd)
+    bideg <- totalBidegrees a d
+    TotBasis <$> bibasis a bideg
