@@ -108,8 +108,8 @@ Plan
   - [x] Bar
     - [x] Commutative algebra structure
     - [ ] Functoriality
-  - [ ] Cobar
-    - [ ] Of 1-reduced
+  - [x] Cobar
+    - [x] Of 1-reduced
     - [ ] Of 0-reduced
     - [ ] Functoriality
 
