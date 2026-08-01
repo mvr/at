@@ -9,6 +9,7 @@ import Prelude hiding (fmap, id, return, (.))
 
 import qualified Math.Algebra.ChainComplex as CC (basisMorphism)
 import Math.Algebra.ChainComplex.Algebra
+import Math.Algebra.ChainComplex.Coalgebra (counitMor)
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Group
 import Math.Topology.SSet
@@ -42,6 +43,9 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
 instance SGrp g => Algebra (NChains g) where
   unitMor (NChains g) = CC.basisMorphism (const (basepoint g))
   muMor (NChains g) = fmap (prodMor g) . reductionG (ezReduction (Product g g))
+
+instance SGrp g => AugmentedAlgebra (NChains g) where
+  augmentationMor = counitMor
 
 instance SAb g => CommAlgebra (NChains g)
 

@@ -8,5 +8,9 @@ class ChainComplex a => Algebra a where
   unitMor :: a -> Morphism () a -- This is just an element
   muMor :: a -> Morphism (Tensor a a) a
 
+-- | An algebra with a chosen augmentation to the ground ring.
+class Algebra a => AugmentedAlgebra a where
+  augmentationMor :: a -> Morphism a ()
+
 -- Can transfer algebra structure across reductions
 class Algebra a => CommAlgebra a

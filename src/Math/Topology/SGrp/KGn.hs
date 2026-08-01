@@ -45,6 +45,11 @@ instance Algebra CircleComplex where
       go (Right _, Left _) = singleComb (Right ())
       go (Right _, Right _) = 0
 
+instance AugmentedAlgebra CircleComplex where
+  augmentationMor _ = CC.Morphism 0 $ \case
+    Left _ -> singleComb ()
+    Right _ -> 0
+
 instance DVF KZ1 where
   vf _ [] = Critical
   vf _ [1] = Critical

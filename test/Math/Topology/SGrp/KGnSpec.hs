@@ -36,6 +36,7 @@ spec :: Spec
 spec = do
   describe "circle chain algebra" $ do
     AlgebraProperties.check 3 circle
+    AlgebraProperties.checkAugmented 3 circle
 
     it "squares the degree-one generator to zero" $
       muMor circle `onBasis` (Right (), Right ())

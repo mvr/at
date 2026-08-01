@@ -48,3 +48,30 @@ check n a = do
         multiplyLeft = multiplication . tensorFunc productComplex a multiplication id
         multiplyRight = multiplication . tensorFunc a productComplex id multiplication . tensorAssoc
     (multiplyLeft, multiplyRight) `ChainComplexProperties.isEqOnAll` tripleBasis
+
+checkAugmented ::
+  (AugmentedAlgebra a, FiniteType a, Show (Basis a)) =>
+  Int ->
+  a ->
+  Spec
+checkAugmented n a = do
+  let augmentation = augmentationMor a
+      multiplication = muMor a
+      unit = unitMor a
+      algebraBasis = [0 .. n] >>= basis a
+      productComplex = Tensor a a
+      productBasis = [0 .. n] >>= basis productComplex
+
+  it "has a degree-zero augmentation" $
+    morphismDegree augmentation `shouldBe` 0
+
+  ChainComplexProperties.checkChainMap a () "augmentation" algebraBasis augmentation
+
+  it "splits the unit" $
+    (augmentation . unit) `ChainComplexProperties.isIdOnAll` [()]
+
+  it "preserves multiplication" $
+    ( augmentation . multiplication,
+      tensorUnitL . tensorFunc a a augmentation augmentation
+    )
+      `ChainComplexProperties.isEqOnAll` productBasis

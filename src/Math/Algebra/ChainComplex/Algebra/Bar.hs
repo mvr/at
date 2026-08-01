@@ -16,7 +16,7 @@
 --
 -- To reduce the surface area of where sign issues can creep in, the
 -- construction is factored into two steps:
--- Alg(Z) -Bar-> biCh(Z) -Tot-> Ch(Z)
+-- AugAlg(Z) -Bar-> biCh(Z) -Tot-> Ch(Z)
 module Math.Algebra.ChainComplex.Algebra.Bar where
 
 -- There are lots of places that the signs can go wrong.
@@ -43,18 +43,33 @@ import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Combination
 
--- To implement the action of `Bar` on reductions, we need a
--- `TensorAlgebra` functor, which only uses the vertical differentials
--- of the Bar bicomplex. Really, we are computing the tensor algebra
--- of the suspension of the original `a`.
+-- To implement the action of `Bar` on reductions, we need the tensor
+-- algebra functor, which only uses the vertical differentials of the Bar
+-- bicomplex.
 -- TODO: this could be moved to its own file
 
+-- | The tensor algebra on the suspension of a chain complex. Every basis
+-- element of the supplied complex is available as a tensor generator.
 newtype TensorSusp a = TensorSusp a
+
+-- | The positive-degree truncation of a chain complex. For a connected
+-- augmented complex, this represents its augmentation ideal. The same
+-- representation is also used for intermediate complexes in a strong
+-- equivalence; those reductions are expected to respect the degree-zero
+-- splitting.
+newtype AugmentationIdeal a = AugmentationIdeal a
+
+-- | The tensor algebra on the suspended augmentation ideal.
+type BarTensor a = TensorSusp (AugmentationIdeal a)
+
+-- | The unperturbed tensor algebra underlying the Bar construction.
+barTensor :: a -> BarTensor a
+barTensor = TensorSusp . AugmentationIdeal
 
 instance ChainComplex a => Bicomplex (TensorSusp a) where
   type Bibasis (TensorSusp a) = [Basis a]
 
-  isBibasis (TensorSusp a) bs = all (\b -> degree a b /= 0) bs && all (isBasis a) bs
+  isBibasis (TensorSusp a) = all (isBasis a)
 
   bidegree (TensorSusp a) bs = (length bs, sum (degree a <$> bs))
 
@@ -75,25 +90,75 @@ instance ChainComplex a => ChainComplex (TensorSusp a) where
   degree (TensorSusp a) = degree (Tot (TensorSusp a))
   diff (TensorSusp a) = Morphism (-1) (onBasis (diff (Tot (TensorSusp a))))
 
+instance ChainComplex a => ChainComplex (AugmentationIdeal a) where
+  type Basis (AugmentationIdeal a) = Basis a
+
+  isBasis (AugmentationIdeal a) b =
+    degree a b > 0 && isBasis a b
+  degree (AugmentationIdeal a) = degree a
+  diff (AugmentationIdeal a) = Morphism (-1) $ \b ->
+    bindCombination (diff a `onBasis` b) $ \image ->
+      if degree a image <= 0
+        then zeroCombination
+        else singleComb image
+
+instance FiniteType a => FiniteType (AugmentationIdeal a) where
+  basis (AugmentationIdeal a) d
+    | d <= 0 = []
+    | otherwise = filter (isBasis (AugmentationIdeal a)) (basis a d)
+
 tensorAlgFunc ::
   (ChainComplex a, ChainComplex b) =>
   Morphism a b ->
   Morphism (TensorSusp a) (TensorSusp b)
 tensorAlgFunc (Morphism deg f) = Morphism deg (traverseCombination f)
 
-instance FiniteType a => Bi.FiniteType (TensorSusp a) where
-  bibasis (TensorSusp a) (hd, vd) = go vd hd
-    where
-      go 0 0 = [[]]
-      go i d | d <= 0 = []
-      go i d = do
-        j <- [1 .. d] -- Degree 0 basis elements are deliberately excluded
-        b <- basis a j
-        rest <- go (i - 1) (d - j)
-        return (b : rest)
+augmentationIdealWords ::
+  FiniteType a =>
+  AugmentationIdeal a ->
+  Int ->
+  Int ->
+  [[Basis a]]
+augmentationIdealWords _ 0 0 = [[]]
+augmentationIdealWords _ _ wordLength | wordLength <= 0 = []
+augmentationIdealWords _ totalDegree wordLength
+  | totalDegree < wordLength = []
+augmentationIdealWords ideal totalDegree wordLength = do
+  generatorDegree <- [1 .. totalDegree - (wordLength - 1)]
+  b <- basis ideal generatorDegree
+  bs <- augmentationIdealWords ideal (totalDegree - generatorDegree) (wordLength - 1)
+  pure (b : bs)
 
-instance FiniteType a => FiniteType (TensorSusp a) where
-  basis (TensorSusp a) = basis (Tot (TensorSusp a))
+instance
+  FiniteType a =>
+  Bi.FiniteType (TensorSusp (AugmentationIdeal a))
+  where
+  bibasis (TensorSusp ideal) (horizontalDegree, verticalDegree)
+    | horizontalDegree < 0 = []
+    | otherwise =
+        augmentationIdealWords ideal verticalDegree horizontalDegree
+
+instance
+  FiniteType a =>
+  FiniteType (TensorSusp (AugmentationIdeal a))
+  where
+  basis tensorSusp = basis (Tot tensorSusp)
+
+instance ChainComplex a => Algebra (TensorSusp a) where
+  unitMor _ = basisMorphism (const [])
+  muMor _ = basisMorphism (\(left, right) -> left ++ right)
+
+instance ChainComplex a => AugmentedAlgebra (TensorSusp a) where
+  augmentationMor _ = Morphism 0 $ \word ->
+    if null word then singleComb () else zeroCombination
+
+instance
+  ConnectedChainComplex a =>
+  ConnectedChainComplex (TensorSusp (AugmentationIdeal a))
+
+instance
+  ConnectedChainComplex a =>
+  OneReducedChainComplex (TensorSusp (AugmentationIdeal a))
 
 verth :: ChainComplex a => a -> Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
 verth _ _ _ [] = 0
@@ -118,13 +183,13 @@ tensorAlgReduction a b (Reduction f g h) =
 
 newtype Bar a = Bar a
 
-instance Algebra a => Bicomplex (Bar a) where
+instance (AugmentedAlgebra a, ConnectedChainComplex a) => Bicomplex (Bar a) where
   type Bibasis (Bar a) = [Basis a]
 
-  isBibasis (Bar a) = isBibasis (TensorSusp a)
-  bidegree (Bar a) = bidegree (TensorSusp a)
+  isBibasis (Bar a) = isBibasis (barTensor a)
+  bidegree (Bar a) = bidegree (barTensor a)
   vdiff (Bar a) =
-    Bimorphism (Bidegree (0, -1)) (onBibasis (vdiff (TensorSusp a)))
+    Bimorphism (Bidegree (0, -1)) (onBibasis (vdiff (barTensor a)))
 
   hdiff (Bar a) = Bimorphism (Bidegree (-1, 0)) go
     where
@@ -133,17 +198,31 @@ instance Algebra a => Bicomplex (Bar a) where
       go [b1] = 0
       go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (mapMonotonic (: bs) (muMor a `onBasis` (b1, b2)) + mapMonotonic (b1 :) (go (b2 : bs)))
 
-instance (Algebra a, FiniteType a) => Bi.FiniteType (Bar a) where
-  bibasis (Bar a) = bibasis (TensorSusp a)
+instance
+  (AugmentedAlgebra a, ConnectedChainComplex a, FiniteType a) =>
+  Bi.FiniteType (Bar a)
+  where
+  bibasis (Bar a) = bibasis (barTensor a)
 
-instance Algebra a => ChainComplex (Bar a) where
+instance (AugmentedAlgebra a, ConnectedChainComplex a) => ChainComplex (Bar a) where
   type Basis (Bar a) = [Basis a]
   isBasis (Bar a) = isBasis (Tot (Bar a))
   degree (Bar a) = degree (Tot (Bar a))
   diff (Bar a) = Morphism (-1) (onBasis (diff (Tot (Bar a))))
 
-instance (Algebra a, FiniteType a) => FiniteType (Bar a) where
-  basis (Bar a) = basis (TensorSusp a)
+instance
+  (AugmentedAlgebra a, ConnectedChainComplex a, FiniteType a) =>
+  FiniteType (Bar a)
+  where
+  basis (Bar a) = basis (barTensor a)
+
+instance
+  (AugmentedAlgebra a, ConnectedChainComplex a) =>
+  ConnectedChainComplex (Bar a)
+
+instance
+  (AugmentedAlgebra a, ConnectedChainComplex a) =>
+  OneReducedChainComplex (Bar a)
 
 shuffle :: (ChainComplex a) => a -> [Basis a] -> [Basis a] -> Combination [Basis a]
 shuffle c [] [] = singleComb []
@@ -155,32 +234,83 @@ shuffle c (a : as) (b : bs) =
   where
     eps = (1 + degree c b) * (length (a : as) + sum (degree c <$> (a : as)))
 
-instance (CommAlgebra a) => Algebra (Bar a) where
+instance
+  (CommAlgebra a, AugmentedAlgebra a, ConnectedChainComplex a) =>
+  Algebra (Bar a)
+  where
   unitMor _ = basisMorphism (const [])
   muMor (Bar a) = Morphism 0 (uncurry (shuffle a))
 
-instance (CommAlgebra a) => CommAlgebra (Bar a)
+instance
+  (CommAlgebra a, AugmentedAlgebra a, ConnectedChainComplex a) =>
+  AugmentedAlgebra (Bar a)
+  where
+  augmentationMor _ = Morphism 0 $ \word ->
+    if null word then singleComb () else zeroCombination
+
+instance
+  (CommAlgebra a, AugmentedAlgebra a, ConnectedChainComplex a) =>
+  CommAlgebra (Bar a)
 
 barFunc ::
-  (ChainComplex a, ChainComplex b) =>
+  ( AugmentedAlgebra a,
+    AugmentedAlgebra b,
+    ConnectedChainComplex a,
+    ConnectedChainComplex b
+  ) =>
   Morphism a b ->
   Morphism (Bar a) (Bar b)
 barFunc (Morphism deg f) = Morphism deg (traverseCombination f)
 
-horizPerturbation :: (Algebra a) => a -> Morphism (TensorSusp a) (TensorSusp a)
+horizPerturbation ::
+  (AugmentedAlgebra a, ConnectedChainComplex a) =>
+  a ->
+  Morphism (BarTensor a) (BarTensor a)
 horizPerturbation a = Morphism (-1) $ onBibasis $ hdiff (Bar a)
 
-asBarReduction :: Algebra a => Reduction x (Perturbed (TensorSusp a)) -> Reduction x (Bar a)
+asBarReduction ::
+  (AugmentedAlgebra a, ConnectedChainComplex a) =>
+  Reduction x (Perturbed (BarTensor a)) ->
+  Reduction x (Bar a)
 asBarReduction (Reduction (Morphism fd f) (Morphism gd g) h) =
   Reduction (Morphism fd f) (Morphism gd g) h
 
+augmentationIdealReduction ::
+  Reduction a b ->
+  Reduction (AugmentationIdeal a) (AugmentationIdeal b)
+augmentationIdealReduction (Reduction (Morphism fd f) (Morphism gd g) (Morphism hd h)) =
+  Reduction (Morphism fd f) (Morphism gd g) (Morphism hd h)
+
+-- | Lift a reduction to the unperturbed tensor algebras underlying Bar.
+barTensorReduction ::
+  (ChainComplex a, ChainComplex b) =>
+  a ->
+  b ->
+  Reduction a b ->
+  Reduction (BarTensor a) (BarTensor b)
+barTensorReduction a b reduction =
+  tensorAlgReduction
+    (AugmentationIdeal a)
+    (AugmentationIdeal b)
+    (augmentationIdealReduction reduction)
+
 barEquiv ::
-  (Algebra a, ChainComplex b) =>
+  (AugmentedAlgebra a, ConnectedChainComplex a, ChainComplex b) =>
   Equivalence a b ->
-  Equivalence (Bar a) (Perturbed (TensorSusp b))
+  Equivalence (Bar a) (Perturbed (BarTensor b))
 barEquiv (Equivalence a l x r b) = Equivalence (Bar a) (asBarReduction newl) newx newr newb
   where
-    (newx, _, newl) = perturbBottom (TensorSusp x) (TensorSusp a) (tensorAlgReduction x a l) (horizPerturbation a)
-    (_, newb, newr) = perturb (TensorSusp x) (TensorSusp b) (tensorAlgReduction x b r) (perturbedDiff newx)
+    (newx, _, newl) =
+      perturbBottom
+        (barTensor x)
+        (barTensor a)
+        (barTensorReduction x a l)
+        (horizPerturbation a)
+    (_, newb, newr) =
+      perturb
+        (barTensor x)
+        (barTensor b)
+        (barTensorReduction x b r)
+        (perturbedDiff newx)
 
 -- TODO: universal twisting cochain a -> Bar a (should be same as the one induced by the twist on Wbar)

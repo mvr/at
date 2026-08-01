@@ -45,9 +45,9 @@ spec = do
   describe "lifted Wbar reduction for K(Z/2,1)" $
     ReductionProperties.check
       6
-      (TensorSusp (NChains (Wbar KZmod2_1)))
-      (TensorSusp (Bar (NChains KZmod2_1)))
-      ( tensorAlgReduction
+      (barTensor (NChains (Wbar KZmod2_1)))
+      (barTensor (Bar (NChains KZmod2_1)))
+      ( barTensorReduction
           (NChains (Wbar KZmod2_1))
           (Bar (NChains KZmod2_1))
           (wbarReduction (Wbar KZmod2_1))

@@ -340,7 +340,7 @@ wbarReduction p@(Wbar g) =
     . dvfReduction (NChains p)
 
 instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where
-  type Model (Wbar g) = Perturbed (TensorSusp (Model g))
+  type Model (Wbar g) = Perturbed (BarTensor (Model g))
   eff (Wbar g) = barEquiv (eff g) . fromRedLeft (NChains (Wbar g)) (Bar (NChains g)) (wbarReduction (Wbar g))
 
 -- | Canonical twisting function \(\bar W G \rightsquigarrow G\),
