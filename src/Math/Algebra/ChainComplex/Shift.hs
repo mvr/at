@@ -4,21 +4,18 @@
 module Math.Algebra.ChainComplex.Shift where
 
 import Math.Algebra.ChainComplex
-import Math.Algebra.Combination (mapMonotonic)
 import Prelude hiding (id, return, (.))
 
 newtype Shift a = Shift a
-newtype ShiftBasis a = ShiftBasis a
-  deriving (Eq, Ord, Show)
 
 instance (ChainComplex a) => ChainComplex (Shift a) where
-  type Basis (Shift a) = ShiftBasis (Basis a)
-  isBasis (Shift a) (ShiftBasis s) = isBasis a s
-  degree (Shift a) (ShiftBasis s) = degree a s + 1
+  type Basis (Shift a) = Basis a
+  isBasis (Shift a) = isBasis a
+  degree (Shift a) s = degree a s + 1
   diff (Shift a) = Morphism (-1) go
     where
-      go (ShiftBasis s) = -mapMonotonic ShiftBasis (diff a `onBasis` s)
+      go s = -(diff a `onBasis` s)
 
 instance (FiniteType a) => FiniteType (Shift a) where
   dim (Shift a) n = dim a (n - 1)
-  basis (Shift a) n = ShiftBasis <$> basis a (n - 1)
+  basis (Shift a) n = basis a (n - 1)

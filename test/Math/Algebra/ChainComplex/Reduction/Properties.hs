@@ -21,6 +21,9 @@ checkTop a as bs (Reduction f g h) = do
 
 checkOn :: (ChainComplex a, ChainComplex b, Show (Basis b), Show (Basis a)) => a -> b -> [Basis a] -> [Basis b] -> Reduction a b -> Spec
 checkOn a b as bs r@(Reduction f g h) = do
+  it "f should have degree 0" $ morphismDegree f `shouldBe` 0
+  it "g should have degree 0" $ morphismDegree g `shouldBe` 0
+  it "h should have degree 1" $ morphismDegree h `shouldBe` 1
   checkChainConditionOn a "top" as
   checkChainConditionOn b "bottom" bs
   checkChainMap a b "f" as f

@@ -3,8 +3,6 @@
 -- | Internal hom of chain complexes
 module Math.Algebra.ChainComplex.Hom where
 
-import qualified Control.Category.Constrained as Constrained
-
 import Prelude hiding (Bounded, id, (.))
 
 import Math.Algebra.ChainComplex
@@ -47,9 +45,6 @@ homcontramap a a' m = Morphism 0 $ \(HomBasis s' t) ->
 
 hommap :: (Ord (Basis a), Ord (Basis b')) => Morphism b b' -> Morphism (Hom a b) (Hom a b')
 hommap m = Morphism 0 $ \(HomBasis s t) -> mapMonotonic (HomBasis s) (m `onBasis` t)
-
-instance Ord a => Constrained.Functor (UMorphism Int) (UMorphism Int) (HomBasis a) where
-  fmap m = Morphism 0 $ \(HomBasis s t) -> mapMonotonic (HomBasis s) (m `onBasis` t)
 
 homcounit :: Ord (Basis a) => Morphism (Tensor (Hom a b) a) b
 homcounit = Morphism 0 $ \(HomBasis s t, s') -> if s == s' then singleComb t else zeroCombination

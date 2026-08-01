@@ -1,11 +1,11 @@
 module Math.Topology.SSet.TwistedProductSpec where
 
 import Control.Monad (forM_)
-import Data.Coerce (coerce)
 import Test.Hspec
 
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.Group
+import Math.Topology.SGrp (SGrp)
 import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.Wbar
 import Math.Topology.SGrp.WbarDiscrete
@@ -16,6 +16,12 @@ import Math.Topology.SSet.Sphere
 import Math.Topology.SSet.TwistedProduct
 
 import qualified Math.Topology.SSet.Properties as SSetProperties
+
+asProductDiff ::
+  (SSet f, SSet b, SGrp g) =>
+  TwistedProduct f b g ->
+  CC.Morphism (NChains (Product.Product f b)) (NChains (Product.Product f b))
+asProductDiff x = CC.Morphism (-1) (CC.onBasis (CC.diff (NChains x)))
 
 spec :: Spec
 spec = do
@@ -35,7 +41,7 @@ spec = do
         n = 3
         ks = [-3 .. -1] ++ [1 .. 3]
         gs =
-          [ TwistedProductSimplex (s, t)
+          [ (s, t)
           | s <- someSimplices kz1 n (\d -> if d <= 3 then sequence (replicate d ks) else []),
             t <- allSimplices s2 n,
             isGeomSimplex (Product.Product kz1 s2) (s, t)
@@ -49,11 +55,11 @@ spec = do
       SSetProperties.checkOn x gs
     it "computes the perturbation directly" $ do
       let oldPerturbation =
-            coerce (CC.diff (NChains x))
+            asProductDiff x
               - CC.diff (NChains (Product.Product kz1 s2))
-      forM_ gs $ \(TwistedProductSimplex simplex) ->
-        CC.onBasis (twistedProductPerturbation x) (BasisSimplex simplex)
-          `shouldBe` CC.onBasis oldPerturbation (BasisSimplex simplex)
+      forM_ gs $ \simplex ->
+        CC.onBasis (twistedProductPerturbation x) simplex
+          `shouldBe` CC.onBasis oldPerturbation simplex
 
   describe "PrincipalFibration over S3" $ do
     let s3 = Sphere 3
@@ -84,7 +90,7 @@ spec = do
                 someKz1 <$> reverse [0 .. dimension - 1]
         someKz2 dimension = someSimplices kz2 dimension someGeomKz2
         gs =
-          [ TwistedProductSimplex (s, t)
+          [ (s, t)
           | s <- someKz2 n,
             t <- allSimplices s3 n,
             isGeomSimplex (Product.Product kz2 s3) (s, t)
@@ -98,11 +104,11 @@ spec = do
       SSetProperties.checkOn x gs
     it "computes the perturbation directly" $ do
       let oldPerturbation =
-            coerce (CC.diff (NChains x))
+            asProductDiff x
               - CC.diff (NChains (Product.Product kz2 s3))
-      forM_ gs $ \(TwistedProductSimplex simplex) ->
-        CC.onBasis (twistedProductPerturbation x) (BasisSimplex simplex)
-          `shouldBe` CC.onBasis oldPerturbation (BasisSimplex simplex)
+      forM_ gs $ \simplex ->
+        CC.onBasis (twistedProductPerturbation x) simplex
+          `shouldBe` CC.onBasis oldPerturbation simplex
 
   describe "Universal principal fibration over K(ℤ/2,2)" $ do
     let g = WbarDiscrete (Zmod 2)
@@ -116,8 +122,8 @@ spec = do
       SSetProperties.check 4 x
     it "computes the perturbation directly" $ do
       let oldPerturbation =
-            coerce (CC.diff (NChains x))
+            asProductDiff x
               - CC.diff (NChains (Product.Product g b))
-      forM_ ([0 .. 4] >>= geomBasis x) $ \(TwistedProductSimplex simplex) ->
-        CC.onBasis (twistedProductPerturbation x) (BasisSimplex simplex)
-          `shouldBe` CC.onBasis oldPerturbation (BasisSimplex simplex)
+      forM_ ([0 .. 4] >>= geomBasis x) $ \simplex ->
+        CC.onBasis (twistedProductPerturbation x) simplex
+          `shouldBe` CC.onBasis oldPerturbation simplex

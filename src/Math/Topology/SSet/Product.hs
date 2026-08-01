@@ -10,7 +10,6 @@ module Math.Topology.SSet.Product where
 
 import Control.Category.Constrained (fmap, (.))
 import Data.Bits (clearBit, testBit, (.&.))
-import Data.Coerce
 import Prelude hiding (fmap, id, return, (.))
 
 import Math.Algebra.ChainComplex hiding (FiniteType, Morphism)
@@ -37,15 +36,15 @@ extractCommonDegens left right =
   where
     common = left .&. right
 
-prodNormalise :: (Simplex a, Simplex b) -> Simplex (Product a b)
+prodNormalise :: (FormalDegen a, FormalDegen b) -> FormalDegen (FormalDegen a, FormalDegen b)
 prodNormalise (FormalDegen leftMask left, FormalDegen rightMask right) =
   let (common, residualLeft, residualRight) = extractCommonDegens leftMask rightMask
    in FormalDegen common (FormalDegen residualLeft left, FormalDegen residualRight right)
 
-prodUnnormalise :: Simplex (Product a b) -> (Simplex a, Simplex b)
+prodUnnormalise :: FormalDegen (FormalDegen a, FormalDegen b) -> (FormalDegen a, FormalDegen b)
 prodUnnormalise s = (s >>= fst, s >>= snd) -- nice!
 
-jointlyNonDegen :: (Simplex a, Simplex b) -> Bool
+jointlyNonDegen :: (FormalDegen a, FormalDegen b) -> Bool
 jointlyNonDegen (FormalDegen leftMask _, FormalDegen rightMask _) =
   leftMask .&. rightMask == 0
 
@@ -110,11 +109,11 @@ instance (SSet a, SSet b) => DVF (Product a b) where
 data Direction = X | Y | Diag
 
 data PathStep a b
-  = PathStep !Direction !Int !(Simplex a) !(Simplex b)
+  = PathStep !Direction !Int !(FormalDegen a) !(FormalDegen b)
   | PathEnd
 
 -- Walking backwards from (p,q) to (0,0)
-pathStep :: Int -> Simplex a -> Simplex b -> PathStep a b
+pathStep :: Int -> FormalDegen a -> FormalDegen b -> PathStep a b
 pathStep 0 _ _ = PathEnd
 pathStep q s@(FormalDegen sMask sGeom) t@(FormalDegen tMask tGeom)
   | testBit sMask q' = PathStep X q' (FormalDegen (clearBit sMask q') sGeom) t
@@ -124,7 +123,7 @@ pathStep q s@(FormalDegen sMask sGeom) t@(FormalDegen tMask tGeom)
     q' = q - 1
 {-# INLINE pathStep #-}
 
-pathUnstep :: Direction -> (Int, Simplex a, Simplex b) -> (Int, Simplex a, Simplex b)
+pathUnstep :: Direction -> (Int, FormalDegen a, FormalDegen b) -> (Int, FormalDegen a, FormalDegen b)
 pathUnstep Diag (q, s, t) = (q + 1, s, t)
 pathUnstep X (q, s, t) = (q + 1, Degen q s, t)
 pathUnstep Y (q, s, t) = (q + 1, s, Degen q t)
@@ -132,7 +131,7 @@ pathUnstep Y (q, s, t) = (q + 1, s, Degen q t)
 incidenceFor :: Int -> Incidence
 incidenceFor x = if even x then Pos else Neg
 
-statusStep :: (Int, Simplex a, Simplex b) -> Status (Int, Simplex a, Simplex b)
+statusStep :: (Int, FormalDegen a, FormalDegen b) -> Status (Int, FormalDegen a, FormalDegen b)
 statusStep (q, s, t) = case pathStep q s t of
   -- Simplex is a target
   PathStep Y q' s' t'
@@ -158,7 +157,7 @@ status (Product a _) (s, t) =
         t
       )
 
-stripProduct :: (Simplex a, Simplex b) -> (GeomSimplex a, GeomSimplex b)
+stripProduct :: (FormalDegen a, FormalDegen b) -> (a, b)
 stripProduct (s, t) = (underlyingGeom s, underlyingGeom t)
 
 reconstructProduct :: (SSet a, SSet b) => a -> b -> (GeomSimplex a, GeomSimplex b) -> (Simplex a, Simplex b)
@@ -169,11 +168,11 @@ reconstructProduct a b (s, t) =
 {-# INLINE reconstructProduct #-}
 
 criticalIso ::
-  forall a b.
+  (SSet a, SSet b) =>
   CC.Morphism
     (CriticalComplex (NChains (Product a b)))
     (Tensor (NChains a) (NChains b))
-criticalIso = fmapBasis $ coerce @((Simplex a, Simplex b) -> _) stripProduct
+criticalIso = basisMorphism stripProduct
 
 criticalIsoInv ::
   (SSet a, SSet b) =>
@@ -182,7 +181,7 @@ criticalIsoInv ::
   CC.Morphism
     (Tensor (NChains a) (NChains b))
     (CriticalComplex (NChains (Product a b)))
-criticalIsoInv a b = fmapBasis $ coerce $ reconstructProduct a b
+criticalIsoInv a b = basisMorphism (reconstructProduct a b)
 
 ezReduction ::
   (SSet a, SSet b) =>
@@ -198,12 +197,13 @@ diagMor :: Morphism a (Product a a)
 diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
 
 instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NChains a) where
-  counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then singleComb () else 0
+  counitMor (NChains a) =
+    CC.Morphism 0 $ \s ->
+      if geomSimplexDim a s == 0 then singleComb () else 0
   delMor (NChains a) = reductionF (ezReduction (Product a a)) . fmap diagMor
 
 instance ZeroReduced a => CoaugmentedCoalgebra (NChains a) where
-  coaugmentationMor (NChains a) =
-    CC.Morphism 0 $ const $ singleComb $ BasisSimplex $ basepoint a
+  coaugmentationMor (NChains a) = basisMorphism (const (basepoint a))
 
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)

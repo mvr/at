@@ -85,7 +85,7 @@ evaluateCocycleFaces a c cocycle@(CC.Cocycle (CC.Cochain n _)) simplex =
     q = geomSimplexDim a simplex
     evaluateFace (_, Degen _ _) = Nothing
     evaluateFace (coordinate, NonDegen faceSimplex) =
-      let value = CC.cocycleOnBasis cocycle (BasisSimplex faceSimplex)
+      let value = CC.cocycleOnBasis cocycle faceSimplex
        in if value == unit c
             then Nothing
             else Just (coordinate, value)

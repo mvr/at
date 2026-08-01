@@ -6,41 +6,36 @@
 module Math.Algebra.ChainComplex.Reduction where
 
 import Control.Category.Constrained
-import Data.Coerce
 import Math.Algebra.ChainComplex
 
 import Prelude hiding (fmap, id, (.))
 
-data UReduction a b = Reduction
-  { reductionF :: UMorphism Int a b, -- degree 0
-    reductionG :: UMorphism Int b a, -- degree 0
-    reductionH :: UMorphism Int a a -- degree 1
+data Reduction a b = Reduction
+  { reductionF :: Morphism a b, -- degree 0
+    reductionG :: Morphism b a, -- degree 0
+    reductionH :: Morphism a a -- degree 1
   }
 
-type Reduction a b = UReduction (Basis a) (Basis b)
-
-instance Semigroupoid UReduction where
-  type Object UReduction a = Ord a
+instance Semigroupoid Reduction where
+  type Object Reduction a = ChainComplex a
   (Reduction f1 g1 h1) . (Reduction f2 g2 h2) = Reduction (f1 . f2) (g2 . g1) (h2 + (g2 . h1 . f2))
 
-instance Category UReduction where
+instance Category Reduction where
   id = Reduction id id (morphismZeroOfDeg 1)
 
-isoToReduction :: Ord a => UMorphism Int a b -> UMorphism Int b a -> UReduction a b
-isoToReduction f g = Reduction f g 0
+isoToReduction :: (ChainComplex a, ChainComplex b) => Morphism a b -> Morphism b a -> Reduction a b
+isoToReduction f g = Reduction f g (morphismZeroOfDeg 1)
 
 data Perturbed a = Perturbed
   { perturbedOrig :: a,
     perturbedDiff :: Morphism a a
   }
 
-newtype PerturbedBasis a = PerturbedBasis a
-  deriving (Eq, Ord, Show)
-
 instance (ChainComplex a) => ChainComplex (Perturbed a) where
-  type Basis (Perturbed a) = PerturbedBasis (Basis a)
-  degree (Perturbed a _) (PerturbedBasis b) = degree a b
-  diff (Perturbed a delta) = Morphism (-1) $ coerce $ \b -> diff a `onBasis` b + delta `onBasis` b
+  type Basis (Perturbed a) = Basis a
+  isBasis (Perturbed a _) = isBasis a
+  degree (Perturbed a _) = degree a
+  diff (Perturbed a delta) = Morphism (-1) $ \b -> diff a `onBasis` b + delta `onBasis` b
 
 instance ConnectedChainComplex a => ConnectedChainComplex (Perturbed a)
 
@@ -48,20 +43,23 @@ instance OneReducedChainComplex a => OneReducedChainComplex (Perturbed a)
 
 instance (FiniteType a) => FiniteType (Perturbed a) where
   dim (Perturbed a _) = dim a
-  basis (Perturbed a _) n = fmap PerturbedBasis (basis a n)
+  basis (Perturbed a _) = basis a
+
+liftPerturbedMorphism :: Morphism a b -> Morphism (Perturbed a) (Perturbed b)
+liftPerturbedMorphism (Morphism d f) = Morphism d f
 
 -- | The Basic Perturbation Lemma
 -- The recursion only terminates if (deltahat . h) is
 -- pointwise nilpotent, and this is not checked!.
 perturb ::
-  (Ord (Basis a), Ord (Basis b)) =>
+  (ChainComplex a, ChainComplex b) =>
   a ->
   b ->
   Reduction a b ->
   Morphism a a ->
   (Perturbed a, Perturbed b, Reduction (Perturbed a) (Perturbed b))
 perturb a b (Reduction f g h) deltahat =
-  (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f') (coerce g') (coerce h'))
+  (Perturbed a deltahat, Perturbed b delta, Reduction (liftPerturbedMorphism f') (liftPerturbedMorphism g') (liftPerturbedMorphism h'))
   where
     -- Write psi = (1 + deltahat h)^-1.  The right-hand formulas let the
     -- transferred differential project during the recursion, instead of first
@@ -78,7 +76,7 @@ perturb a b (Reduction f g h) deltahat =
 -- morphism. Again, the nilpotence condition of the BPL must be
 -- satisfied.
 perturbTo ::
-  (Ord (Basis a), Ord (Basis b), ChainComplex a) =>
+  (ChainComplex a, ChainComplex b) =>
   a ->
   b ->
   Reduction a b ->
@@ -88,21 +86,21 @@ perturbTo a b r d = perturb a b r (d - diff a)
 
 -- | The Easy Perturbation Lemma
 perturbBottom ::
-  (Ord (Basis a), Ord (Basis b)) =>
+  (ChainComplex a, ChainComplex b) =>
   a ->
   b ->
   Reduction a b ->
   Morphism b b ->
   (Perturbed a, Perturbed b, Reduction (Perturbed a) (Perturbed b))
 perturbBottom a b (Reduction f g h) delta =
-  (Perturbed a deltahat, Perturbed b delta, Reduction (coerce f) (coerce g) (coerce h))
+  (Perturbed a deltahat, Perturbed b delta, Reduction (liftPerturbedMorphism f) (liftPerturbedMorphism g) (liftPerturbedMorphism h))
   where
     deltahat = memoiseMorphism $ g . delta . f
 
 -- | Use the EPL to set the differential of `b` to a particular
 -- morphism.
 perturbBottomTo ::
-  (Ord (Basis a), Ord (Basis b), ChainComplex b) =>
+  (ChainComplex a, ChainComplex b) =>
   a ->
   b ->
   Reduction a b ->

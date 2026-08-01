@@ -22,7 +22,8 @@ spec = describe "tensor products" $ do
         tensorId `onBasis` b `shouldBe` singleComb b
 
     it "uses the second morphism's degree in the Koszul rule" $ do
-      let raise = Morphism 1 $ \case
+      let raise :: Morphism Disk Disk
+          raise = Morphism 1 $ \case
             DiskBase -> singleComb DiskBoundary
             _ -> 0
           disk = Disk 2

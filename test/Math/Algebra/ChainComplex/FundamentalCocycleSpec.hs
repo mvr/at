@@ -57,17 +57,20 @@ spec = do
 
   describe "Cocycle" $ do
     it "pulls back along a chain map" $ do
-      let cocycle = CC.Cocycle $ CC.Cochain 2 $ \x -> case x of
-            BasisSimplex Sphere.Cell -> 1
+      let cocycle :: CC.Cocycle (NChains Sphere.Sphere) Z
+          cocycle = CC.Cocycle $ CC.Cochain 2 $ \x -> case x of
+            Sphere.Cell -> 1
             _ -> 0
+          doubling :: CC.Morphism (NChains Sphere.Sphere) (NChains Sphere.Sphere)
           doubling = CC.Morphism 0 $ \x -> 2 .* singleComb x
+          pulledBack :: CC.Cocycle (NChains Sphere.Sphere) Z
           pulledBack = CC.pullbackCocycle Z doubling cocycle
-      CC.cocycleOnBasis pulledBack (BasisSimplex Sphere.Cell)
+      CC.cocycleOnBasis pulledBack Sphere.Cell
         `shouldBe` 2
 
     it "accepts a cochain that vanishes on boundaries" $ do
       let cochain = CC.Cochain 2 $ \x -> case x of
-            BasisSimplex Sphere.Cell -> 1
+            Sphere.Cell -> 1
             _ -> 0
       case CC.mkCocycle (NChains (Sphere.Sphere 2)) Z cochain of
         Just _ -> pure ()
@@ -75,7 +78,7 @@ spec = do
 
     it "rejects a cochain that does not vanish on boundaries" $ do
       let cochain = CC.Cochain 2 $ \x -> case x of
-            BasisSimplex Moore.N -> 1
+            Moore.N -> 1
             _ -> 0
       case CC.mkCocycle (NChains (Moore.Moore 2 2)) Z cochain of
         Nothing -> pure ()
@@ -85,14 +88,14 @@ spec = do
     it "pulls back along a chain map" $ do
       let cocycle :: CC.FundamentalCocycle (NChains Sphere.Sphere)
           cocycle = CC.IntegralFundamentalCocycle $ CC.Cocycle $ CC.Cochain 2 $ \x -> case x of
-            BasisSimplex Sphere.Cell -> 1
+            Sphere.Cell -> 1
             _ -> 0
           doubling :: CC.Morphism (NChains Sphere.Sphere) (NChains Sphere.Sphere)
           doubling = CC.Morphism 0 $ \x -> 2 .* singleComb x
           pulledBack = CC.pullbackFundamentalCocycle doubling cocycle
       case pulledBack of
         CC.IntegralFundamentalCocycle c ->
-          CC.cocycleOnBasis c (BasisSimplex Sphere.Cell) `shouldBe` 2
+          CC.cocycleOnBasis c Sphere.Cell `shouldBe` 2
         CC.ModularFundamentalCocycle _ _ ->
           expectationFailure "expected an integral cocycle"
 
@@ -105,7 +108,7 @@ fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
     case cocycles of
       [fundamental@(CC.IntegralFundamentalCocycle cocycle)] -> do
         CC.fundamentalCocycleDegree fundamental `shouldBe` 3
-        abs (CC.cocycleOnChain Z cocycle (singleComb (BasisSimplex Sphere.Cell)))
+        abs (CC.cocycleOnChain Z cocycle (singleComb Sphere.Cell))
           `shouldBe` 1
       _ -> expectationFailure "expected exactly one integral cocycle"
 
@@ -113,7 +116,7 @@ fundamentalCocycleSpec = describe "fundamentalCocycles" $ do
     cocycles <- expectCocycles (NChains (Moore.Moore 2 2)) 2
     case cocycles of
       [CC.ModularFundamentalCocycle c@(Zmod 2) cocycle] ->
-        CC.cocycleOnChain c cocycle (singleComb (BasisSimplex Moore.N))
+        CC.cocycleOnChain c cocycle (singleComb Moore.N)
           `shouldBe` zmodElement c (1 :: Integer)
       _ -> expectationFailure "expected exactly one order-two cocycle"
 

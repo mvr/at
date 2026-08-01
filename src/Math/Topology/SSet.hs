@@ -138,7 +138,7 @@ class Ord (GeomSimplex a) => SSet a where
 
   -- NOTE: Or we could even reverse things, so that GeomSimplex is the
   -- class and SSet is the associated type.
-  type GeomSimplex a = s | s -> a
+  type GeomSimplex a
 
   -- In a language with dependent types, this could be folded into the
   -- GeomSimplex type.
@@ -249,21 +249,19 @@ class Pointed a => ZeroReduced a
 class ZeroReduced a => OneReduced a
 
 -- | Simplicial morphisms
-newtype UMorphism a b = Morphism {onGeomSimplex :: a -> FormalDegen b}
+newtype Morphism a b = Morphism
+  { onGeomSimplex :: GeomSimplex a -> Simplex b
+  }
 
-type Morphism a b = UMorphism (GeomSimplex a) (GeomSimplex b)
-
-onSimplex :: UMorphism a b -> FormalDegen a -> FormalDegen b
+onSimplex :: Morphism a b -> Simplex a -> Simplex b
 onSimplex (Morphism f) (FormalDegen mask s) = applyDegenMask mask (f s)
 
-instance Constrained.Semigroupoid UMorphism where
+instance Constrained.Semigroupoid Morphism where
+  type Object Morphism a = SSet a
   f2 . (Morphism f1) = Morphism $ \s -> f2 `onSimplex` f1 s
 
-instance Constrained.Category UMorphism where
+instance Constrained.Category Morphism where
   id = Morphism $ \s -> NonDegen s
-
-instance Constrained.Functor UMorphism (->) FormalDegen where
-  fmap = onSimplex
 
 -- Reid Barton:
 -- https://categorytheory.zulipchat.com/#narrow/stream/241590-theory.3A-

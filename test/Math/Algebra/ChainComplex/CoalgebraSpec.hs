@@ -26,7 +26,7 @@ spec = describe "coaugmented chains" $ do
     (epsilon . eta) `CC.onBasis` () `shouldBe` singleComb ()
 
   it "has zero reduced diagonal on the coaugmentation" $
-    reducedDelMor chains `CC.onBasis` BasisSimplex Basepoint `shouldBe` 0
+    reducedDelMor chains `CC.onBasis` Basepoint `shouldBe` 0
 
   it "recognises the sphere cell as primitive" $
-    reducedDelMor chains `CC.onBasis` BasisSimplex Cell `shouldBe` 0
+    reducedDelMor chains `CC.onBasis` Cell `shouldBe` 0

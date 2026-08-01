@@ -43,15 +43,13 @@ instance (FiniteType b, FiniteType c, FiniteType d) => FiniteType (Bicone b c d)
   dim (Bicone b c d _ _) n = dim b n + dim c (n + 1) + dim d n
   basis (Bicone b c d _ _) n = (FromB <$> basis b n) ++ (FromC <$> basis c (n + 1)) ++ (FromD <$> basis d n)
 
--- Can all be defined without reference to the differentials, so we
--- use UMorphism.
-projLeft :: (Num deg, Ord b) => UMorphism deg (BiconeBasis b c d) b
+projLeft :: (ChainComplex b, ChainComplex c, ChainComplex d) => Morphism (Bicone b c d) b
 projLeft = Morphism 0 (\case FromB b -> singleComb b; _ -> 0)
 
-projRight :: (Num deg, Ord d) => UMorphism deg (BiconeBasis b c d) d
+projRight :: (ChainComplex b, ChainComplex c, ChainComplex d) => Morphism (Bicone b c d) d
 projRight = Morphism 0 (\case FromD d -> singleComb d; _ -> 0)
 
-projRedLeft :: (Ord b, Ord c, Ord d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) b
+projRedLeft :: (ChainComplex b, ChainComplex c, ChainComplex d) => Reduction b c -> Reduction d c -> Reduction (Bicone b c d) b
 projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morphism 0 g) (Morphism 1 h)
   where
     g b =
@@ -62,7 +60,7 @@ projRedLeft (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projLeft (Morp
     h (FromC c) = mapMonotonic FromD (g2 `onBasis` c)
     h (FromD d) = mapMonotonic FromD (h2 `onBasis` d)
 
-projRedRight :: (Ord b, Ord c, Ord d) => UReduction b c -> UReduction d c -> UReduction (BiconeBasis b c d) d
+projRedRight :: (ChainComplex b, ChainComplex c, ChainComplex d) => Reduction b c -> Reduction d c -> Reduction (Bicone b c d) d
 projRedRight (Reduction f1 g1 h1) (Reduction f2 g2 h2) = Reduction projRight (Morphism 0 g) (Morphism 1 h)
   where
     g d =

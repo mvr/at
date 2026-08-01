@@ -29,7 +29,7 @@ circle = Sum () (Shift ())
 
 sphereCocycle :: Cocycle (NChains Sphere) Z
 sphereCocycle = Cocycle $ Cochain 2 $ \simplex -> case simplex of
-  BasisSimplex Cell -> 1
+  Cell -> 1
   _ -> 0
 
 spec :: Spec
@@ -38,7 +38,7 @@ spec = do
     AlgebraProperties.check 3 circle
 
     it "squares the degree-one generator to zero" $
-      muMor circle `onBasis` (Right (ShiftBasis ()), Right (ShiftBasis ()))
+      muMor circle `onBasis` (Right (), Right ())
         `shouldBe` (0 :: Combination (Basis CircleComplex))
 
   describe "efficient K(ℤ/2,1)" $ do

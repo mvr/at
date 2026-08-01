@@ -28,13 +28,13 @@ spec = do
     describe "SSet" $
       SSetProperties.checkOn p gs
     describe "DVF" $
-      DVFProperties.checkOn (NChains p) (BasisSimplex <$> gs)
+      DVFProperties.checkOn (NChains p) gs
     describe "dvfReduction" $
       ReductionProperties.checkOn
         (NChains p)
         (CriticalComplex (NChains p))
-        (BasisSimplex <$> gs)
-        (CriticalBasis <$> BasisSimplex <$> criticalBasis)
+        gs
+        criticalBasis
         (dvfReduction (NChains p))
 
   describe "K(ℤ/n,1)s" $
@@ -62,11 +62,9 @@ spec = do
                 generated
                   | degree < 0 = []
                   | otherwise = [alternating]
-                expected =
-                  CriticalBasis
-                    <$> filter (isCritical chains) (CC.basis chains degree)
+                expected = filter (isCritical chains) (CC.basis chains degree)
             SSetDVF.criticalGeomBasis p degree `shouldBe` Just generated
             CC.basis (CriticalComplex chains) degree
-              `shouldBe` (CriticalBasis . BasisSimplex <$> generated)
+              `shouldBe` generated
             when (degree >= 0) $
               CC.basis (CriticalComplex chains) degree `shouldBe` expected

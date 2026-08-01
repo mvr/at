@@ -6,7 +6,6 @@ module Math.Algebra.ChainComplex.DVF where
 
 import Control.Category.Constrained (id, (.))
 import qualified Control.Category.Constrained as Constrained
-import Data.Coerce
 import Prelude hiding (id, return, (.))
 
 import Math.Algebra.ChainComplex
@@ -45,32 +44,28 @@ isCritical a b
   | otherwise = False
 
 newtype CriticalComplex a = CriticalComplex a
-newtype CriticalBasis a = CriticalBasis a
-  deriving (Eq, Ord)
-  deriving (Show) via a
 
 -- Could be done as a use of the perturbation lemma, but I think these
 -- direct definitions might end up being more efficient
 instance DVF a => ChainComplex (CriticalComplex a) where
-  type Basis (CriticalComplex a) = CriticalBasis (Basis a)
-  isBasis (CriticalComplex a) (CriticalBasis s) = isBasis a s && isCritical a s
-  degree (CriticalComplex a) (CriticalBasis b) = degree a b
+  type Basis (CriticalComplex a) = Basis a
+  isBasis (CriticalComplex a) s = isBasis a s && isCritical a s
+  degree (CriticalComplex a) = degree a
   diff (CriticalComplex a) = dK a (diff a)
 
 instance (DVF a, FiniteType a) => FiniteType (CriticalComplex a) where
   basis (CriticalComplex a) n =
-    CriticalBasis <$> case criticalBasis a n of
+    case criticalBasis a n of
       Just critical -> critical
       Nothing -> filter (isCritical a) (basis a n)
 
 proj :: DVF a => a -> Morphism a (CriticalComplex a)
-proj a = Morphism 0 $
-  coerce $ \b -> case vf a b of
+proj a = Morphism 0 $ \b -> case vf a b of
     Critical -> singleComb b
     _ -> zeroCombination
 
 incl :: DVF a => a -> Morphism (CriticalComplex a) a
-incl a = fmapBasis coerce
+incl _ = basisMorphism id
 
 -- Called d_V
 nullDiff :: DVF a => a -> Morphism a a
@@ -84,7 +79,7 @@ nullCodiff a = Morphism 1 $ \b -> case vf a b of
   Source tau i -> incidenceCoef i .* singleComb tau
   _ -> zeroCombination
 
-hWith :: (DVF a, Ord (Basis a)) => a -> Morphism a a -> Morphism a a
+hWith :: DVF a => a -> Morphism a a -> Morphism a a
 hWith a d = homotopy
   where
     homotopy = Morphism 1 $ memoiseOrd $ \b -> case vf a b of
@@ -94,7 +89,7 @@ hWith a d = homotopy
           d'_vb = incidenceCoef i .* singleComb tau
       _ -> zeroCombination
 
-h :: (DVF a, Ord (Basis a)) => a -> Morphism a a -> Morphism a a
+h :: DVF a => a -> Morphism a a -> Morphism a a
 h = hWith
 
 fWith :: DVF a => a -> Morphism a a -> Morphism a a -> Morphism a (CriticalComplex a)
@@ -106,7 +101,7 @@ gWith a d homotopy = (id - (homotopy . d)) . incl a
 dKWith :: DVF a => a -> Morphism a a -> Morphism a a -> Morphism (CriticalComplex a) (CriticalComplex a)
 dKWith a d homotopy = proj a . (d - (d . homotopy . d)) . incl a
 
-f :: forall a. DVF a => a -> Morphism a a -> Morphism a (CriticalComplex a)
+f :: DVF a => a -> Morphism a a -> Morphism a (CriticalComplex a)
 f a d = fWith a d (hWith a d)
 
 g :: DVF a => a -> Morphism a a -> Morphism (CriticalComplex a) a

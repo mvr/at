@@ -56,7 +56,7 @@ checkIdentities a g = do
 
 checkFaces :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkFaces a g =
-  forM_ (zip [0 ..] (geomFaces a g)) (\(i, s) -> unless (isSimplex a s) $ expectationFailure $ show i ++ "th face " ++ show s ++ " of " ++ show g ++ " is not a valid simplex")
+  forM_ (zip [0 :: Int ..] (geomFaces a g)) (\(i, s) -> unless (isSimplex a s) $ expectationFailure $ show i ++ "th face " ++ show s ++ " of " ++ show g ++ " is not a valid simplex")
 
 checkDims :: (SSet a, Show (GeomSimplex a)) => a -> GeomSimplex a -> Expectation
 checkDims a g =

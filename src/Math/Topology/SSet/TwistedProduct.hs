@@ -27,7 +27,6 @@ module Math.Topology.SSet.TwistedProduct where
 -- \]
 --
 
-import Data.Coerce
 import Math.Algebra.ChainComplex hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
@@ -62,46 +61,40 @@ type TotalSpace b g = TwistedProduct g b g
 totalSpace :: (SGrp g) => b -> g -> Twist b g -> TotalSpace b g
 totalSpace b g tau = TwistedProduct g b g (prodMor g) tau
 
-newtype TwistedProductSimplex a g = TwistedProductSimplex a
-
-deriving instance (Eq a) => Eq (TwistedProductSimplex a g)
-deriving instance Ord a => Ord (TwistedProductSimplex a g)
-instance (Show a) => Show (TwistedProductSimplex a g) where
-  show (TwistedProductSimplex a) = show a
-
 instance (SSet f, SSet b, SGrp g) => SSet (TwistedProduct f b g) where
-  type GeomSimplex (TwistedProduct f b g) = TwistedProductSimplex (Simplex f, Simplex b) g
+  type GeomSimplex (TwistedProduct f b g) = (Simplex f, Simplex b)
 
-  isGeomSimplex (TwistedProduct f b _ _ _) (TwistedProductSimplex s) = isGeomSimplex (Product f b) s
+  isGeomSimplex (TwistedProduct f b _ _ _) = isGeomSimplex (Product f b)
 
-  geomSimplexDim (TwistedProduct f _ _ _ _) (TwistedProductSimplex (s, _)) = simplexDim f s
+  geomSimplexDim (TwistedProduct f _ _ _ _) (s, _) = simplexDim f s
 
-  geomFace (TwistedProduct f b g act tau) (TwistedProductSimplex (s, t)) i
+  geomFace (TwistedProduct f b g act tau) (s, t) i
     | i == 0 =
-        TwistedProductSimplex
-          <$> prodNormalise
-            ( act `onSimplex` prodNormalise (face f s 0, twistOnFor b g tau t),
-              face b t 0
-            )
-    | otherwise = TwistedProductSimplex <$> prodNormalise (face f s i, face b t i)
+        prodNormalise
+          ( act `onSimplex` prodNormalise (face f s 0, twistOnFor b g tau t),
+            face b t 0
+          )
+    | otherwise = prodNormalise (face f s i, face b t i)
 
 instance (FiniteType b, FiniteType f, SGrp g) => FiniteType (TwistedProduct f b g) where
-  geomBasis (TwistedProduct f b _ _ _) n = [TwistedProductSimplex (s, t) | s <- allSimplices f n, t <- allSimplices b n, isGeomSimplex (Product f b) (s, t)]
+  geomBasis (TwistedProduct f b _ _ _) n = [(s, t) | s <- allSimplices f n, t <- allSimplices b n, isGeomSimplex (Product f b) (s, t)]
 
 instance (SSet f, SSet b, SGrp g) => DVF (TwistedProduct f b g) where
-  vf (TwistedProduct f b g _ _) (TwistedProductSimplex s) = coerce $ status (Product f b) s
+  vf (TwistedProduct f b _ _ _) = status (Product f b)
 
 totalSpaceChainsIso ::
+  (SSet f, SSet b, SGrp g) =>
   CC.Morphism
     (Perturbed (NChains (Product f b)))
     (NChains (TwistedProduct f b g))
-totalSpaceChainsIso = fmapBasis coerce
+totalSpaceChainsIso = basisMorphism (\simplex -> simplex)
 
 totalSpaceChainsIsoInv ::
+  (SSet f, SSet b, SGrp g) =>
   CC.Morphism
     (NChains (TwistedProduct f b g))
     (Perturbed (NChains (Product f b)))
-totalSpaceChainsIsoInv = fmapBasis coerce
+totalSpaceChainsIsoInv = basisMorphism (\simplex -> simplex)
 
 -- | The twisting changes only the zeroth face of a product simplex.
 twistedProductPerturbation ::
@@ -109,19 +102,17 @@ twistedProductPerturbation ::
   TwistedProduct f b g ->
   CC.Morphism (NChains (Product f b)) (NChains (Product f b))
 twistedProductPerturbation t@(TwistedProduct f b _ _ _) =
-  CC.Morphism (-1) $ \(BasisSimplex simplex) -> perturb simplex
+  CC.Morphism (-1) perturb
   where
     perturb simplex@(s, _)
       | simplexDim f s == 0 = 0
       | otherwise = asChain twistedFace - asChain untwistedFace
       where
-        twistedFace =
-          fmap (\(TwistedProductSimplex faceSimplex) -> faceSimplex) $
-            geomFace t (TwistedProductSimplex simplex) 0
+        twistedFace = geomFace t simplex 0
         untwistedFace = geomFace (Product f b) simplex 0
 
     asChain (FormalDegen mask simplex)
-      | mask == 0 = singleComb (BasisSimplex simplex)
+      | mask == 0 = singleComb simplex
       | otherwise = 0
 
 instance

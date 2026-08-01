@@ -7,10 +7,9 @@ module Math.Topology.SGrp where
 import Control.Category.Constrained
 import Prelude hiding (fmap, id, return, (.))
 
-import qualified Math.Algebra.ChainComplex as CC (UMorphism (..))
+import qualified Math.Algebra.ChainComplex as CC (basisMorphism)
 import Math.Algebra.ChainComplex.Algebra
 import Math.Algebra.ChainComplex.Reduction
-import Math.Algebra.Combination
 import Math.Algebra.Group
 import Math.Topology.SSet
 import Math.Topology.SSet.NChains
@@ -41,7 +40,7 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
       (×) = prodFunc
 
 instance SGrp g => Algebra (NChains g) where
-  unitMor (NChains g) = CC.Morphism 0 (const (singleComb (BasisSimplex (basepoint g))))
+  unitMor (NChains g) = CC.basisMorphism (const (basepoint g))
   muMor (NChains g) = fmap (prodMor g) . reductionG (ezReduction (Product g g))
 
 instance SAb g => CommAlgebra (NChains g)

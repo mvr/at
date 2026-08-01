@@ -9,7 +9,7 @@ import Prelude hiding (id, (.))
 
 data Equivalence a b
   = forall c.
-  (ChainComplex c, Ord (Basis c)) =>
+  (ChainComplex a, ChainComplex b, ChainComplex c) =>
   Equivalence
   { equivLeft :: a,
     equivLeftRed :: Reduction c a,
@@ -18,16 +18,16 @@ data Equivalence a b
     equivRight :: b
   }
 
-equivalenceForward :: (Ord (Basis a), Ord (Basis b)) => Equivalence a b -> Morphism a b
+equivalenceForward :: (ChainComplex a, ChainComplex b) => Equivalence a b -> Morphism a b
 equivalenceForward (Equivalence _ leftReduction _ rightReduction _) =
   reductionF rightReduction . reductionG leftReduction
 
-equivalenceBackward :: (Ord (Basis a), Ord (Basis b)) => Equivalence a b -> Morphism b a
+equivalenceBackward :: (ChainComplex a, ChainComplex b) => Equivalence a b -> Morphism b a
 equivalenceBackward (Equivalence _ leftReduction _ rightReduction _) =
   reductionF leftReduction . reductionG rightReduction
 
 instance Semigroupoid Equivalence where
-  type Object Equivalence a = (ChainComplex a, Ord (Basis a))
+  type Object Equivalence a = ChainComplex a
 
   (Equivalence b1 l1 x1 r1 c1) . (Equivalence a2 l2 x2 r2 b2) =
     Equivalence
@@ -40,17 +40,17 @@ instance Semigroupoid Equivalence where
 idEquiv :: (ChainComplex a) => a -> Equivalence a a
 idEquiv a = Equivalence a id a id a
 
-isoToEquiv :: (ChainComplex a) => a -> b -> Morphism a b -> Morphism b a -> Equivalence a b
+isoToEquiv :: (ChainComplex a, ChainComplex b) => a -> b -> Morphism a b -> Morphism b a -> Equivalence a b
 isoToEquiv a b f g = Equivalence a id a (isoToReduction f g) b
 
-fromRedLeft :: ChainComplex a => a -> b -> Reduction a b -> Equivalence a b
+fromRedLeft :: (ChainComplex a, ChainComplex b) => a -> b -> Reduction a b -> Equivalence a b
 fromRedLeft a b r = Equivalence a id a r b
 
-composeLeft :: (Ord (Basis a), Ord (Basis a')) => a' -> Reduction a a' -> Equivalence a b -> Equivalence a' b
+composeLeft :: (ChainComplex a, ChainComplex a') => a' -> Reduction a a' -> Equivalence a b -> Equivalence a' b
 composeLeft a' l' (Equivalence a l x r b) = Equivalence a' (l' . l) x r b
 
 perturbLeft ::
-  (Ord (Basis a), Ord (Basis b)) =>
+  (ChainComplex a, ChainComplex b) =>
   Equivalence a b ->
   Morphism a a ->
   Equivalence (Perturbed a) (Perturbed b)
@@ -60,7 +60,7 @@ perturbLeft (Equivalence a l x r b) m =
    in Equivalence a' l' x' r' b'
 
 perturbRight ::
-  (Ord (Basis a), Ord (Basis b)) =>
+  (ChainComplex a, ChainComplex b) =>
   Equivalence a b ->
   Morphism b b ->
   Equivalence (Perturbed a) (Perturbed b)

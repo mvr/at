@@ -11,7 +11,6 @@
 module Math.Topology.SGrp.KGn where
 
 import Control.Category.Constrained ((.))
-import Data.Coerce
 import Math.Algebra.ChainComplex as CC hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Algebra
@@ -38,12 +37,12 @@ kz1 = WbarDiscrete Z
 type CircleComplex = () `Sum` Shift ()
 
 instance Algebra CircleComplex where
-  unitMor _ = CC.Morphism 0 (const (singleComb (Left ())))
+  unitMor _ = basisMorphism (const (Left ()))
   muMor _ = CC.Morphism 0 go
     where
       go (Left _, Left _) = singleComb (Left ())
-      go (Left _, Right _) = singleComb (Right (ShiftBasis ()))
-      go (Right _, Left _) = singleComb (Right (ShiftBasis ()))
+      go (Left _, Right _) = singleComb (Right ())
+      go (Right _, Left _) = singleComb (Right ())
       go (Right _, Right _) = 0
 
 instance DVF KZ1 where
@@ -57,17 +56,15 @@ instance DVF KZ1 where
     | otherwise = Source (1 : a1 - 1 : as) Neg
 
 criticalIso :: CC.Morphism (CriticalComplex (NChains KZ1)) CircleComplex
-criticalIso = fmapBasis $
-  coerce $ \case
-    [] -> Left ()
-    [1 :: Integer] -> Right (ShiftBasis ())
-    _ -> error "impossible"
+criticalIso = basisMorphism $ \case
+  [] -> Left ()
+  [1 :: Integer] -> Right ()
+  _ -> error "impossible"
 
 criticalIsoInv :: CC.Morphism CircleComplex (CriticalComplex (NChains KZ1))
-criticalIsoInv = fmapBasis $
-  coerce $ \case
-    Left () -> []
-    Right (ShiftBasis ()) -> [1 :: Integer]
+criticalIsoInv = basisMorphism $ \case
+  Left () -> []
+  Right () -> [1 :: Integer]
 
 instance Effective KZ1 where
   type Model KZ1 = CircleComplex

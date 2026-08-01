@@ -1,4 +1,3 @@
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Chain complex of free \(ℤ\)-modules
@@ -7,7 +6,6 @@ module Math.Algebra.ChainComplex where
 import Control.Category.Constrained (id, (.))
 import qualified Control.Category.Constrained as Constrained
 import Control.Exception (evaluate)
-import Data.Coerce
 import Data.IORef
 import qualified Data.Map.Strict as Map
 import qualified Data.Matrix as M
@@ -25,7 +23,7 @@ import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
 
 class Ord (Basis a) => ChainComplex a where
-  type Basis a = s | s -> a
+  type Basis a
 
   isBasis :: a -> Basis a -> Bool
   isBasis _ _ = True
@@ -45,7 +43,7 @@ type Chain a = Combination (Basis a)
 instance ChainComplex () where
   type Basis () = ()
   degree _ _ = 0
-  diff _ = 0
+  diff _ = morphismZeroOfDeg (-1)
 
 instance ConnectedChainComplex ()
 
@@ -77,15 +75,11 @@ validComb a combination = and $ fmap (\(_, b) -> isBasis a b) (coeffs combinatio
 kozulRule :: Num b => Int -> b -> b
 kozulRule n c = if even n then c else negate c
 
--- NOTE: I don't think we ever use a variable morphism degree, so the
--- degree could be lifted to the type level. Then again I think
--- type-level Ints are rough compared to Nats.
-data UMorphism d a b = Morphism
-  { morphismDegree :: d,
-    onBasis :: a -> Combination b
+-- | A homogeneous morphism between chain complexes.
+data Morphism a b = Morphism
+  { morphismDegree :: Int,
+    onBasis :: Basis a -> Combination (Basis b)
   }
-
-type Morphism a b = UMorphism Int (Basis a) (Basis b)
 
 -- | Memoise a pure function for the lifetime of the returned closure.
 --
@@ -109,44 +103,37 @@ memoiseOrd f = unsafePerformIO $ do
 {-# NOINLINE memoiseOrd #-}
 
 -- | Retain the image of each visited source basis element.
-memoiseMorphism :: Ord a => UMorphism d a b -> UMorphism d a b
+memoiseMorphism :: ChainComplex a => Morphism a b -> Morphism a b
 memoiseMorphism (Morphism morphismDegree action) =
   Morphism morphismDegree (memoiseOrd action)
 
--- | Identical to `onBasis`, but sometimes clearer
-underlyingFunction :: UMorphism d a b -> (a -> Combination b)
-underlyingFunction = onBasis
+onComb :: (ChainComplex a, ChainComplex b) => Morphism a b -> Chain a -> Chain b
+onComb m combination = bindCombination combination (m `onBasis`)
 
-instance Constrained.Functor (UMorphism d) (->) Combination where
-  fmap m combination = bindCombination combination (m `onBasis`)
-
-onComb :: (Ord a, Ord b) => UMorphism d a b -> Combination a -> Combination b
-onComb = Constrained.fmap
-
-morphismZeroOfDeg :: d -> UMorphism d a b
+morphismZeroOfDeg :: Int -> Morphism a b
 morphismZeroOfDeg d = Morphism d (const zeroCombination)
 
-morphismZero :: Num d => UMorphism d a b
-morphismZero = morphismZeroOfDeg 0
+-- | Extend a function on basis representations to a degree-zero morphism.
+basisMorphism ::
+  (Basis a -> Basis b) ->
+  Morphism a b
+basisMorphism f = Morphism 0 (singleComb . f)
 
-fmapBasis :: Num d => (a -> b) -> UMorphism d a b
-fmapBasis f = Morphism 0 (singleComb . f)
-
-instance Show d => Show (UMorphism d a b) where
+instance Show (Morphism a b) where
   -- TODO
   show (Morphism d f) = "Morphism of degree " ++ show d
 
-instance Num d => Constrained.Semigroupoid (UMorphism d) where
-  type Object (UMorphism d) a = Ord a
+instance Constrained.Semigroupoid Morphism where
+  type Object Morphism a = ChainComplex a
 
   (Morphism d2 f2) . (Morphism d1 f1) =
     Morphism (d1 + d2) (\basis -> bindCombination (f1 basis) f2)
 
-instance Num d => Constrained.Category (UMorphism d) where
+instance Constrained.Category Morphism where
   id = Morphism 0 singleComb
 
-instance (Num d, Ord b) => Num (UMorphism d a b) where
-  fromInteger 0 = morphismZero
+instance (ChainComplex a, ChainComplex b) => Num (Morphism a b) where
+  fromInteger 0 = morphismZeroOfDeg 0
   fromInteger _ = error "Morphism: fromInteger"
 
   (Morphism d1 f1) + (Morphism _ f2) = Morphism d1 (\x -> f1 x + f2 x)
@@ -162,20 +149,18 @@ instance (Num d, Ord b) => Num (UMorphism d a b) where
 data ClosedMorphism a b = ClosedMorphism a (Morphism a b) b
 
 instance Constrained.Semigroupoid ClosedMorphism where
-  type Object ClosedMorphism o = Ord (Basis o)
+  type Object ClosedMorphism o = ChainComplex o
   (ClosedMorphism _ n c) . (ClosedMorphism a m _) = ClosedMorphism a (n . m) c
 
 data ChainGroup a = ChainGroup Int a
-newtype ChainGroupElt a = ChainGroupElt (Combination a)
+newtype ChainGroupElt a = ChainGroupElt (Chain a)
 
 instance (ChainComplex a) => Group (ChainGroup a) where
-  type Element (ChainGroup a) = ChainGroupElt (Basis a)
-  prod _ = coerce ((+) :: Chain a -> Chain a -> Chain a)
-  inv _ = coerce (negate :: Chain a -> Chain a)
-  unit _ = coerce (0 :: Chain a)
-
-instance Constrained.Functor (UMorphism d) (->) ChainGroupElt where
-  fmap m (ChainGroupElt as) = ChainGroupElt $ m `onComb` as
+  type Element (ChainGroup a) = ChainGroupElt a
+  prod _ (ChainGroupElt left) (ChainGroupElt right) =
+    ChainGroupElt (left + right)
+  inv _ (ChainGroupElt chain) = ChainGroupElt (negate chain)
+  unit _ = ChainGroupElt 0
 
 toChainGrpElt :: (FiniteType a) => a -> Int -> Chain a -> AbGroupPresElt
 toChainGrpElt a n cs = AbGroupPresElt $ M.fromList 1 (length r) (fmap (fromIntegral . coeffOf cs) r)
@@ -219,10 +204,9 @@ data HomologyGroup a = HomologyGroup Int AbGroupPres a
 instance Show a => Show (HomologyGroup a) where
   show (HomologyGroup n p a) = "H^" ++ show n ++ "(" ++ show a ++ ")=" ++ show p
 
-newtype UHomologyClass a = HomologyClass (Combination a)
-type HomologyClass a = UHomologyClass (Basis a)
+newtype HomologyClass a = HomologyClass (Chain a)
 
-instance Show a => (Show (UHomologyClass a)) where
+instance Show (Basis a) => Show (HomologyClass a) where
   show (HomologyClass cs) = show cs
 
 classRepresentative :: HomologyClass a -> Chain a
@@ -234,9 +218,6 @@ instance (FiniteType a) => Group (HomologyGroup a) where
   inv (HomologyGroup n p a) (HomologyClass x) = HomologyClass $ fromChainGrpElt a n $ inv p (toChainGrpElt a n x)
   unit (HomologyGroup n p a) = HomologyClass $ fromChainGrpElt a n (unit p)
 
-instance Constrained.Functor (UMorphism d) (->) UHomologyClass where
-  fmap m (HomologyClass as) = HomologyClass $ m `onComb` as
-
 homologyGenerators :: FiniteType a => HomologyGroup a -> [HomologyClass a]
 homologyGenerators (HomologyGroup n p a) = fmap HomologyClass chains
   where
@@ -246,13 +227,13 @@ homologies :: FiniteType a => a -> [AbGroupPres]
 homologies a = fmap (uncurry homology) pairs
   where
     diffs = chainDiffs a
-    pairs = zip (tail diffs) diffs
+    pairs = zip (drop 1 diffs) diffs
 
 homologyGroups :: FiniteType a => a -> [HomologyGroup a]
 homologyGroups a = fmap (\(n, f, g) -> HomologyGroup n (homology f g) a) pairs
   where
     diffs = chainDiffs a
-    pairs = zip3 [0 ..] (tail diffs) diffs
+    pairs = zip3 [0 ..] (drop 1 diffs) diffs
 
 -- | A (not necessarily Z-valued) cochain, defined by its values on a chain basis.
 data Cochain a c = Cochain
@@ -373,4 +354,4 @@ neghomologies :: FiniteType a => a -> [AbGroupPres]
 neghomologies a = fmap (uncurry homology) pairs
   where
     diffs = fmap (chainDiff a . negate) [-1 ..]
-    pairs = zip diffs (tail diffs)
+    pairs = zip diffs (drop 1 diffs)

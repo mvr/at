@@ -4,13 +4,15 @@
 -- convention that the squares in the complex *anticommute*.
 module Math.Algebra.Bicomplex where
 
+import Control.Category.Constrained (id, (.))
+import qualified Control.Category.Constrained as Constrained
 import Math.Algebra.ChainComplex hiding (FiniteType)
 import qualified Math.Algebra.ChainComplex as CC (FiniteType)
 import Math.Algebra.Combination
 import Prelude hiding (id, return, (.))
 
 newtype Bidegree = Bidegree (Int, Int)
-  deriving (Show) via (Int, Int)
+  deriving (Eq, Show) via (Int, Int)
 
 -- This should just be a monoid instance.
 instance Num Bidegree where
@@ -25,7 +27,7 @@ instance Num Bidegree where
   signum = error "Bidegree: signum"
 
 class Ord (Bibasis a) => Bicomplex a where
-  type Bibasis a = s | s -> a
+  type Bibasis a
 
   isBibasis :: a -> Bibasis a -> Bool
   isBibasis _ _ = True
@@ -47,28 +49,47 @@ class Bicomplex a => FiniteType a where
     | d < 0 = []
     | otherwise = [(d - vd, vd) | vd <- [0 .. d]]
 
-type Bimorphism a b = UMorphism Bidegree (Bibasis a) (Bibasis b)
+data Bimorphism a b = Bimorphism
+  { bimorphismDegree :: Bidegree,
+    onBibasis :: Bibasis a -> Combination (Bibasis b)
+  }
+
+bimorphismZeroOfDeg :: Bidegree -> Bimorphism a b
+bimorphismZeroOfDeg degree = Bimorphism degree (const zeroCombination)
+
+instance Constrained.Semigroupoid Bimorphism where
+  type Object Bimorphism a = Bicomplex a
+  (Bimorphism d2 f2) . (Bimorphism d1 f1) =
+    Bimorphism (d1 + d2) (\basisElement -> bindCombination (f1 basisElement) f2)
+
+instance Constrained.Category Bimorphism where
+  id = Bimorphism (Bidegree (0, 0)) singleComb
+
+instance (Bicomplex a, Bicomplex b) => Num (Bimorphism a b) where
+  fromInteger 0 = bimorphismZeroOfDeg (Bidegree (0, 0))
+  fromInteger _ = error "Bimorphism: fromInteger"
+  Bimorphism d f + Bimorphism _ g = Bimorphism d (\x -> f x + g x)
+  negate (Bimorphism d f) = Bimorphism d (negate . f)
+  (*) = error "Bimorphism: (*)"
+  abs = error "Bimorphism: abs"
+  signum = error "Bimorphism: signum"
 
 validBicomb :: Bicomplex a => a -> Combination (Bibasis a) -> Bool
 validBicomb a combination = and $ fmap (\(_, b) -> isBibasis a b) (coeffs combination)
 
 newtype Tot a = Tot a
 
-newtype TotBasis a = TotBasis a
-  deriving (Eq, Ord)
-  deriving (Show) via a
-
 instance (Bicomplex a) => ChainComplex (Tot a) where
-  type Basis (Tot a) = TotBasis (Bibasis a)
+  type Basis (Tot a) = Bibasis a
 
-  isBasis (Tot a) (TotBasis b) = isBibasis a b
+  isBasis (Tot a) = isBibasis a
 
-  degree (Tot a) (TotBasis b) =
+  degree (Tot a) b =
     let (p, q) = bidegree a b in p + q
-  diff (Tot a) = Morphism (-1) $ \(TotBasis b) ->
-    mapMonotonic TotBasis $ hdiff a `onBasis` b + vdiff a `onBasis` b
+  diff (Tot a) = Morphism (-1) $ \b ->
+    hdiff a `onBibasis` b + vdiff a `onBibasis` b
 
 instance (Bicomplex a, FiniteType a) => CC.FiniteType (Tot a) where
   basis (Tot a) d = do
     bideg <- totalBidegrees a d
-    TotBasis <$> bibasis a bideg
+    bibasis a bideg

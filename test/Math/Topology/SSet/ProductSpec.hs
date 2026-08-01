@@ -42,7 +42,7 @@ checkProduct n a b = do
   describe "ezReduction" $
     ReductionProperties.check n (NChains p) (Tensor (NChains a) (NChains b)) (Product.ezReduction p)
 
-recursiveProdNormalise :: (Simplex a, Simplex b) -> Simplex (Product.Product a b)
+recursiveProdNormalise :: (FormalDegen a, FormalDegen b) -> FormalDegen (FormalDegen a, FormalDegen b)
 recursiveProdNormalise (Degen i s, Degen j t)
   | i == j = degen (recursiveProdNormalise (s, t)) i
   | i > j =

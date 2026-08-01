@@ -6,7 +6,7 @@ import Data.List (sortBy)
 import Data.Ord (comparing)
 
 class Group a where
-  type Element a = s | s -> a
+  type Element a
   prod :: a -> Element a -> Element a -> Element a
   unit :: a -> Element a
   inv :: a -> Element a -> Element a

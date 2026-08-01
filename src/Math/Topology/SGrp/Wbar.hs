@@ -12,11 +12,9 @@ module Math.Topology.SGrp.Wbar where
 
 import Control.Category.Constrained ((.))
 import Data.Bits
-import Data.Coerce
 import Prelude hiding (id, return, (.))
 
-import qualified Math.Algebra.Bicomplex as Bi
-import qualified Math.Algebra.ChainComplex as CC (Morphism, UMorphism (..), kozulRule)
+import qualified Math.Algebra.ChainComplex as CC (Morphism (..), kozulRule)
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.DVF hiding (DVF, vf)
 import Math.Algebra.ChainComplex.Equivalence
@@ -100,14 +98,14 @@ expandWbarSimplex g bar = go (wbarDimension bar) bar
 normalise :: Pointed g => g -> [Simplex g] -> Simplex (Wbar g)
 normalise g ss = normaliseWbar (wbarSimplex g ss)
 
-normaliseWbar :: WbarSimplex (Simplex g) -> Simplex (Wbar g)
+normaliseWbar :: WbarSimplex (FormalDegen a) -> FormalDegen (WbarSimplex (FormalDegen a))
 normaliseWbar bar
   | outerMask == 0 = NonDegen bar
   | otherwise = FormalDegen outerMask (removeOuterDegens outerMask bar)
   where
     outerMask = outerDegenMask bar
 
-outerDegenMask :: WbarSimplex (Simplex g) -> Word
+outerDegenMask :: WbarSimplex (FormalDegen a) -> Word
 outerDegenMask (WbarSimplex unitMask entries) = go unitMask maxBound entries
   where
     -- Candidate bit zero and the result are relative to this coordinate.
@@ -121,7 +119,7 @@ outerDegenMask (WbarSimplex unitMask entries) = go unitMask maxBound entries
       go (units `shiftR` 1) ((candidates `shiftR` 1) .&. mask) rest `shiftL` 1
     go _ _ [] = error "outerDegenMask: invalid unit mask"
 
-removeOuterDegens :: Word -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
+removeOuterDegens :: Word -> WbarSimplex (FormalDegen a) -> WbarSimplex (FormalDegen a)
 removeOuterDegens 0 bar = bar
 removeOuterDegens outerMask (WbarSimplex unitMask entries) =
   WbarSimplex (removeDegenMask outerMask unitMask) (go unitMask outerMask entries)
@@ -134,7 +132,7 @@ removeOuterDegens outerMask (WbarSimplex unitMask entries) =
         : go (units `shiftR` 1) (outer `shiftR` 1) rest
     go _ _ [] = error "removeOuterDegens: invalid unit mask"
 
-unnormaliseWbar :: Simplex (Wbar g) -> WbarSimplex (Simplex g)
+unnormaliseWbar :: FormalDegen (WbarSimplex (FormalDegen a)) -> WbarSimplex (FormalDegen a)
 unnormaliseWbar (FormalDegen outerMask core) = go outerMask core
   where
     go 0 bar = bar
@@ -313,13 +311,12 @@ barOrientation g = go . fmap (geomSimplexDim g)
     go (d : ds) = d * (length ds + sum ds) + go ds
 
 criticalIso ::
-  forall g.
   (Pointed g) =>
   g ->
   CC.Morphism
     (CriticalComplex (NChains (Wbar g)))
     (Bar (NChains g))
-criticalIso g = CC.Morphism 0 $ coerce @(GeomSimplex (Wbar g) -> _) $ \s ->
+criticalIso g = CC.Morphism 0 $ \s ->
   let as = stripBar g s
    in CC.kozulRule (barOrientation g as) (singleComb as)
 
@@ -329,7 +326,7 @@ criticalIsoInv ::
   CC.Morphism
     (Bar (NChains g))
     (CriticalComplex (NChains (Wbar g)))
-criticalIsoInv g = CC.Morphism 0 $ coerce $ \as ->
+criticalIsoInv g = CC.Morphism 0 $ \as ->
   CC.kozulRule (barOrientation g as) (singleComb (reconstructBar g as))
 
 wbarReduction ::

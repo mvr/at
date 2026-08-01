@@ -58,22 +58,22 @@ tensorFunc a1 _ (Morphism deg1 f1) (Morphism deg2 f2) =
     cachedF2 = memoiseOrd f2
 
 tensorAssoc :: Morphism (Tensor (Tensor a b) c) (Tensor a (Tensor b c))
-tensorAssoc = fmapBasis $ \((a, b), c) -> (a, (b, c))
+tensorAssoc = basisMorphism $ \((a, b), c) -> (a, (b, c))
 
 tensorAssocInv :: Morphism (Tensor a (Tensor b c)) (Tensor (Tensor a b) c)
-tensorAssocInv = fmapBasis $ \(a, (b, c)) -> ((a, b), c)
+tensorAssocInv = basisMorphism $ \(a, (b, c)) -> ((a, b), c)
 
 tensorUnitL :: Morphism (Tensor () a) a
-tensorUnitL = fmapBasis snd
+tensorUnitL = basisMorphism snd
 
 tensorUnitLInv :: Morphism a (Tensor () a)
-tensorUnitLInv = fmapBasis $ \a -> ((), a)
+tensorUnitLInv = basisMorphism $ \a -> ((), a)
 
 tensorUnitR :: Morphism (Tensor a ()) a
-tensorUnitR = fmapBasis fst
+tensorUnitR = basisMorphism fst
 
 tensorUnitRInv :: Morphism a (Tensor a ())
-tensorUnitRInv = fmapBasis $ \a -> (a, ())
+tensorUnitRInv = basisMorphism $ \a -> (a, ())
 
 tensorReduction ::
   (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2) =>

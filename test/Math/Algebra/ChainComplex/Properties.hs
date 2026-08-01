@@ -6,29 +6,31 @@ import Math.Algebra.ChainComplex
 import Test.Hspec
 import Prelude hiding (id, (.))
 
-isEqOn :: (Num d, Ord a', Show a', Show a) => a -> UMorphism d a a' -> UMorphism d a a' -> Expectation
+isEqOn :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => Basis a -> Morphism a b -> Morphism a b -> Expectation
 isEqOn b m m' =
   unless ((m `onBasis` b) == (m' `onBasis` b)) $
     expectationFailure $
       "Images of " ++ show b ++ " are the non-equal " ++ show (m `onBasis` b) ++ " and " ++ show (m' `onBasis` b)
 
-isIdOn :: (Num d, Ord a, Show a) => a -> UMorphism d a a -> Expectation
+isIdOn :: (ChainComplex a, Show (Basis a)) => Basis a -> Morphism a a -> Expectation
 isIdOn b m = isEqOn b m id
 
-isZeroOn :: (Num d, Ord a', Show a', Show a) => a -> UMorphism d a a' -> Expectation
+isZeroOn :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => Basis a -> Morphism a b -> Expectation
 isZeroOn b m = isEqOn b m 0
 
-isEqOnAll :: (Num d, Ord a', Show a', Show a) => (UMorphism d a a', UMorphism d a a') -> [a] -> Expectation
+isEqOnAll :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => (Morphism a b, Morphism a b) -> [Basis a] -> Expectation
 isEqOnAll (m, m') bs = forM_ bs (\b -> isEqOn b m m')
 
-isIdOnAll :: (Num d, Ord a, Show a) => UMorphism d a a -> [a] -> Expectation
+isIdOnAll :: (ChainComplex a, Show (Basis a)) => Morphism a a -> [Basis a] -> Expectation
 isIdOnAll m bs = forM_ bs (\b -> isIdOn b m)
 
-isZeroOnAll :: (Num d, Ord a', Show a', Show a) => UMorphism d a a' -> [a] -> Expectation
+isZeroOnAll :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => Morphism a b -> [Basis a] -> Expectation
 isZeroOnAll m bs = forM_ bs (\b -> isZeroOn b m)
 
 checkChainConditionOn :: (ChainComplex a, Show (Basis a)) => a -> String -> [Basis a] -> Spec
 checkChainConditionOn a name as = do
+  it "the differential should have degree -1" $
+    morphismDegree (diff a) `shouldBe` (-1)
   it "images should be valid" $
     forM_ as (\b -> diff a `onBasis` b `shouldSatisfy` validComb a)
   it ("∂ ∘ ∂ = 0 for " ++ name) $ (diff a . diff a) `isZeroOnAll` as
@@ -36,6 +38,8 @@ checkChainConditionOn a name as = do
 checkChainCondition :: (FiniteType a, Show (Basis a)) => a -> Int -> Spec
 checkChainCondition a n = do
   let as = [0 .. n] >>= basis a
+  it "the differential should have degree -1" $
+    morphismDegree (diff a) `shouldBe` (-1)
   it "images should be valid" $
     forM_ as (\b -> diff a `onBasis` b `shouldSatisfy` validComb a)
   it ("∂ ∘ ∂ = 0") $ (diff a . diff a) `isZeroOnAll` as

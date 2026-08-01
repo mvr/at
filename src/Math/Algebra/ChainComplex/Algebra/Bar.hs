@@ -33,7 +33,6 @@ module Math.Algebra.ChainComplex.Algebra.Bar where
 -- coefficients in a pair of differential graded modules. "
 
 import Control.Category.Constrained ((.))
-import Data.Coerce (coerce)
 import Prelude hiding ((.))
 
 import Math.Algebra.Bicomplex hiding (FiniteType)
@@ -50,24 +49,16 @@ import Math.Algebra.Combination
 -- of the suspension of the original `a`.
 -- TODO: this could be moved to its own file
 
-newtype TensorSusp a = TensorSusp {unTensorSusp :: a}
-
-newtype TensorSuspBibasis a = TensorSuspBibasis a
-  deriving (Eq, Ord)
-  deriving (Show) via a
-
-newtype TensorSuspBasis a = TensorSuspBasis a
-  deriving (Eq, Ord)
-  deriving (Show) via a
+newtype TensorSusp a = TensorSusp a
 
 instance ChainComplex a => Bicomplex (TensorSusp a) where
-  type Bibasis (TensorSusp a) = TensorSuspBibasis [Basis a]
+  type Bibasis (TensorSusp a) = [Basis a]
 
-  isBibasis (TensorSusp a) (TensorSuspBibasis bs) = all (\b -> degree a b /= 0) bs && all (isBasis a) bs
+  isBibasis (TensorSusp a) bs = all (\b -> degree a b /= 0) bs && all (isBasis a) bs
 
-  bidegree (TensorSusp a) (TensorSuspBibasis bs) = (length bs, sum (degree a <$> bs))
+  bidegree (TensorSusp a) bs = (length bs, sum (degree a <$> bs))
 
-  vdiff (TensorSusp a) = Morphism (Bidegree (0, -1)) (coerce go)
+  vdiff (TensorSusp a) = Bimorphism (Bidegree (0, -1)) go
     where
       -- Homological suspension convention: d(sb) = -s(db).
       go :: [Basis a] -> Combination [Basis a]
@@ -76,21 +67,22 @@ instance ChainComplex a => Bicomplex (TensorSusp a) where
         -mapMonotonic (: bs) (diff a `onBasis` b)
           + kozulRule (degree a b + 1) (mapMonotonic (b :) (go bs))
 
-  hdiff _ = morphismZero
+  hdiff _ = bimorphismZeroOfDeg (Bidegree (-1, 0))
 
 instance ChainComplex a => ChainComplex (TensorSusp a) where
-  type Basis (TensorSusp a) = TensorSuspBasis (Basis (Tot (TensorSusp a)))
-  degree (TensorSusp a) = coerce (degree (Tot (TensorSusp a)))
-  diff (TensorSusp a) = coerce (diff (Tot (TensorSusp a)))
+  type Basis (TensorSusp a) = [Basis a]
+  isBasis (TensorSusp a) = isBasis (Tot (TensorSusp a))
+  degree (TensorSusp a) = degree (Tot (TensorSusp a))
+  diff (TensorSusp a) = Morphism (-1) (onBasis (diff (Tot (TensorSusp a))))
 
 tensorAlgFunc ::
   (ChainComplex a, ChainComplex b) =>
   Morphism a b ->
   Morphism (TensorSusp a) (TensorSusp b)
-tensorAlgFunc (Morphism deg f) = Morphism deg (coerce $ traverseCombination f)
+tensorAlgFunc (Morphism deg f) = Morphism deg (traverseCombination f)
 
 instance FiniteType a => Bi.FiniteType (TensorSusp a) where
-  bibasis (TensorSusp a) (hd, vd) = TensorSuspBibasis <$> go vd hd
+  bibasis (TensorSusp a) (hd, vd) = go vd hd
     where
       go 0 0 = [[]]
       go i d | d <= 0 = []
@@ -101,7 +93,7 @@ instance FiniteType a => Bi.FiniteType (TensorSusp a) where
         return (b : rest)
 
 instance FiniteType a => FiniteType (TensorSusp a) where
-  basis (TensorSusp a) i = TensorSuspBasis <$> basis (Tot (TensorSusp a)) i
+  basis (TensorSusp a) = basis (Tot (TensorSusp a))
 
 verth :: ChainComplex a => a -> Morphism a a -> Morphism a a -> [Basis a] -> Combination [Basis a]
 verth _ _ _ [] = 0
@@ -109,7 +101,7 @@ verth a h gf (b : bs) =
   -liftCombination2
     (:)
     (h `onBasis` b)
-    (coerce (tensorAlgFunc gf `onBasis` TensorSuspBasis (TotBasis (TensorSuspBibasis bs))))
+    (tensorAlgFunc gf `onBasis` bs)
     + kozulRule (degree a b + 1) (mapMonotonic (b :) (verth a h gf bs))
 
 tensorAlgReduction ::
@@ -122,26 +114,19 @@ tensorAlgReduction a b (Reduction f g h) =
   Reduction
     (tensorAlgFunc f)
     (tensorAlgFunc g)
-    (Morphism 1 $ coerce $ verth a h (g . f))
+    (Morphism 1 $ verth a h (g . f))
 
 newtype Bar a = Bar a
 
-newtype BarBibasis a = BarBibasis a
-  deriving (Eq, Ord)
-  deriving (Show) via a
-
-newtype BarBasis a = BarBasis a
-  deriving (Eq, Ord)
-  deriving (Show) via a
-
 instance Algebra a => Bicomplex (Bar a) where
-  type Bibasis (Bar a) = BarBibasis [Basis a]
+  type Bibasis (Bar a) = [Basis a]
 
-  isBibasis (Bar a) = coerce (isBibasis (TensorSusp a))
-  bidegree (Bar a) = coerce (bidegree (TensorSusp a))
-  vdiff (Bar a) = coerce (vdiff (TensorSusp a))
+  isBibasis (Bar a) = isBibasis (TensorSusp a)
+  bidegree (Bar a) = bidegree (TensorSusp a)
+  vdiff (Bar a) =
+    Bimorphism (Bidegree (0, -1)) (onBibasis (vdiff (TensorSusp a)))
 
-  hdiff (Bar a) = Morphism (Bidegree (-1, 0)) (coerce go)
+  hdiff (Bar a) = Bimorphism (Bidegree (-1, 0)) go
     where
       go :: [Basis a] -> Combination [Basis a]
       go [] = 0
@@ -149,16 +134,16 @@ instance Algebra a => Bicomplex (Bar a) where
       go (b1 : b2 : bs) = kozulRule (degree a b1 + 1) (mapMonotonic (: bs) (muMor a `onBasis` (b1, b2)) + mapMonotonic (b1 :) (go (b2 : bs)))
 
 instance (Algebra a, FiniteType a) => Bi.FiniteType (Bar a) where
-  bibasis (Bar a) = coerce (bibasis (TensorSusp a))
+  bibasis (Bar a) = bibasis (TensorSusp a)
 
--- Can this be done using DerivingVia?
 instance Algebra a => ChainComplex (Bar a) where
-  type Basis (Bar a) = BarBasis (Basis (Tot (Bar a))) -- Reuse the same carrier Bar
-  degree (Bar a) = coerce (degree (Tot (Bar a)))
-  diff (Bar a) = coerce (diff (Tot (Bar a)))
+  type Basis (Bar a) = [Basis a]
+  isBasis (Bar a) = isBasis (Tot (Bar a))
+  degree (Bar a) = degree (Tot (Bar a))
+  diff (Bar a) = Morphism (-1) (onBasis (diff (Tot (Bar a))))
 
 instance (Algebra a, FiniteType a) => FiniteType (Bar a) where
-  basis (Bar a) = coerce (basis (TensorSusp a))
+  basis (Bar a) = basis (TensorSusp a)
 
 shuffle :: (ChainComplex a) => a -> [Basis a] -> [Basis a] -> Combination [Basis a]
 shuffle c [] [] = 0
@@ -171,8 +156,8 @@ shuffle c (a : as) (b : bs) =
     eps = (1 + degree c b) * (length (a : as) + sum (degree c <$> (a : as)))
 
 instance (CommAlgebra a) => Algebra (Bar a) where
-  unitMor _ = fmapBasis (const (coerce @[Basis a] []))
-  muMor (Bar a) = Morphism 0 $ coerce (uncurry (shuffle a))
+  unitMor _ = basisMorphism (const [])
+  muMor (Bar a) = Morphism 0 (uncurry (shuffle a))
 
 instance (CommAlgebra a) => CommAlgebra (Bar a)
 
@@ -180,18 +165,22 @@ barFunc ::
   (ChainComplex a, ChainComplex b) =>
   Morphism a b ->
   Morphism (Bar a) (Bar b)
-barFunc (Morphism deg f) = Morphism deg (coerce $ traverseCombination f)
+barFunc (Morphism deg f) = Morphism deg (traverseCombination f)
 
 horizPerturbation :: (Algebra a) => a -> Morphism (TensorSusp a) (TensorSusp a)
-horizPerturbation a = Morphism (-1) $ coerce $ underlyingFunction $ hdiff (Bar a)
+horizPerturbation a = Morphism (-1) $ onBibasis $ hdiff (Bar a)
+
+asBarReduction :: Algebra a => Reduction x (Perturbed (TensorSusp a)) -> Reduction x (Bar a)
+asBarReduction (Reduction (Morphism fd f) (Morphism gd g) h) =
+  Reduction (Morphism fd f) (Morphism gd g) h
 
 barEquiv ::
   (Algebra a, ChainComplex b) =>
   Equivalence a b ->
   Equivalence (Bar a) (Perturbed (TensorSusp b))
-barEquiv (Equivalence a l x r b) = Equivalence (Bar (unTensorSusp (perturbedOrig newa))) (coerce newl) newx newr newb
+barEquiv (Equivalence a l x r b) = Equivalence (Bar a) (asBarReduction newl) newx newr newb
   where
-    (newx, newa, newl) = perturbBottom (TensorSusp x) (TensorSusp a) (tensorAlgReduction x a l) (horizPerturbation a)
+    (newx, _, newl) = perturbBottom (TensorSusp x) (TensorSusp a) (tensorAlgReduction x a l) (horizPerturbation a)
     (_, newb, newr) = perturb (TensorSusp x) (TensorSusp b) (tensorAlgReduction x b r) (perturbedDiff newx)
 
 -- TODO: universal twisting cochain a -> Bar a (should be same as the one induced by the twist on Wbar)
