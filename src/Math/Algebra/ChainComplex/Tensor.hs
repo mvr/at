@@ -22,6 +22,14 @@ instance (ChainComplex a, ChainComplex b) => ChainComplex (Tensor a b) where
         mapMonotonic (,t) (diff a `onBasis` s)
           + kozulRule (degree a s) (mapMonotonic (s,) (diff b `onBasis` t))
 
+instance
+  (ConnectedChainComplex a, ConnectedChainComplex b) =>
+  ConnectedChainComplex (Tensor a b)
+
+instance
+  (OneReducedChainComplex a, OneReducedChainComplex b) =>
+  OneReducedChainComplex (Tensor a b)
+
 -- TODO: this assumes that a and b are null below degree 0
 instance (FiniteType a, FiniteType b) => FiniteType (Tensor a b) where
   dim (Tensor a b) n = sum [dim a i * dim b (n - i) | i <- [0 .. n]]

@@ -42,6 +42,10 @@ instance (ChainComplex a) => ChainComplex (Perturbed a) where
   degree (Perturbed a _) (PerturbedBasis b) = degree a b
   diff (Perturbed a delta) = Morphism (-1) $ coerce $ \b -> diff a `onBasis` b + delta `onBasis` b
 
+instance ConnectedChainComplex a => ConnectedChainComplex (Perturbed a)
+
+instance OneReducedChainComplex a => OneReducedChainComplex (Perturbed a)
+
 instance (FiniteType a) => FiniteType (Perturbed a) where
   dim (Perturbed a _) = dim a
   basis (Perturbed a _) n = fmap PerturbedBasis (basis a n)

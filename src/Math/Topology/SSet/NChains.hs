@@ -42,6 +42,10 @@ instance FiniteType a => CC.FiniteType (NChains a) where
 instance Bounded a => CC.Bounded (NChains a) where
   amplitude (NChains a) = amplitude a
 
+instance ZeroReduced a => CC.ConnectedChainComplex (NChains a)
+
+instance OneReduced a => CC.OneReducedChainComplex (NChains a)
+
 instance Functor UMorphism (CC.UMorphism Int) BasisSimplex where
   fmap m = CC.Morphism 0 $ \(BasisSimplex s) -> case m `onGeomSimplex` s of
     NonDegen t -> singleComb (BasisSimplex t)
