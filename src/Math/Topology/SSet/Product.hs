@@ -201,6 +201,10 @@ instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NChains a) where
   counitMor a = CC.Morphism 0 $ \s -> if degree a s == 0 then singleComb () else 0
   delMor (NChains a) = reductionF (ezReduction (Product a a)) . fmap diagMor
 
+instance ZeroReduced a => CoaugmentedCoalgebra (NChains a) where
+  coaugmentationMor (NChains a) =
+    CC.Morphism 0 $ const $ singleComb $ BasisSimplex $ basepoint a
+
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)
 

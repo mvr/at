@@ -6,6 +6,7 @@ import qualified Math.Algebra.AbGroupPres.MatrixOpsSpec
 import qualified Math.Algebra.AbGroupPresSpec
 import qualified Math.Algebra.ChainComplex.Algebra.BarSpec
 import qualified Math.Algebra.ChainComplex.BiconeSpec
+import qualified Math.Algebra.ChainComplex.CoalgebraSpec
 import qualified Math.Algebra.ChainComplex.DiskSpec
 import qualified Math.Algebra.ChainComplex.FundamentalCocycleSpec
 import qualified Math.Algebra.ChainComplex.HomSpec
@@ -42,6 +43,7 @@ spec = do
   Math.Topology.SGrp.KGnSpec.spec
   Math.Topology.SGrp.KGn.DoldKanSpec.spec
   Math.Algebra.ChainComplex.BiconeSpec.spec
+  Math.Algebra.ChainComplex.CoalgebraSpec.spec
   Math.Algebra.ChainComplex.DiskSpec.spec
   Math.Algebra.ChainComplex.TensorSpec.spec
   Math.Algebra.ChainComplex.Algebra.BarSpec.spec

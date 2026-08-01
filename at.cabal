@@ -171,6 +171,7 @@ test-suite spec
     Math.Algebra.ChainComplex.Algebra.BarSpec
     Math.Algebra.ChainComplex.Algebra.Properties
     Math.Algebra.ChainComplex.BiconeSpec
+    Math.Algebra.ChainComplex.CoalgebraSpec
     Math.Algebra.ChainComplex.DiskSpec
     Math.Algebra.ChainComplex.DVF.Properties
     Math.Algebra.ChainComplex.FundamentalCocycleSpec
