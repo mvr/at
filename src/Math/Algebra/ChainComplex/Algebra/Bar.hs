@@ -146,7 +146,7 @@ instance (Algebra a, FiniteType a) => FiniteType (Bar a) where
   basis (Bar a) = basis (TensorSusp a)
 
 shuffle :: (ChainComplex a) => a -> [Basis a] -> [Basis a] -> Combination [Basis a]
-shuffle c [] [] = 0
+shuffle c [] [] = singleComb []
 shuffle c as [] = singleComb as
 shuffle c [] bs = singleComb bs
 shuffle c (a : as) (b : bs) =
