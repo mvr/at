@@ -127,7 +127,7 @@ Plan
   - [ ] Kan Structure on Chains of Groups
 - Finite Examples
   - [x] Spheres
-    - [ ] Treat `S¹` separately (not 1-reduced)
+    - [x] Treat `S¹` separately (not 1-reduced)
   - [x] Moore Spaces
   - [x] Real Projective Spaces
   - [ ] Lens Spaces

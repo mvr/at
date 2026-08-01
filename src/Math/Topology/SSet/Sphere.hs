@@ -6,6 +6,8 @@ import Prelude hiding (Bounded)
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
+-- | This model is intended for dimensions at least two. Use
+-- 'Math.Topology.SSet.Circle.Circle' for \(S^1\).
 newtype Sphere = Sphere {sphereDim :: Int}
 
 instance Show Sphere where
@@ -37,7 +39,6 @@ instance Pointed Sphere where
 
 instance ZeroReduced Sphere
 
--- err, as long as d > 1
 instance OneReduced Sphere
 
 instance Effective Sphere

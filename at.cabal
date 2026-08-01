@@ -82,6 +82,7 @@ library
     Math.Topology.SGrp.Wbar
     Math.Topology.SGrp.WbarDiscrete
     Math.Topology.SSet
+    Math.Topology.SSet.Circle
     Math.Topology.SSet.DVF
     Math.Topology.SSet.Effective
     Math.Topology.SSet.Moore
@@ -187,6 +188,7 @@ test-suite spec
     Math.Topology.SGrp.WbarDiscreteSpec
     Math.Topology.SGrp.WbarSpec
     Math.Topology.SSetSpec
+    Math.Topology.SSet.CircleSpec
     Math.Topology.SSet.MooreSpec
     Math.Topology.SSet.Properties
     Math.Topology.SSet.ProductSpec

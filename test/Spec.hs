@@ -18,6 +18,7 @@ import qualified Math.Topology.SGrp.KGn.DoldKanSpec
 import qualified Math.Topology.SGrp.KGnSpec
 import qualified Math.Topology.SGrp.WbarDiscreteSpec
 import qualified Math.Topology.SGrp.WbarSpec
+import qualified Math.Topology.SSet.CircleSpec
 import qualified Math.Topology.SSet.MooreSpec
 import qualified Math.Topology.SSet.ProductSpec
 import qualified Math.Topology.SSet.RPnSpec
@@ -50,6 +51,7 @@ spec = do
   Math.Algebra.ChainComplex.HomSpec.spec
   Math.Topology.SSet.ProductSpec.spec
   Math.Topology.SSet.SphereSpec.spec
+  Math.Topology.SSet.CircleSpec.spec
   Math.Topology.SSet.MooreSpec.spec
   Math.Topology.SSet.SkeletonSpec.spec
   Math.Topology.SSet.RPnSpec.spec
