@@ -22,7 +22,7 @@ spec = describe "bicone" $ do
       rightBasis = [0 .. 3] >>= basis right
 
   describe "chain complex" $
-    ChainComplexProperties.checkChainConditionOn bicone "bicone" biconeBasis
+    ChainComplexProperties.checkChainConditionOn bicone biconeBasis
 
   describe "left projection reduction" $
     ReductionProperties.checkOn

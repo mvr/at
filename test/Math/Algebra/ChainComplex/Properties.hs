@@ -27,22 +27,16 @@ isIdOnAll m bs = forM_ bs (\b -> isIdOn b m)
 isZeroOnAll :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => Morphism a b -> [Basis a] -> Expectation
 isZeroOnAll m bs = forM_ bs (\b -> isZeroOn b m)
 
-checkChainConditionOn :: (ChainComplex a, Show (Basis a)) => a -> String -> [Basis a] -> Spec
-checkChainConditionOn a name as = do
+checkChainConditionOn :: (ChainComplex a, Show (Basis a)) => a -> [Basis a] -> Spec
+checkChainConditionOn a as = do
   it "the differential should have degree -1" $
     morphismDegree (diff a) `shouldBe` (-1)
   it "images should be valid" $
     forM_ as (\b -> diff a `onBasis` b `shouldSatisfy` validComb a)
-  it ("∂ ∘ ∂ = 0 for " ++ name) $ (diff a . diff a) `isZeroOnAll` as
+  it "∂ ∘ ∂ = 0" $ (diff a . diff a) `isZeroOnAll` as
 
 checkChainCondition :: (FiniteType a, Show (Basis a)) => a -> Int -> Spec
-checkChainCondition a n = do
-  let as = [0 .. n] >>= basis a
-  it "the differential should have degree -1" $
-    morphismDegree (diff a) `shouldBe` (-1)
-  it "images should be valid" $
-    forM_ as (\b -> diff a `onBasis` b `shouldSatisfy` validComb a)
-  it ("∂ ∘ ∂ = 0") $ (diff a . diff a) `isZeroOnAll` as
+checkChainCondition a n = checkChainConditionOn a ([0 .. n] >>= basis a)
 
 checkChainMap :: (ChainComplex a, ChainComplex a', Show (Basis a'), Show (Basis a)) => a -> a' -> String -> [Basis a] -> Morphism a a' -> Spec
 checkChainMap a a' name as m = do

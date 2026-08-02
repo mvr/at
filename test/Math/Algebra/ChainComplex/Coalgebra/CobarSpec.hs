@@ -81,7 +81,6 @@ spec = describe "Cobar" $ do
 
     ChainComplexProperties.checkChainConditionOn
       tensorDesusp
-      "tensor desuspension"
       [[], [DiskBase], [DiskBoundary], [DiskInterior], [DiskInterior, DiskInterior]]
 
     it "allows degree-one generators" $

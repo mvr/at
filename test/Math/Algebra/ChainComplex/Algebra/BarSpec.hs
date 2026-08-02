@@ -29,7 +29,6 @@ spec = do
 
     ChainComplexProperties.checkChainConditionOn
       tensorSusp
-      "tensor suspension"
       [[], [DiskBase], [DiskBoundary], [DiskInterior], [DiskInterior, DiskInterior]]
 
     it "allows degree-zero generators" $
@@ -40,7 +39,6 @@ spec = do
 
     ChainComplexProperties.checkChainConditionOn
       ideal
-      "augmentation ideal"
       [DiskInterior]
 
     it "discards degree-zero boundaries" $
@@ -72,7 +70,7 @@ spec = do
             bibasis a (h, v)
       BicomplexProperties.checkChainConditions a as
     describe "is a chain complex" $
-      ChainComplexProperties.checkChainConditionOn a "bar" ([0 .. 5] >>= CC.basis a)
+      ChainComplexProperties.checkChainConditionOn a ([0 .. 5] >>= CC.basis a)
     describe "is augmented" $
       AlgebraProperties.checkAugmented 5 a
 
@@ -85,4 +83,4 @@ spec = do
             bibasis a (h, v)
       BicomplexProperties.checkChainConditions a as
     describe "is a chain complex" $
-      ChainComplexProperties.checkChainConditionOn a "bar" ([0 .. 6] >>= CC.basis a)
+      ChainComplexProperties.checkChainConditionOn a ([0 .. 6] >>= CC.basis a)

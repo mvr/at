@@ -24,8 +24,8 @@ checkOn a b as bs r@(Reduction f g h) = do
   it "f should have degree 0" $ morphismDegree f `shouldBe` 0
   it "g should have degree 0" $ morphismDegree g `shouldBe` 0
   it "h should have degree 1" $ morphismDegree h `shouldBe` 1
-  checkChainConditionOn a "top" as
-  checkChainConditionOn b "bottom" bs
+  describe "top" $ checkChainConditionOn a as
+  describe "bottom" $ checkChainConditionOn b bs
   checkChainMap a b "f" as f
   checkChainMap b a "g" bs g
 

@@ -23,6 +23,25 @@ asProductDiff ::
   CC.Morphism (NChains (Product.Product f b)) (NChains (Product.Product f b))
 asProductDiff x = CC.Morphism (-1) (CC.onBasis (CC.diff (NChains x)))
 
+checkPerturbationOn ::
+  ( SSet f,
+    SSet b,
+    SGrp g,
+    Show (GeomSimplex f),
+    Show (GeomSimplex b)
+  ) =>
+  TwistedProduct f b g ->
+  [GeomSimplex (TwistedProduct f b g)] ->
+  Spec
+checkPerturbationOn x@(TwistedProduct f b _ _ _) simplices =
+  it "computes the perturbation directly" $ do
+    let oldPerturbation =
+          asProductDiff x
+            - CC.diff (NChains (Product.Product f b))
+    forM_ simplices $ \simplex ->
+      CC.onBasis (twistedProductPerturbation x) simplex
+        `shouldBe` CC.onBasis oldPerturbation simplex
+
 spec :: Spec
 spec = do
   describe "PrincipalFibration over S2" $ do
@@ -53,13 +72,7 @@ spec = do
       SSetProperties.checkTwistOn s2 kz1 fibration [Basepoint, Cell]
     describe "SSet" $
       SSetProperties.checkOn x gs
-    it "computes the perturbation directly" $ do
-      let oldPerturbation =
-            asProductDiff x
-              - CC.diff (NChains (Product.Product kz1 s2))
-      forM_ gs $ \simplex ->
-        CC.onBasis (twistedProductPerturbation x) simplex
-          `shouldBe` CC.onBasis oldPerturbation simplex
+    checkPerturbationOn x gs
 
   describe "PrincipalFibration over S3" $ do
     let s3 = Sphere 3
@@ -102,13 +115,7 @@ spec = do
       SSetProperties.checkTwistOn s3 kz2 fibration [Basepoint, Cell]
     describe "SSet" $
       SSetProperties.checkOn x gs
-    it "computes the perturbation directly" $ do
-      let oldPerturbation =
-            asProductDiff x
-              - CC.diff (NChains (Product.Product kz2 s3))
-      forM_ gs $ \simplex ->
-        CC.onBasis (twistedProductPerturbation x) simplex
-          `shouldBe` CC.onBasis oldPerturbation simplex
+    checkPerturbationOn x gs
 
   describe "Universal principal fibration over K(ℤ/2,2)" $ do
     let g = WbarDiscrete (Zmod 2)
@@ -120,10 +127,4 @@ spec = do
       SSetProperties.checkTwistOn b g twist ([0 .. 4] >>= geomBasis b)
     describe "SSet" $
       SSetProperties.check 4 x
-    it "computes the perturbation directly" $ do
-      let oldPerturbation =
-            asProductDiff x
-              - CC.diff (NChains (Product.Product g b))
-      forM_ ([0 .. 4] >>= geomBasis x) $ \simplex ->
-        CC.onBasis (twistedProductPerturbation x) simplex
-          `shouldBe` CC.onBasis oldPerturbation simplex
+    checkPerturbationOn x ([0 .. 4] >>= geomBasis x)

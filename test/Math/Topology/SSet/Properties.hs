@@ -77,6 +77,30 @@ checkOn a gs = do
           let d = geomSimplexDim a g
            in when (d >= 1) $ length (geomFaces a g) `shouldBe` d + 1
       )
+  checkSimplexPropertiesOn a gs
+
+check :: (FiniteType a, Show (GeomSimplex a)) => Int -> a -> Spec
+check n a = do
+  let basisByDegree = [(degree, geomBasis a degree) | degree <- [0 .. n]]
+      basisSimplices = basisByDegree >>= snd
+
+  it "basis simplices should be valid" $
+    forM_ basisSimplices (\g -> g `shouldSatisfy` isGeomSimplex a)
+  it "basis simplices have correct dimension" $
+    forM_ basisByDegree $ \(degree, simplices) ->
+      forM_ simplices (\g -> geomSimplexDim a g `shouldBe` degree)
+  it "should have the correct number of faces" $
+    forM_ (drop 1 basisByDegree) $ \(degree, simplices) ->
+      forM_ simplices (\g -> length (geomFaces a g) `shouldBe` degree + 1)
+
+  checkSimplexPropertiesOn a basisSimplices
+
+checkSimplexPropertiesOn ::
+  (SSet a, Show (GeomSimplex a)) =>
+  a ->
+  [GeomSimplex a] ->
+  Spec
+checkSimplexPropertiesOn a gs = do
   it "faces should be valid simplices " $
     forM_ gs (checkFaces a)
   it "faces should have correct dimensions" $
@@ -85,24 +109,6 @@ checkOn a gs = do
     forM_ gs (checkNonDegenFaces a)
   it "should satisfy the simplicial identities " $
     forM_ gs (checkIdentities a)
-
-check :: (FiniteType a, Show (GeomSimplex a)) => Int -> a -> Spec
-check n a = do
-  -- TODO compute the bases once instead of repeatedly
-  it "basis simplices should be valid" $
-    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (\g -> g `shouldSatisfy` isGeomSimplex a))
-  it "basis simplices have correct dimension" $
-    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (\g -> geomSimplexDim a g `shouldBe` i))
-  it "should have the correct number of faces" $
-    forM_ [1 .. n] (\i -> forM_ (geomBasis a i) (\g -> length (geomFaces a g) `shouldBe` (i + 1)))
-  it "faces should be valid simplices " $
-    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkFaces a))
-  it "faces should have correct dimensions" $
-    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkDims a))
-  it "identifies the nondegenerate faces" $
-    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkNonDegenFaces a))
-  it "should satisfy the simplicial identities " $
-    forM_ [0 .. n] (\i -> forM_ (geomBasis a i) (checkIdentities a))
 
 checkMorphismFaces :: (SSet a, SSet b, Show (GeomSimplex a), Show (GeomSimplex b)) => a -> b -> Morphism a b -> GeomSimplex a -> Expectation
 checkMorphismFaces a b m g = do

@@ -42,10 +42,4 @@ checkOn a bs = do
     forM_ bs (checkSourceTarget a)
 
 check :: (FiniteType a, DVF a, Show (Basis a)) => Int -> a -> Spec
-check n a = do
-  it "should yield valid partners" $
-    forM_ [0 .. n] (\i -> forM_ (basis a i) (checkValidResult a))
-  it "should give regular faces" $
-    forM_ [0 .. n] (\i -> forM_ (basis a i) (checkIsFace a))
-  it "should be a bijection" $
-    forM_ [0 .. n] (\i -> forM_ (basis a i) (checkSourceTarget a))
+check n a = checkOn a ([0 .. n] >>= basis a)
