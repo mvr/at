@@ -63,6 +63,15 @@ tensorAssoc = basisMorphism $ \((a, b), c) -> (a, (b, c))
 tensorAssocInv :: Morphism (Tensor a (Tensor b c)) (Tensor (Tensor a b) c)
 tensorAssocInv = basisMorphism $ \(a, (b, c)) -> ((a, b), c)
 
+-- | The symmetry of chain complexes, including the Koszul sign.
+tensorSwap ::
+  (ChainComplex a, ChainComplex b) =>
+  a ->
+  b ->
+  Morphism (Tensor a b) (Tensor b a)
+tensorSwap a b = Morphism 0 $ \(left, right) ->
+  kozulRule (degree a left * degree b right) (singleComb (right, left))
+
 tensorUnitL :: Morphism (Tensor () a) a
 tensorUnitL = basisMorphism snd
 
