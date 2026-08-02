@@ -16,7 +16,7 @@
 -- 4. Extract the twisting cochain \(t\) from \(A ⊗_t G\)
 module Math.Topology.SSet.TwistedProduct where
 
--- The following equations are satisfied:
+-- The following right-action equations are satisfied:
 -- \[
 -- \begin{aligned}
 --   ∂_0(τ b) &= τ(∂_1 b) · [τ(∂_0 b)]^{-1} \\
@@ -41,7 +41,7 @@ import Math.Topology.SSet.NChains
 import Math.Topology.SSet.Product
 import Prelude hiding (id, return, (.))
 
-type Action g f = Morphism (Product f g) f
+type RightAction g f = Morphism (Product f g) f
 
 newtype Twist b g = Twist {twistOnGeom :: GeomSimplex b -> Simplex g}
 
@@ -54,7 +54,7 @@ twistOnFor a g f (Degen i s)
 pullback :: (SSet b, Pointed g) => b -> g -> Twist b g -> Morphism a b -> Twist a g
 pullback b g t f = Twist $ \a -> twistOnFor b g t (f `onGeomSimplex` a)
 
-data TwistedProduct f b g = TwistedProduct f b g (Action g f) (Twist b g)
+data TwistedProduct f b g = TwistedProduct f b g (RightAction g f) (Twist b g)
 
 type TotalSpace b g = TwistedProduct g b g
 
