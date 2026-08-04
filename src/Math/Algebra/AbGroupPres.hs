@@ -138,10 +138,12 @@ fromPresentation m = AbGroupPres m (M.forceMatrix d) (M.forceMatrix li) (M.force
 -- MX = 0   <->   exists Y. X = LY
 -- So the image of L is the kernel of M
 matrixKernel :: Matrix Integer -> Matrix Integer
-matrixKernel m =
-  if nonzeroes /= 0
-    then M.forceMatrix $ M.submatrix 1 (M.nrows ri) (nonzeroes + 1) (M.ncols ri) ri
-    else M.identity (M.ncols m)
+matrixKernel m
+  | nonzeroes == 0 = M.identity (M.ncols m)
+  | nonzeroes == M.ncols m = M.zero (M.ncols m) 0
+  | otherwise =
+      M.forceMatrix $
+        M.submatrix 1 (M.nrows ri) (nonzeroes + 1) (M.ncols ri) ri
   where
     (Triple _ _ d _ ri) = smithNormalForm m
     diag = V.toList $ M.getDiag d
@@ -150,9 +152,13 @@ matrixKernel m =
 -- This solves (M L) (X Y)^T = 0 and returns the part of the solution
 -- corresponding to X.
 matrixKernelModulo :: Matrix Integer -> Matrix Integer -> Matrix Integer
-matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols bigl) bigl
+matrixKernelModulo m l
+  | M.ncols kernel == 0 = M.zero (M.ncols m) 0
+  | otherwise =
+      M.forceMatrix $
+        M.submatrix 1 (M.ncols m) 1 (M.ncols kernel) kernel
   where
-    bigl = matrixKernel (m <|> l)
+    kernel = matrixKernel (m <|> l)
 
 -- If SX = A with S a square diagonal matrix, calculate S^{-1}A if possible
 divideDiag :: Matrix Integer -> Matrix Integer -> Maybe (Matrix Integer)

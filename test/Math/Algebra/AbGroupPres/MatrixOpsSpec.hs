@@ -11,6 +11,21 @@ import TestSupport.ArbitraryInstances
 
 spec :: Spec
 spec = do
+  describe "matrixKernel" $
+    it "represents a trivial full-rank kernel with no columns" $ do
+      let matrix = M.fromList 1 1 [2]
+          kernel = matrixKernel matrix
+      (M.nrows kernel, M.ncols kernel) `shouldBe` (1, 0)
+      matrix * kernel `shouldBe` M.zero 1 0
+
+  describe "matrixKernelModulo" $
+    it "represents a trivial full-rank kernel with no columns" $ do
+      let matrix = M.fromList 2 1 [1, 0]
+          modulus = M.fromList 2 1 [0, 1]
+          kernel = matrixKernelModulo matrix modulus
+      (M.nrows kernel, M.ncols kernel) `shouldBe` (1, 0)
+      matrix * kernel `shouldBe` M.zero 2 0
+
   describe "divideDiag" $ do
     it "divides correctly" $
       property $ do
