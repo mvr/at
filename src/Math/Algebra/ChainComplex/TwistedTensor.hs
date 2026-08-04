@@ -1,8 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Twisted product of chain complexes of free Z-modules. The left
--- factor must be a coalgebra and the right an algebra. There is an
--- (unimplemented) extension to comodules and modules.
+-- | Twisted products of chain complexes of free Z-modules, in algebra-first
+-- order for a right action.
 -- See Section 8.3 in https://arxiv.org/abs/1208.3816
 -- Twisting cochains and power maps in https://arxiv.org/abs/1106.4787
 -- Anything useful in https://arxiv.org/abs/1006.2781 on algebra structures?
@@ -16,46 +15,96 @@ import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
 import Prelude hiding (id, return, (.))
 
--- | The twisting cochain tau has degree -1
-data TwistedTensor a b = TwistedTensor a b (Morphism a b)
+-- | A twisted tensor product for a right action, with the algebra (the
+-- fibre) before the coalgebra (the base). The twisting cochain still goes
+-- from the coalgebra to the algebra.
+data TwistedTensor a c = TwistedTensor
+  { twistedAlgebra :: a,
+    twistedCoalgebra :: c,
+    twistingCochain :: Morphism c a
+  }
 
-perturbationForCochain :: (Coalgebra a, Algebra b) => a -> b -> Morphism a b -> Morphism (Tensor a b) (Tensor a b)
-perturbationForCochain a b tauMor = delta
+-- | The perturbation on @A ⊗ C@ determined by a twisting cochain
+-- @C -> A@ and the right action of @A@ on itself.
+perturbationForCochain ::
+  (Algebra a, Coalgebra c) =>
+  a ->
+  c ->
+  Morphism c a ->
+  Morphism (Tensor a c) (Tensor a c)
+perturbationForCochain a c tauMor = delta
   where
-    (ClosedMorphism _ delta _) = (idA ⊗ mu) . assoc . ((idA ⊗ tau) ⊗ idB) . (del ⊗ idB)
+    (ClosedMorphism _ delta _) =
+      (mu ⊗ idC)
+        . assocInv
+        . (idA ⊗ (tau ⊗ idC))
+        . (idA ⊗ del)
 
-    mu = ClosedMorphism (Tensor b b) (muMor b) b
-    del = ClosedMorphism a (delMor a) (Tensor a a)
-    tau = ClosedMorphism a tauMor b
+    mu = ClosedMorphism (Tensor a a) (muMor a) a
+    del = ClosedMorphism c (delMor c) (Tensor c c)
+    tau = ClosedMorphism c tauMor a
     idA = ClosedMorphism a id a
-    idB = ClosedMorphism b id b
-    assoc = ClosedMorphism (Tensor (Tensor a b) b) tensorAssoc (Tensor a (Tensor b b))
+    idC = ClosedMorphism c id c
+    assocInv =
+      ClosedMorphism
+        (Tensor a (Tensor a c))
+        tensorAssocInv
+        (Tensor (Tensor a a) c)
     (⊗) = tensorFuncArr
 
--- | Calculating the twisting cochain from a perturbation on a tensor
--- product: franz:twisting
--- C(B) η⊗1 −−→ C(G) ⊗ C(B) dt−d⊗ −−−→ C(G) ⊗ C(B) 1⊗ε −−→ C(G)
-cochainForPerturbation :: (Coalgebra a, Algebra b) => a -> b -> Morphism (Tensor a b) (Tensor a b) -> Morphism a b
-cochainForPerturbation a b delta = undefined
+-- | Recover the twisting cochain from a perturbation on an algebra-first
+-- tensor product. The composite is @η ⊗ 1@, the perturbation, and
+-- @1 ⊗ ε@.
+cochainForPerturbation ::
+  (Algebra a, Coalgebra c) =>
+  a ->
+  c ->
+  Morphism (Tensor a c) (Tensor a c) ->
+  Morphism c a
+cochainForPerturbation a c delta =
+  tensorUnitR
+    . tensorFunc a c id (counitMor c)
+    . delta
+    . tensorFunc () c (unitMor a) id
+    . tensorUnitLInv
 
-instance (Coalgebra a, Algebra b) => ChainComplex (TwistedTensor a b) where
-  type Basis (TwistedTensor a b) = (Basis a, Basis b)
+twistedTensorPerturbation ::
+  (Algebra a, Coalgebra c) =>
+  TwistedTensor a c ->
+  Morphism (Tensor a c) (Tensor a c)
+twistedTensorPerturbation (TwistedTensor a c tau) =
+  perturbationForCochain a c tau
 
-  isBasis (TwistedTensor a b _) (s, t) = isBasis a s && isBasis b t
-  degree (TwistedTensor a b _) = degree (Tensor a b)
+instance (Algebra a, Coalgebra c) => ChainComplex (TwistedTensor a c) where
+  type Basis (TwistedTensor a c) = (Basis a, Basis c)
+
+  isBasis (TwistedTensor a c _) (s, t) = isBasis a s && isBasis c t
+  degree (TwistedTensor a c _) = degree (Tensor a c)
 
   diff twisted@(TwistedTensor a c _) =
     sameBasisMorphism $
       diff (Perturbed (Tensor a c) (twistedTensorPerturbation twisted))
 
-toTwisted :: (Coalgebra a, Algebra b) => Perturbed (Tensor a b) -> TwistedTensor a b
-toTwisted (Perturbed (Tensor a b) delta) = TwistedTensor a b (cochainForPerturbation a b delta)
+toTwisted ::
+  (Algebra a, Coalgebra c) =>
+  Perturbed (Tensor a c) ->
+  TwistedTensor a c
+toTwisted (Perturbed (Tensor a c) delta) =
+  TwistedTensor a c (cochainForPerturbation a c delta)
 
-fromTwisted :: (Coalgebra a, Algebra b) => TwistedTensor a b -> Perturbed (Tensor a b)
-fromTwisted (TwistedTensor a b tau) = Perturbed (Tensor a b) (perturbationForCochain a b tau)
+fromTwisted ::
+  (Algebra a, Coalgebra c) =>
+  TwistedTensor a c ->
+  Perturbed (Tensor a c)
+fromTwisted twisted@(TwistedTensor a c _) =
+  Perturbed (Tensor a c) (twistedTensorPerturbation twisted)
 
-isoPerturbed :: (Coalgebra a, Algebra b) => Morphism (Perturbed (Tensor a b)) (TwistedTensor a b)
+isoPerturbed ::
+  (Algebra a, Coalgebra c) =>
+  Morphism (Perturbed (Tensor a c)) (TwistedTensor a c)
 isoPerturbed = basisMorphism id
 
-isoPerturbedInv :: (Coalgebra a, Algebra b) => Morphism (TwistedTensor a b) (Perturbed (Tensor a b))
+isoPerturbedInv ::
+  (Algebra a, Coalgebra c) =>
+  Morphism (TwistedTensor a c) (Perturbed (Tensor a c))
 isoPerturbedInv = basisMorphism id

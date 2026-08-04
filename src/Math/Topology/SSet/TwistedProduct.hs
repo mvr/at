@@ -10,10 +10,10 @@
 -- complicated method by Szczarba, a recursive definition by Morace
 -- and Prouté, and what Kenzo does. That is:
 --
--- 1. Start with the Eilenberg-Zilber reduction \(A × G ⇛ A ⊗ G \)
--- 2. Determine the perturbation on \(A × G\) that yields \(A ×_τ G\)
--- 3. Use the perturbation lemma to transfer this down to \(A ⊗_t G\)
--- 4. Extract the twisting cochain \(t\) from \(A ⊗_t G\)
+-- 1. Start with the Eilenberg-Zilber reduction \(G × A ⇛ G ⊗ A \)
+-- 2. Determine the perturbation on \(G × A\) that yields \(G ×_τ A\)
+-- 3. Use the perturbation lemma to transfer this down to \(G ⊗_t A\)
+-- 4. Extract the twisting cochain \(t\) from \(G ⊗_t A\)
 module Math.Topology.SSet.TwistedProduct where
 
 -- The following right-action equations are satisfied:
@@ -32,7 +32,6 @@ import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
-import Math.Algebra.Combination (singleComb)
 import Math.Topology.SGrp
 import Math.Topology.SSet
 import Math.Topology.SSet.DVF
@@ -66,18 +65,18 @@ instance (SSet f, SSet b, SGrp g) => SSet (TwistedProduct f b g) where
 
   isGeomSimplex (TwistedProduct f b _ _ _) = isGeomSimplex (Product f b)
 
-  geomSimplexDim (TwistedProduct f _ _ _ _) (s, _) = simplexDim f s
+  geomSimplexDim (TwistedProduct _ b _ _ _) (_, base) = simplexDim b base
 
-  geomFace (TwistedProduct f b g act tau) (s, t) i
+  geomFace (TwistedProduct f b g act tau) (fibre, base) i
     | i == 0 =
         prodNormalise
-          ( act `onSimplex` prodNormalise (face f s 0, twistOnFor b g tau t),
-            face b t 0
+          ( act `onSimplex` prodNormalise (face f fibre 0, twistOnFor b g tau base),
+            face b base 0
           )
-    | otherwise = prodNormalise (face f s i, face b t i)
+    | otherwise = prodNormalise (face f fibre i, face b base i)
 
-instance (FiniteType b, FiniteType f, SGrp g) => FiniteType (TwistedProduct f b g) where
-  geomBasis (TwistedProduct f b _ _ _) n = [(s, t) | s <- allSimplices f n, t <- allSimplices b n, isGeomSimplex (Product f b) (s, t)]
+instance (FiniteType f, FiniteType b, SGrp g) => FiniteType (TwistedProduct f b g) where
+  geomBasis (TwistedProduct f b _ _ _) n = [(fibre, base) | fibre <- allSimplices f n, base <- allSimplices b n, isGeomSimplex (Product f b) (fibre, base)]
 
 instance (SSet f, SSet b, SGrp g) => DVF (TwistedProduct f b g) where
   vf (TwistedProduct f b _ _ _) = status (Product f b)
@@ -104,8 +103,8 @@ twistedProductPerturbation ::
 twistedProductPerturbation t@(TwistedProduct f b _ _ _) =
   CC.Morphism (-1) perturb
   where
-    perturb simplex@(s, _)
-      | simplexDim f s == 0 = 0
+    perturb simplex@(_, base)
+      | simplexDim b base == 0 = 0
       | otherwise = asChain twistedFace - asChain untwistedFace
       where
         twistedFace = geomFace t simplex 0

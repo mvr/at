@@ -60,10 +60,10 @@ spec = do
         n = 3
         ks = [-3 .. -1] ++ [1 .. 3]
         gs =
-          [ (s, t)
-          | s <- someSimplices kz1 n (\d -> if d <= 3 then sequence (replicate d ks) else []),
-            t <- allSimplices s2 n,
-            isGeomSimplex (Product.Product kz1 s2) (s, t)
+          [ (fibre, base)
+          | base <- allSimplices s2 n,
+            fibre <- someSimplices kz1 n (\d -> if d <= 3 then sequence (replicate d ks) else []),
+            isGeomSimplex (Product.Product kz1 s2) (fibre, base)
           ]
 
     describe "classifying morphism" $
@@ -103,10 +103,10 @@ spec = do
                 someKz1 <$> reverse [0 .. dimension - 1]
         someKz2 dimension = someSimplices kz2 dimension someGeomKz2
         gs =
-          [ (s, t)
-          | s <- someKz2 n,
-            t <- allSimplices s3 n,
-            isGeomSimplex (Product.Product kz2 s3) (s, t)
+          [ (fibre, base)
+          | base <- allSimplices s3 n,
+            fibre <- someKz2 n,
+            isGeomSimplex (Product.Product kz2 s3) (fibre, base)
           ]
 
     describe "classifying morphism" $
