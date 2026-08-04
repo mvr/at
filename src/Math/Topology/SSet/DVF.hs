@@ -13,10 +13,5 @@ import Math.Topology.SSet.NChains
 class SSet a => DVF a where
   vf :: a -> GeomSimplex a -> CC.Status (GeomSimplex a)
 
-  -- | A directly generated critical geometric basis, when one is available.
-  criticalGeomBasis :: a -> Int -> Maybe [GeomSimplex a]
-  criticalGeomBasis _ _ = Nothing
-
 instance DVF a => CC.DVF (NChains a) where
   vf (NChains a) = vf a
-  criticalBasis (NChains a) = criticalGeomBasis a

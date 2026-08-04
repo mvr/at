@@ -34,9 +34,11 @@ data Status a
 class ChainComplex a => DVF a where
   vf :: a -> Basis a -> Status (Basis a)
 
-  -- | A directly generated critical basis, when one is available.
-  criticalBasis :: a -> Int -> Maybe [Basis a]
-  criticalBasis _ _ = Nothing
+-- | A discrete vector field with finitely many critical cells in each degree.
+class DVF a => FiniteCritical a where
+  criticalBasis :: a -> Int -> [Basis a]
+  default criticalBasis :: FiniteType a => a -> Int -> [Basis a]
+  criticalBasis a n = filter (isCritical a) (basis a n)
 
 isCritical :: DVF a => a -> Basis a -> Bool
 isCritical a b
@@ -53,11 +55,8 @@ instance DVF a => ChainComplex (CriticalComplex a) where
   degree (CriticalComplex a) = degree a
   diff (CriticalComplex a) = dK a (diff a)
 
-instance (DVF a, FiniteType a) => FiniteType (CriticalComplex a) where
-  basis (CriticalComplex a) n =
-    case criticalBasis a n of
-      Just critical -> critical
-      Nothing -> filter (isCritical a) (basis a n)
+instance FiniteCritical a => FiniteType (CriticalComplex a) where
+  basis (CriticalComplex a) = criticalBasis a
 
 proj :: DVF a => a -> Morphism a (CriticalComplex a)
 proj a = Morphism 0 $ \b -> case vf a b of

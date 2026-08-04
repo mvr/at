@@ -9,7 +9,6 @@ import Math.Algebra.Group
 import Math.Topology.SGrp.KGn ()
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet
-import qualified Math.Topology.SSet.DVF as SSetDVF
 import Math.Topology.SSet.NChains
 
 import qualified Math.Algebra.ChainComplex.DVF.Properties as DVFProperties
@@ -36,6 +35,14 @@ spec = do
         gs
         criticalBasis
         (dvfReduction (NChains p))
+    it "enumerates the finite critical complex of the infinite source" $ do
+      let chains = NChains p
+      forM_ [-1 .. 4] $ \degree ->
+        CC.basis (CriticalComplex chains) degree
+          `shouldBe` case degree of
+            0 -> [[]]
+            1 -> [[1]]
+            _ -> []
 
   describe "K(ℤ/n,1)s" $
     forM_ [2, 3, 4, 5] $ \i ->
@@ -63,7 +70,7 @@ spec = do
                   | degree < 0 = []
                   | otherwise = [alternating]
                 expected = filter (isCritical chains) (CC.basis chains degree)
-            SSetDVF.criticalGeomBasis p degree `shouldBe` Just generated
+            criticalBasis chains degree `shouldBe` generated
             CC.basis (CriticalComplex chains) degree
               `shouldBe` generated
             when (degree >= 0) $

@@ -106,6 +106,8 @@ prodFunc m m' = Morphism $ \(s, t) -> prodNormalise (m `onSimplex` s, m' `onSimp
 instance (SSet a, SSet b) => DVF (Product a b) where
   vf = status
 
+instance (FiniteType a, FiniteType b) => FiniteCritical (NChains (Product a b))
+
 data Direction = X | Y | Diag
 
 data PathStep a b

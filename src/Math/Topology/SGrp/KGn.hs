@@ -60,6 +60,11 @@ instance DVF KZ1 where
     | a1 < 0 = Source (1 : a1 : as) Pos
     | otherwise = Source (1 : a1 - 1 : as) Neg
 
+instance FiniteCritical (NChains KZ1) where
+  criticalBasis _ 0 = [[]]
+  criticalBasis _ 1 = [[1]]
+  criticalBasis _ _ = []
+
 criticalIso :: CC.Morphism (CriticalComplex (NChains KZ1)) CircleComplex
 criticalIso = basisMorphism $ \case
   [] -> Left ()
@@ -88,9 +93,10 @@ instance DVF (WbarDiscrete Zmod) where
     | otherwise = Target (a1 + 1 : as) Neg
   vf (WbarDiscrete (Zmod n)) (a1 : as) = Source (1 : a1 - 1 : as) Neg
 
-  criticalGeomBasis (WbarDiscrete (Zmod n)) degree
-    | degree < 0 = Just []
-    | otherwise = Just [take degree (cycle [1, ZmodElement (n - 1)])]
+instance FiniteCritical (NChains (WbarDiscrete Zmod)) where
+  criticalBasis (NChains (WbarDiscrete (Zmod n))) degree
+    | degree < 0 = []
+    | otherwise = [take degree (cycle [1, ZmodElement (n - 1)])]
 
 instance Effective (WbarDiscrete Zmod) where
   type Model (WbarDiscrete Zmod) = CriticalComplex (NChains (WbarDiscrete Zmod))

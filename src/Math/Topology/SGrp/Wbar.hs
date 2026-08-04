@@ -293,6 +293,10 @@ instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
             WEntry entrySimplex (unnormaliseWbar tailSimplex)
   vf _ (WUnit _) = error "Wbar.vf: invalid leading unit"
 
+instance
+  (SAb g, ZeroReduced g, FiniteType g) =>
+  FiniteCritical (NChains (Wbar g))
+
 stripBar :: Pointed g => g -> GeomSimplex (Wbar g) -> [GeomSimplex g]
 stripBar _ (WbarSimplex _ entries) = fmap underlyingGeom entries
 

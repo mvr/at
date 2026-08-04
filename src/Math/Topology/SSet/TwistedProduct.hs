@@ -29,6 +29,7 @@ module Math.Topology.SSet.TwistedProduct where
 
 import Math.Algebra.ChainComplex hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
+import Math.Algebra.ChainComplex.DVF (FiniteCritical)
 import Math.Algebra.ChainComplex.Equivalence
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.ChainComplex.Tensor
@@ -80,6 +81,10 @@ instance (FiniteType f, FiniteType b, SGrp g) => FiniteType (TwistedProduct f b 
 
 instance (SSet f, SSet b, SGrp g) => DVF (TwistedProduct f b g) where
   vf (TwistedProduct f b _ _ _) = status (Product f b)
+
+instance
+  (FiniteType f, FiniteType b, SGrp g) =>
+  FiniteCritical (NChains (TwistedProduct f b g))
 
 totalSpaceChainsIso ::
   (SSet f, SSet b, SGrp g) =>
