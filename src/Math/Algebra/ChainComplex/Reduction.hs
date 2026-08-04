@@ -16,6 +16,18 @@ data Reduction a b = Reduction
     reductionH :: Morphism a a -- degree 1
   }
 
+-- | Retag all three maps of a reduction between complexes with the same
+-- source and target basis representations.
+sameBasisReduction ::
+  (Basis a ~ Basis a', Basis b ~ Basis b') =>
+  Reduction a b ->
+  Reduction a' b'
+sameBasisReduction (Reduction project include homotopy) =
+  Reduction
+    (sameBasisMorphism project)
+    (sameBasisMorphism include)
+    (sameBasisMorphism homotopy)
+
 instance Semigroupoid Reduction where
   type Object Reduction a = ChainComplex a
   (Reduction f1 g1 h1) . (Reduction f2 g2 h2) = Reduction (f1 . f2) (g2 . g1) (h2 + (g2 . h1 . f2))
@@ -46,7 +58,7 @@ instance (FiniteType a) => FiniteType (Perturbed a) where
   basis (Perturbed a _) = basis a
 
 liftPerturbedMorphism :: Morphism a b -> Morphism (Perturbed a) (Perturbed b)
-liftPerturbedMorphism (Morphism d f) = Morphism d f
+liftPerturbedMorphism = sameBasisMorphism
 
 -- | The Basic Perturbation Lemma
 -- The recursion only terminates if (deltahat . h) is
@@ -59,7 +71,10 @@ perturb ::
   Morphism a a ->
   (Perturbed a, Perturbed b, Reduction (Perturbed a) (Perturbed b))
 perturb a b (Reduction f g h) deltahat =
-  (Perturbed a deltahat, Perturbed b delta, Reduction (liftPerturbedMorphism f') (liftPerturbedMorphism g') (liftPerturbedMorphism h'))
+  ( Perturbed a deltahat,
+    Perturbed b delta,
+    sameBasisReduction (Reduction f' g' h')
+  )
   where
     -- Write psi = (1 + deltahat h)^-1.  The right-hand formulas let the
     -- transferred differential project during the recursion, instead of first
@@ -93,7 +108,10 @@ perturbBottom ::
   Morphism b b ->
   (Perturbed a, Perturbed b, Reduction (Perturbed a) (Perturbed b))
 perturbBottom a b (Reduction f g h) delta =
-  (Perturbed a deltahat, Perturbed b delta, Reduction (liftPerturbedMorphism f) (liftPerturbedMorphism g) (liftPerturbedMorphism h))
+  ( Perturbed a deltahat,
+    Perturbed b delta,
+    sameBasisReduction (Reduction f g h)
+  )
   where
     deltahat = memoiseMorphism $ g . delta . f
 

@@ -44,9 +44,9 @@ instance (Coalgebra a, Algebra b) => ChainComplex (TwistedTensor a b) where
   isBasis (TwistedTensor a b _) (s, t) = isBasis a s && isBasis b t
   degree (TwistedTensor a b _) = degree (Tensor a b)
 
-  diff (TwistedTensor a b tauMor) =
-    Morphism (-1) $
-      onBasis (diff (Perturbed (Tensor a b) (perturbationForCochain a b tauMor)))
+  diff twisted@(TwistedTensor a c _) =
+    sameBasisMorphism $
+      diff (Perturbed (Tensor a c) (twistedTensorPerturbation twisted))
 
 toTwisted :: (Coalgebra a, Algebra b) => Perturbed (Tensor a b) -> TwistedTensor a b
 toTwisted (Perturbed (Tensor a b) delta) = TwistedTensor a b (cochainForPerturbation a b delta)

@@ -81,6 +81,16 @@ data Morphism a b = Morphism
     onBasis :: Basis a -> Combination (Basis b)
   }
 
+-- | Retag a morphism when its source and target use the same basis
+-- representations. The caller is responsible for ensuring that the
+-- corresponding differentials make the retagged map a chain map.
+sameBasisMorphism ::
+  (Basis a ~ Basis a', Basis b ~ Basis b') =>
+  Morphism a b ->
+  Morphism a' b'
+sameBasisMorphism (Morphism morphismDegree action) =
+  Morphism morphismDegree action
+
 -- | Memoise a pure function for the lifetime of the returned closure.
 --
 -- The algorithms in this package build large morphisms out of recursive

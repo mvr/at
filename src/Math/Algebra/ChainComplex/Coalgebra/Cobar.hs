@@ -64,7 +64,7 @@ instance ChainComplex c => ChainComplex (TensorDesusp c) where
   isBasis (TensorDesusp c) = isBasis (Tot (TensorDesusp c))
   degree (TensorDesusp c) = degree (Tot (TensorDesusp c))
   diff (TensorDesusp c) =
-    Morphism (-1) (onBasis (diff (Tot (TensorDesusp c))))
+    sameBasisMorphism (diff (Tot (TensorDesusp c)))
 
 instance OneReducedChainComplex c => ChainComplex (CoaugmentationCoideal c) where
   type Basis (CoaugmentationCoideal c) = Basis c
@@ -186,7 +186,7 @@ instance
 
   isBasis (Cobar c) = isBasis (Tot (Cobar c))
   degree (Cobar c) = degree (Tot (Cobar c))
-  diff (Cobar c) = Morphism (-1) (onBasis (diff (Tot (Cobar c))))
+  diff (Cobar c) = sameBasisMorphism (diff (Tot (Cobar c)))
 
 instance
   (CoaugmentedCoalgebra c, OneReducedChainComplex c) =>

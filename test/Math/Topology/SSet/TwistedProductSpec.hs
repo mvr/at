@@ -21,7 +21,7 @@ asProductDiff ::
   (SSet f, SSet b, SGrp g) =>
   TwistedProduct f b g ->
   CC.Morphism (NChains (Product.Product f b)) (NChains (Product.Product f b))
-asProductDiff x = CC.Morphism (-1) (CC.onBasis (CC.diff (NChains x)))
+asProductDiff x = CC.sameBasisMorphism (CC.diff (NChains x))
 
 checkPerturbationOn ::
   ( SSet f,

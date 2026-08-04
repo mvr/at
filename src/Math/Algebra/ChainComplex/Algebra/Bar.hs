@@ -88,7 +88,7 @@ instance ChainComplex a => ChainComplex (TensorSusp a) where
   type Basis (TensorSusp a) = [Basis a]
   isBasis (TensorSusp a) = isBasis (Tot (TensorSusp a))
   degree (TensorSusp a) = degree (Tot (TensorSusp a))
-  diff (TensorSusp a) = Morphism (-1) (onBasis (diff (Tot (TensorSusp a))))
+  diff (TensorSusp a) = sameBasisMorphism (diff (Tot (TensorSusp a)))
 
 instance ChainComplex a => ChainComplex (AugmentationIdeal a) where
   type Basis (AugmentationIdeal a) = Basis a
@@ -208,7 +208,7 @@ instance (AugmentedAlgebra a, ConnectedChainComplex a) => ChainComplex (Bar a) w
   type Basis (Bar a) = [Basis a]
   isBasis (Bar a) = isBasis (Tot (Bar a))
   degree (Bar a) = degree (Tot (Bar a))
-  diff (Bar a) = Morphism (-1) (onBasis (diff (Tot (Bar a))))
+  diff (Bar a) = sameBasisMorphism (diff (Tot (Bar a)))
 
 instance
   (AugmentedAlgebra a, ConnectedChainComplex a, FiniteType a) =>
@@ -272,14 +272,13 @@ asBarReduction ::
   (AugmentedAlgebra a, ConnectedChainComplex a) =>
   Reduction x (Perturbed (BarTensor a)) ->
   Reduction x (Bar a)
-asBarReduction (Reduction (Morphism fd f) (Morphism gd g) h) =
-  Reduction (Morphism fd f) (Morphism gd g) h
+asBarReduction = sameBasisReduction
 
 augmentationIdealReduction ::
+  (ChainComplex a, ChainComplex b) =>
   Reduction a b ->
   Reduction (AugmentationIdeal a) (AugmentationIdeal b)
-augmentationIdealReduction (Reduction (Morphism fd f) (Morphism gd g) (Morphism hd h)) =
-  Reduction (Morphism fd f) (Morphism gd g) (Morphism hd h)
+augmentationIdealReduction = sameBasisReduction
 
 -- | Lift a reduction to the unperturbed tensor algebras underlying Bar.
 barTensorReduction ::
