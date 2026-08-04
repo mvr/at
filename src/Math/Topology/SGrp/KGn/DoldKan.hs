@@ -197,7 +197,7 @@ instance (Abelian c, Ord (Element c)) => SSet (DoldKanKGn c) where
         (,value) <$> composeFace i surjection
 
 instance (Abelian c, Ord (Element c)) => Pointed (DoldKanKGn c) where
-  basepoint target = DoldKanGeomSimplex (doldKanSimplex target 0 [])
+  geomBasepoint target = DoldKanGeomSimplex (doldKanSimplex target 0 [])
 
 instance
   (Abelian c, FiniteGroup c, Ord (Element c)) =>

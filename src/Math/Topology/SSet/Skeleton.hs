@@ -36,6 +36,6 @@ instance Bounded a => Bounded (Skeleton a) where
   amplitude (Skeleton n a) = filter (<= n) (amplitude a)
 
 instance Pointed a => Pointed (Skeleton a) where
-  basepoint (Skeleton _ a) = SkeletonSimplex (basepoint a)
+  geomBasepoint (Skeleton _ a) = SkeletonSimplex (geomBasepoint a)
 
 -- instance Effective (Skeleton a)

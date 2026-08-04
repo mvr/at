@@ -35,7 +35,7 @@ instance Bounded Sphere where
   amplitude (Sphere n) = [0, n]
 
 instance Pointed Sphere where
-  basepoint _ = Basepoint
+  geomBasepoint _ = Basepoint
 
 instance ZeroReduced Sphere
 

@@ -160,7 +160,7 @@ checkTwistFaces a b m g = do
         "Twist failed exceptional face 0 of " ++ show g ++ ": got " ++ show actual ++ ", expected " ++ show expected
 
   let unitActual = m `twistOn` degen s 0
-      unitExpected = constantAt (basepoint b) d
+      unitExpected = constantAt (geomBasepoint b) d
   unless (unitActual == unitExpected) $
     expectationFailure $
       "Twist failed unit degeneracy of " ++ show g ++ ": got " ++ show unitActual ++ ", expected " ++ show unitExpected

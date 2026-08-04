@@ -48,7 +48,7 @@ newtype Twist b g = Twist {twistOnGeom :: GeomSimplex b -> Simplex g}
 twistOnFor :: (SSet b, Pointed g) => b -> g -> Twist b g -> Simplex b -> Simplex g
 twistOnFor a g f (NonDegen s) = f `twistOnGeom` s
 twistOnFor a g f (Degen i s)
-  | i == 0 = constantAt (basepoint g) (simplexDim a s)
+  | i == 0 = constantAt (geomBasepoint g) (simplexDim a s)
   | otherwise = degen (twistOnFor a g f s) (i - 1)
 
 pullback :: (SSet b, Pointed g) => b -> g -> Twist b g -> Morphism a b -> Twist a g

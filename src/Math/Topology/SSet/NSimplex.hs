@@ -38,6 +38,6 @@ instance FiniteType NSimplex where
   geomBasis (NSimplex d) i = NSimplexSimplex <$> choose (i + 1) [0 .. d]
 
 instance Pointed NSimplex where
-  basepoint _ = NSimplexSimplex [0]
+  geomBasepoint _ = NSimplexSimplex [0]
 
 instance Effective NSimplex

@@ -91,7 +91,7 @@ expandWbarSimplex g bar = go (wbarDimension bar) bar
   where
     go _ WNil = []
     go dimension (WUnit rest) =
-      constantAt (basepoint g) (dimension - 1) : go (dimension - 1) rest
+      constantAt (geomBasepoint g) (dimension - 1) : go (dimension - 1) rest
     go dimension (WEntry entry rest) =
       entry : go (dimension - 1) rest
 
@@ -151,7 +151,7 @@ unnormalise g simplex = expandWbarSimplex g (unnormaliseWbar simplex)
 
 consWbar :: Pointed g => g -> Simplex g -> WbarSimplex (Simplex g) -> WbarSimplex (Simplex g)
 consWbar g s
-  | isUnit g s = WUnit
+  | isBasepoint g s = WUnit
   | otherwise = WEntry s
 
 wbarFaceEntries :: SGrp g => g -> WbarSimplex (Simplex g) -> Int -> WbarSimplex (Simplex g)
@@ -197,7 +197,7 @@ instance (SGrp g) => SSet (Wbar g) where
         | testBit unitMask position = validEntries (position + 1) remaining
       validEntries position (s : ss) =
         simplexDim g s == dimension - position - 1
-          && not (isUnit g s)
+          && not (isBasepoint g s)
           && isSimplex g s
           && validEntries (position + 1) ss
       validEntries _ [] = False
@@ -211,7 +211,7 @@ instance (SGrp g) => SSet (Wbar g) where
   geomFace (Wbar g) bar i = normaliseWbar (wbarFaceEntries g bar i)
 
 instance SGrp g => Pointed (Wbar g) where
-  basepoint _ = WNil
+  geomBasepoint _ = WNil
 
 instance (SGrp g) => ZeroReduced (Wbar g)
 
@@ -349,6 +349,6 @@ instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where
 -- contractible.
 canonicalTwist :: (SGrp g) => g -> Twist (Wbar g) g
 canonicalTwist g = Twist $ \bar -> case bar of
-  WNil -> basepointSimplex g
+  WNil -> basepoint g
   WEntry entry _ -> entry
   WUnit _ -> error "canonicalTwist: invalid leading unit"

@@ -5,7 +5,7 @@ import Test.Hspec
 
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.Group
-import Math.Topology.SGrp (SGrp (prodMor), isUnit)
+import Math.Topology.SGrp (SGrp (prodMor))
 import Math.Topology.SGrp.KGn
 import Math.Topology.SGrp.Wbar
 import qualified Math.Topology.SGrp.Wbar as Wbar
@@ -77,7 +77,7 @@ spec = do
         forM_ (inputBars degree) $ \entries -> do
           let compressed@(WbarSimplex _ nonUnits) = wbarSimplex g entries
           expandWbarSimplex g compressed `shouldBe` entries
-          all (not . isUnit g) nonUnits `shouldBe` True
+          all (not . isBasepoint g) nonUnits `shouldBe` True
     it "rejects unit masks outside the represented dimension" $
       isGeomSimplex p (WbarSimplex 32 []) `shouldBe` False
     it "agrees with the recursive normalisation algorithm" $
@@ -108,7 +108,7 @@ spec = do
 recursiveNormalise :: Pointed g => g -> [Simplex g] -> Simplex (Wbar g)
 recursiveNormalise _ [] = NonDegen (WbarSimplex 0 [])
 recursiveNormalise g (s : ss)
-  | isUnit g s = degen (recursiveNormalise g ss) 0
+  | isBasepoint g s = degen (recursiveNormalise g ss) 0
   | otherwise =
       downshift $
         fmap
@@ -120,7 +120,7 @@ recursiveUnnormalise g (NonDegen bar) = expandWbarSimplex g bar
 recursiveUnnormalise g (Degen i s) = recursiveInsertUnit g i (recursiveUnnormalise g s)
 
 recursiveInsertUnit :: Pointed g => g -> Int -> [Simplex g] -> [Simplex g]
-recursiveInsertUnit g 0 ss = constantAt (basepoint g) (length ss) : ss
+recursiveInsertUnit g 0 ss = constantAt (geomBasepoint g) (length ss) : ss
 recursiveInsertUnit g i (s : ss) = degen s (i - 1) : recursiveInsertUnit g (i - 1) ss
 recursiveInsertUnit _ _ _ = error "recursiveInsertUnit: impossible"
 

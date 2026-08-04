@@ -115,7 +115,7 @@ instance SSet KZmod2_1 where
   geomFace _ s i = Degen (i - 1) (NonDegen (s - 2))
 
 instance Pointed KZmod2_1 where
-  basepoint _ = 0
+  geomBasepoint _ = 0
 
 instance ZeroReduced KZmod2_1
 

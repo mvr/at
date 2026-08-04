@@ -35,6 +35,6 @@ instance FiniteType Moore where
     | otherwise = []
 
 instance Pointed Moore where
-  basepoint _ = Basepoint
+  geomBasepoint _ = Basepoint
 
 instance Effective Moore

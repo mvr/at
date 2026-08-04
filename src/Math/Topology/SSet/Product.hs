@@ -73,7 +73,7 @@ instance (SSet a, SSet b) => SSet (Product a b) where
       dimension = simplexDim a s
 
 instance (Pointed a, Pointed b) => Pointed (Product a b) where
-  basepoint (Product a b) = (NonDegen $ basepoint a, NonDegen $ basepoint b)
+  geomBasepoint (Product a b) = (basepoint a, basepoint b)
 
 instance (ZeroReduced a, ZeroReduced b) => ZeroReduced (Product a b)
 
@@ -203,7 +203,7 @@ instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NChains a) where
   delMor (NChains a) = reductionF (ezReduction (Product a a)) . fmap diagMor
 
 instance ZeroReduced a => CoaugmentedCoalgebra (NChains a) where
-  coaugmentationMor (NChains a) = basisMorphism (const (basepoint a))
+  coaugmentationMor (NChains a) = basisMorphism (const (geomBasepoint a))
 
 instance (Effective a, Effective b) => Effective (Product a b) where
   type Model (Product a b) = Tensor (Model a) (Model b)

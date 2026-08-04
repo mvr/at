@@ -33,7 +33,7 @@ instance Bounded Circle where
   amplitude _ = [0, 1]
 
 instance Pointed Circle where
-  basepoint _ = CircleBasepoint
+  geomBasepoint _ = CircleBasepoint
 
 instance ZeroReduced Circle
 

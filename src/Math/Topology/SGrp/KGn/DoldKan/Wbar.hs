@@ -94,7 +94,7 @@ instance (DoldKanWbarModel g) => DoldKanWbarModel (Wbar g) where
   emSimplexFromDoldKan
     p@(Wbar g)
     simplex@(DoldKanGeomSimplex (DoldKanSimplex degree _))
-      | degree < emDegree p = constantAt (basepoint p) degree
+      | degree < emDegree p = constantAt (geomBasepoint p) degree
       | otherwise =
           Wbar.normalise g $
             emSimplexFromDoldKan g headValues

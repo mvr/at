@@ -105,7 +105,7 @@ spec = describe "Whitehead tower" $ do
           cocycle = onlyModularCocycle (model moore5) 5 (Zmod 3)
           TwistedProduct _ _ _ _ twist = whiteheadStage moore5 kzmod3_4 cocycle
       twistOnGeom twist Moore.N
-        `shouldNotBe` constantAt (basepoint kzmod3_4) 4
+        `shouldNotBe` constantAt (geomBasepoint kzmod3_4) 4
       forM_ [Moore.Basepoint, Moore.N, Moore.NPlusOne] $
         SSetProperties.checkTwistFaces moore5 kzmod3_4 twist
 

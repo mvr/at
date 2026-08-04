@@ -33,7 +33,7 @@ instance Bounded RPn where
   amplitude (RPn n) = [0 .. n]
 
 instance Pointed RPn where
-  basepoint (RPn n) = coerce (basepoint KZmod2_1)
+  geomBasepoint (RPn n) = coerce (geomBasepoint KZmod2_1)
 
 instance ZeroReduced RPn
 

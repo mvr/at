@@ -25,7 +25,7 @@ instance (Group g, Ord (Element g)) => SSet (ConstantGroup g) where
   geomFace _ _ _ = undefined
 
 instance (Group g, Ord (Element g)) => Pointed (ConstantGroup g) where
-  basepoint (ConstantGroup g) = ConstantGroupSimplex (unit g)
+  geomBasepoint (ConstantGroup g) = ConstantGroupSimplex (unit g)
 
 instance (FiniteGroup g, Ord (Element g)) => FiniteType (ConstantGroup g) where
   geomBasis (ConstantGroup g) 0 = ConstantGroupSimplex <$> elements g

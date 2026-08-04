@@ -24,9 +24,6 @@ class (SSet a, Pointed a) => SGrp a where
 
 class SGrp a => SAb a
 
-isUnit :: Pointed g => g -> Simplex g -> Bool
-isUnit g (FormalDegen _ s) = s == basepoint g
-
 instance (SGrp a, SGrp b) => SGrp (Product a b) where
   -- TODO: this does more normalising/unnormalising than necessary,
   -- some rewrite rules might fix that.
@@ -41,7 +38,7 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
       (×) = prodFunc
 
 instance SGrp g => Algebra (NChains g) where
-  unitMor (NChains g) = CC.basisMorphism (const (basepoint g))
+  unitMor (NChains g) = CC.basisMorphism (const (geomBasepoint g))
   muMor (NChains g) = fmap (prodMor g) . reductionG (ezReduction (Product g g))
 
 instance SGrp g => AugmentedAlgebra (NChains g) where
@@ -55,7 +52,7 @@ data NDimSimplicesOf a = NDimSimplicesOf Int a
 instance (SGrp a) => Group (NDimSimplicesOf a) where
   type Element (NDimSimplicesOf a) = Simplex a
   prod (NDimSimplicesOf n a) s t = prodMor a `onSimplex` prodNormalise (s, t)
-  unit (NDimSimplicesOf n a) = constantAt (basepoint a) n
+  unit (NDimSimplicesOf n a) = constantAt (geomBasepoint a) n
   inv (NDimSimplicesOf n a) s = invMor a `onSimplex` s
 
 instance (SAb a) => Abelian (NDimSimplicesOf a)

@@ -54,7 +54,7 @@ instance (Group a, Ord (Element a)) => SSet (WbarDiscrete a) where
         ]
 
 instance (Group a, Ord (Element a)) => Pointed (WbarDiscrete a) where
-  basepoint (WbarDiscrete a) = []
+  geomBasepoint (WbarDiscrete a) = []
 
 instance (Group a, Ord (Element a)) => ZeroReduced (WbarDiscrete a)
 

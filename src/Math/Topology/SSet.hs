@@ -234,10 +234,13 @@ class SSet a => Bounded a where
   amplitude :: a -> [Int]
 
 class SSet a => Pointed a where
-  basepoint :: a -> GeomSimplex a
+  geomBasepoint :: a -> GeomSimplex a
 
-basepointSimplex :: (Pointed a) => a -> Simplex a
-basepointSimplex a = NonDegen (basepoint a)
+basepoint :: Pointed a => a -> Simplex a
+basepoint a = NonDegen (geomBasepoint a)
+
+isBasepoint :: Pointed a => a -> Simplex a -> Bool
+isBasepoint a (FormalDegen _ simplex) = simplex == geomBasepoint a
 
 -- TODO: move Pointed to its own file to import Morphism
 -- basepointMor :: a -> Morphism () a

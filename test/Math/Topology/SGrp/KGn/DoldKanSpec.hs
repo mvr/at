@@ -100,7 +100,7 @@ spec = do
 
     it "represents the zero vector by the constant simplex" $
       normalise (simplex kz2 3 [])
-        `shouldBe` constantAt (basepoint kz2) 3
+        `shouldBe` constantAt (geomBasepoint kz2) 3
 
     it "expands formal degeneracies back into coordinates" $ do
       let values = simplex kz2 4 [([0, 2], one)]
@@ -110,7 +110,7 @@ spec = do
       map
         (face kz2 (NonDegen (DoldKanGeomSimplex (simplex kz2 2 [([0, 1], one)]))))
         [0 .. 2]
-        `shouldBe` replicate 3 (constantAt (basepoint kz2) 1)
+        `shouldBe` replicate 3 (constantAt (geomBasepoint kz2) 1)
 
     it "composes face maps with the indexing surjections" $ do
       let kz1 = DoldKanKGn 1 z2
@@ -119,7 +119,7 @@ spec = do
             NonDegen
               (DoldKanGeomSimplex (simplex kz1 2 [([0], one), ([1], one)]))
       map (face kz1 twoSimplex) [0 .. 2]
-        `shouldBe` [edge, constantAt (basepoint kz1) 1, edge]
+        `shouldBe` [edge, constantAt (geomBasepoint kz1) 1, edge]
 
     it "has one free face value per coordinate" $
       fmap (length . allSimplices kz2) [0 .. 4]
