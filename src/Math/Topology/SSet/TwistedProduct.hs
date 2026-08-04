@@ -111,10 +111,6 @@ twistedProductPerturbation t@(TwistedProduct f b _ _ _) =
         twistedFace = geomFace t simplex 0
         untwistedFace = geomFace (Product f b) simplex 0
 
-    asChain (FormalDegen mask simplex)
-      | mask == 0 = singleComb simplex
-      | otherwise = 0
-
 instance
   ( Effective f,
     Effective b,

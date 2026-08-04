@@ -41,7 +41,11 @@ instance ZeroReduced a => CC.ConnectedChainComplex (NChains a)
 
 instance OneReduced a => CC.OneReducedChainComplex (NChains a)
 
+-- | Regard a simplex as an element of the normalised chain complex.
+-- Degenerate simplices represent zero.
+asChain :: FormalDegen a -> Combination a
+asChain (NonDegen simplex) = singleComb simplex
+asChain (Degen _ _) = zeroCombination
+
 instance Functor Morphism CC.Morphism NChains where
-  fmap m = CC.Morphism 0 $ \s -> case m `onGeomSimplex` s of
-    NonDegen t -> singleComb t
-    Degen _ _ -> zeroCombination
+  fmap m = CC.Morphism 0 $ \s -> asChain (m `onGeomSimplex` s)
