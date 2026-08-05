@@ -74,6 +74,7 @@ library
     Math.Algebra.ChainComplex.TwistedTensor
     Math.Algebra.Combination
     Math.Algebra.Group
+    Math.Algebra.Group.Free
     Math.Algebra.SmithNormalForm
     Math.Topology.SGrp
     Math.Topology.SGrp.Constant
@@ -185,6 +186,7 @@ test-suite spec
     Math.Algebra.ChainComplex.TensorSpec
     Math.Algebra.CombinationSpec
     Math.Algebra.GroupSpec
+    Math.Algebra.Group.FreeSpec
     Math.Algebra.SmithNormalFormSpec
     Math.Topology.SGrp.Properties
     Math.Topology.SGrp.KGn.DoldKanSpec
