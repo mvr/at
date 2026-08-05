@@ -117,7 +117,7 @@ memoiseMorphism :: ChainComplex a => Morphism a b -> Morphism a b
 memoiseMorphism (Morphism morphismDegree action) =
   Morphism morphismDegree (memoiseOrd action)
 
-onComb :: (ChainComplex a, ChainComplex b) => Morphism a b -> Chain a -> Chain b
+onComb :: ChainComplex b => Morphism a b -> Chain a -> Chain b
 onComb m combination = bindCombination combination (m `onBasis`)
 
 morphismZeroOfDeg :: Int -> Morphism a b

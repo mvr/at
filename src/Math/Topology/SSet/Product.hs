@@ -170,7 +170,6 @@ reconstructProduct a b (s, t) =
 {-# INLINE reconstructProduct #-}
 
 criticalIso ::
-  (SSet a, SSet b) =>
   CC.Morphism
     (CriticalComplex (NChains (Product a b)))
     (Tensor (NChains a) (NChains b))
@@ -198,7 +197,7 @@ ezReduction p@(Product a b) =
 diagMor :: Morphism a (Product a a)
 diagMor = Morphism $ \s -> NonDegen (NonDegen s, NonDegen s)
 
-instance (SSet a, Eq (GeomSimplex a)) => Coalgebra (NChains a) where
+instance SSet a => Coalgebra (NChains a) where
   counitMor (NChains a) =
     CC.Morphism 0 $ \s ->
       if geomSimplexDim a s == 0 then singleComb () else 0

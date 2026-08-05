@@ -35,7 +35,7 @@ instance Semigroupoid Reduction where
 instance Category Reduction where
   id = Reduction id id (morphismZeroOfDeg 1)
 
-isoToReduction :: (ChainComplex a, ChainComplex b) => Morphism a b -> Morphism b a -> Reduction a b
+isoToReduction :: Morphism a b -> Morphism b a -> Reduction a b
 isoToReduction f g = Reduction f g (morphismZeroOfDeg 1)
 
 data Perturbed a = Perturbed

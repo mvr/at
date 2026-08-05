@@ -87,14 +87,12 @@ instance
   FiniteCritical (NChains (TwistedProduct f b g))
 
 totalSpaceChainsIso ::
-  (SSet f, SSet b, SGrp g) =>
   CC.Morphism
     (Perturbed (NChains (Product f b)))
     (NChains (TwistedProduct f b g))
 totalSpaceChainsIso = basisMorphism (\simplex -> simplex)
 
 totalSpaceChainsIsoInv ::
-  (SSet f, SSet b, SGrp g) =>
   CC.Morphism
     (NChains (TwistedProduct f b g))
     (Perturbed (NChains (Product f b)))
