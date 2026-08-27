@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | A strong deformation retract of chain complexes.  We follow Kenzo
 -- and call these 'reductions'. In other places these are called
 -- 'contractions' or 'SDR-data'.

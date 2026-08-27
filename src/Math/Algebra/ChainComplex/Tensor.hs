@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Tensor product of chain complexes of free Z-modules
 module Math.Algebra.ChainComplex.Tensor where
 

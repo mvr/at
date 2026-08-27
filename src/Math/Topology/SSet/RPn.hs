@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Real projective space \(ℝP^n\)
 module Math.Topology.SSet.RPn where
 

@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | A bicomplex aka double complex, of free Z-modules. We use the
 -- convention that the squares in the complex *anticommute*.
 module Math.Algebra.Bicomplex where

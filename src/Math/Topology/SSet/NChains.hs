@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Normalised chain complex of a SSet
 -- See, eg. <https://kerodon.net/tag/00QH>
 module Math.Topology.SSet.NChains where

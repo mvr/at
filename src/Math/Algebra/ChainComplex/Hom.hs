@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Internal hom of chain complexes
 module Math.Algebra.ChainComplex.Hom where
 

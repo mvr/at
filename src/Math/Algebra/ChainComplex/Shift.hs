@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Shift of chain complexes
 module Math.Algebra.ChainComplex.Shift where
 

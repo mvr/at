@@ -1,6 +1,4 @@
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | A principal \(G\)-bundle over \(A\), represented as a degree (-1) map of
 -- simplicial sets \(τ : A \to G\).
 --

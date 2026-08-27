@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Twisted products of chain complexes of free Z-modules, in algebra-first
 -- order for a right action.
 -- See Section 8.3 in https://arxiv.org/abs/1208.3816

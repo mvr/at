@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Direct sum of chain complexes
 module Math.Algebra.ChainComplex.Sum where
 

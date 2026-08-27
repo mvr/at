@@ -1,4 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 -- | The space \(K(\mathbb{Z}, 1)\), homotopy equivalent to the

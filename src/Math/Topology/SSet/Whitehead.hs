@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Whitehead-tower stages and homotopy groups of 1-reduced spaces.
 module Math.Topology.SSet.Whitehead (
   HomotopyError (..),

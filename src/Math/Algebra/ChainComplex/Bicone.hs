@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | (Suspension of) Pushouts of surjections
 --
 -- The suspension avoids some special casing with dimension 0, and

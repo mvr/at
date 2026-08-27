@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | Discrete Vector Field on a Chain Complex
 -- Following as:ez-dvf
 module Math.Algebra.ChainComplex.DVF where

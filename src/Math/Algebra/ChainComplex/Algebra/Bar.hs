@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | The bar construction of a DG-algebra \(A\), specifically,
 -- \(Bar(ℤ,A,ℤ)\).  The bar construction of an ordinary algebra is a
 -- special case (sometimes called the 'standard complex').

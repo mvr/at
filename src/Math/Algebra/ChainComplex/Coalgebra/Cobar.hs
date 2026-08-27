@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 -- | The Cobar construction of a one-reduced coaugmented DG-coalgebra.
 --
 -- The underlying graded module is the tensor algebra
