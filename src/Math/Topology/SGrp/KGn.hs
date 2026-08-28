@@ -33,7 +33,7 @@ type KZ1 = WbarDiscrete Z
 kz1 :: WbarDiscrete Z
 kz1 = WbarDiscrete Z
 
-type CircleComplex = () `Sum` Shift ()
+type CircleComplex = () `Sum` Susp ()
 
 instance Algebra CircleComplex where
   unitMor _ = basisMorphism (const (Left ()))
@@ -81,7 +81,7 @@ instance Effective KZ1 where
   eff _ =
     fromRedLeft
       (NChains (WbarDiscrete Z))
-      (Sum () (Shift ()))
+      (Sum () (Susp ()))
       (isoToReduction criticalIso criticalIsoInv . dvfReduction (NChains (WbarDiscrete Z)))
 
 instance DVF (WbarDiscrete Zmod) where

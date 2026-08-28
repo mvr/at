@@ -25,7 +25,7 @@ import qualified Math.Topology.SGrp.Properties as SGrpProperties
 import qualified Math.Topology.SSet.Properties as SSetProperties
 
 circle :: CircleComplex
-circle = Sum () (Shift ())
+circle = Sum () (Susp ())
 
 sphereCocycle :: Cocycle (NChains Sphere) Z
 sphereCocycle = Cocycle $ Cochain 2 $ \simplex -> case simplex of
