@@ -3,6 +3,7 @@ module Math.Algebra.ChainComplex.Shift where
 
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Reduction
+import Math.Algebra.Combination
 import Prelude hiding (id, return, (.))
 
 -- | Shift a chain complex by an arbitrary number of degrees, so
@@ -15,12 +16,21 @@ newtype Susp a = Susp a
 -- | Desuspension by one degree.
 newtype Desusp a = Desusp a
 
+-- | Shift a homogeneous morphism on both its source and target. A morphism
+-- of degree @d@ acquires the sign @(-1)^(kd)@ under a shift by @k@.
+shiftMorphism ::
+  (ChainComplex a, ChainComplex b) =>
+  Int ->
+  Morphism a b ->
+  Morphism (Shift a) (Shift b)
+shiftMorphism k (Morphism d f) =
+  Morphism d $ \b -> kozulRule (k * d) (f b)
+
 instance (ChainComplex a) => ChainComplex (Shift a) where
   type Basis (Shift a) = Basis a
   isBasis (Shift _ a) = isBasis a
   degree (Shift k a) b = degree a b + k
-  diff (Shift k a) = Morphism (-1) $ \b ->
-    kozulRule k (diff a `onBasis` b)
+  diff (Shift k a) = shiftMorphism k (diff a)
 
 instance (FiniteType a) => FiniteType (Shift a) where
   dim (Shift k a) n = dim a (n - k)
@@ -53,9 +63,9 @@ shiftReduction ::
   Reduction (Shift a) (Shift b)
 shiftReduction k (Reduction f g h) =
   Reduction
-    (sameBasisMorphism f)
-    (sameBasisMorphism g)
-    (kozulRule k (sameBasisMorphism h))
+    (shiftMorphism k f)
+    (shiftMorphism k g)
+    (shiftMorphism k h)
 
 suspReduction ::
   (ChainComplex a, ChainComplex b) =>

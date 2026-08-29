@@ -26,6 +26,25 @@ equivalenceBackward :: (ChainComplex a, ChainComplex b) => Equivalence a b -> Mo
 equivalenceBackward (Equivalence _ leftReduction _ rightReduction _) =
   reductionF leftReduction . reductionG rightReduction
 
+-- | Retag an equivalence with unchanged endpoint basis types.
+sameBasisEquiv ::
+  ( ChainComplex a',
+    ChainComplex b',
+    Basis a ~ Basis a',
+    Basis b ~ Basis b'
+  ) =>
+  a' ->
+  b' ->
+  Equivalence a b ->
+  Equivalence a' b'
+sameBasisEquiv a' b' (Equivalence _ l x r _) =
+  Equivalence
+    a'
+    (sameBasisReduction l)
+    x
+    (sameBasisReduction r)
+    b'
+
 instance Semigroupoid Equivalence where
   type Object Equivalence a = ChainComplex a
 

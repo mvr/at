@@ -52,8 +52,31 @@ data Bimorphism a b = Bimorphism
     onBibasis :: Bibasis a -> Combination (Bibasis b)
   }
 
+-- | Retag a bimorphism with unchanged endpoint bibasis types.
+sameBibasisMorphism ::
+  (Bibasis a ~ Bibasis a', Bibasis b ~ Bibasis b') =>
+  Bimorphism a b ->
+  Bimorphism a' b'
+sameBibasisMorphism (Bimorphism d f) = Bimorphism d f
+
+-- | Regard a vertical-degree-preserving morphism as horizontal.
+horizontaliseMorphism ::
+  (Basis a ~ Bibasis a', Basis b ~ Bibasis b') =>
+  Morphism a b ->
+  Bimorphism a' b'
+horizontaliseMorphism (Morphism d f) =
+  Bimorphism (Bidegree (d, 0)) f
+
+-- | Regard a horizontal-degree-preserving morphism as vertical.
+verticaliseMorphism ::
+  (Basis a ~ Bibasis a', Basis b ~ Bibasis b') =>
+  Morphism a b ->
+  Bimorphism a' b'
+verticaliseMorphism (Morphism d f) =
+  Bimorphism (Bidegree (0, d)) f
+
 bimorphismZeroOfDeg :: Bidegree -> Bimorphism a b
-bimorphismZeroOfDeg degree = Bimorphism degree (const zeroCombination)
+bimorphismZeroOfDeg d = Bimorphism d (const zeroCombination)
 
 instance Constrained.Semigroupoid Bimorphism where
   type Object Bimorphism a = Bicomplex a
@@ -77,6 +100,14 @@ validBicomb a combination = and $ fmap (\(_, b) -> isBibasis a b) (coeffs combin
 
 newtype Tot a = Tot a
 
+-- | Totalise a bimorphism by summing its bidegree.
+totaliseMorphism ::
+  (Bicomplex a, Bicomplex b) =>
+  Bimorphism a b ->
+  Morphism (Tot a) (Tot b)
+totaliseMorphism (Bimorphism (Bidegree (h, v)) f) =
+  Morphism (h + v) f
+
 instance (Bicomplex a) => ChainComplex (Tot a) where
   type Basis (Tot a) = Bibasis a
 
@@ -84,8 +115,8 @@ instance (Bicomplex a) => ChainComplex (Tot a) where
 
   degree (Tot a) b =
     let (p, q) = bidegree a b in p + q
-  diff (Tot a) = Morphism (-1) $ \b ->
-    hdiff a `onBibasis` b + vdiff a `onBibasis` b
+  diff (Tot a) =
+    totaliseMorphism (hdiff a) + totaliseMorphism (vdiff a)
 
 instance (Bicomplex a, FiniteType a) => CC.FiniteType (Tot a) where
   basis (Tot a) d = do

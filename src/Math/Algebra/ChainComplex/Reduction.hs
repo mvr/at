@@ -14,8 +14,7 @@ data Reduction a b = Reduction
     reductionH :: Morphism a a -- degree 1
   }
 
--- | Retag all three maps of a reduction between complexes with the same
--- source and target basis representations.
+-- | Retag a reduction with unchanged endpoint basis types.
 sameBasisReduction ::
   (Basis a ~ Basis a', Basis b ~ Basis b') =>
   Reduction a b ->
@@ -45,7 +44,7 @@ instance (ChainComplex a) => ChainComplex (Perturbed a) where
   type Basis (Perturbed a) = Basis a
   isBasis (Perturbed a _) = isBasis a
   degree (Perturbed a _) = degree a
-  diff (Perturbed a delta) = Morphism (-1) $ \b -> diff a `onBasis` b + delta `onBasis` b
+  diff (Perturbed a delta) = sameBasisMorphism (diff a + delta)
 
 instance ConnectedChainComplex a => ConnectedChainComplex (Perturbed a)
 

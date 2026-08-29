@@ -88,13 +88,13 @@ totalSpaceChainsIso ::
   CC.Morphism
     (Perturbed (NChains (Product f b)))
     (NChains (TwistedProduct f b g))
-totalSpaceChainsIso = basisMorphism (\simplex -> simplex)
+totalSpaceChainsIso = sameBasisId
 
 totalSpaceChainsIsoInv ::
   CC.Morphism
     (NChains (TwistedProduct f b g))
     (Perturbed (NChains (Product f b)))
-totalSpaceChainsIsoInv = basisMorphism (\simplex -> simplex)
+totalSpaceChainsIsoInv = sameBasisId
 
 -- | The twisting changes only the zeroth face of a product simplex.
 twistedProductPerturbation ::
