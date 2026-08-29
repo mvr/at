@@ -95,6 +95,7 @@ library
     Math.Topology.SSet.RPn
     Math.Topology.SSet.Skeleton
     Math.Topology.SSet.Sphere
+    Math.Topology.SSet.Surjection
     Math.Topology.SSet.TwistedProduct
     Math.Topology.SSet.Whitehead
     Math.ValueCategory
@@ -201,6 +202,7 @@ test-suite spec
     Math.Topology.SSet.RPnSpec
     Math.Topology.SSet.SkeletonSpec
     Math.Topology.SSet.SphereSpec
+    Math.Topology.SSet.SurjectionSpec
     Math.Topology.SSet.TwistedProductSpec
     Math.Topology.SSet.WhiteheadSpec
     Math.ValueCategory.Abelian.Properties

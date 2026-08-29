@@ -29,6 +29,7 @@ import Math.Topology.SGrp.Wbar (Wbar (Wbar))
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.NChains
+import Math.Topology.SSet.Surjection
 
 -- | An independent normalized @n@-face of a @q@-simplex. A coordinate
 -- @c = [c_0,...,c_(n-1)]@ denotes the face with vertices
@@ -56,9 +57,9 @@ cocycleCoordinateFaces ::
   GeomSimplex a ->
   [(CocycleCoordinate, Simplex a)]
 cocycleCoordinateFaces a n q simplex =
-  coordinateFace <$> doldKanSurjections n q
+  coordinateFace <$> surjections q n
   where
-    coordinateFace (DoldKanSurjection _ coordinate) =
+    coordinateFace (Surjection _ coordinate) =
       ( coordinate,
         applyFaceOperator
           a
@@ -90,8 +91,8 @@ evaluateCocycleFaces a c cocycle@(CC.Cocycle (CC.Cochain n _)) simplex =
             then Nothing
             else Just (coordinate, value)
 
-isSection :: CocycleCoordinate -> DoldKanSurjection -> Bool
-isSection coordinate (DoldKanSurjection _ transitions) =
+isSection :: CocycleCoordinate -> Surjection -> Bool
+isSection coordinate (Surjection _ transitions) =
   go coordinate transitions
   where
     go [] [] = True
@@ -106,7 +107,7 @@ sectionSum ::
   Abelian c =>
   c ->
   CocycleCoordinate ->
-  [(DoldKanSurjection, Element c)] ->
+  [(Surjection, Element c)] ->
   Element c
 sectionSum c coordinate = foldl' add (unit c)
   where
@@ -128,10 +129,10 @@ cocycleValuesToDoldKan ::
   CocycleFaceValues (Element c) ->
   DoldKanSimplex (Element c)
 cocycleValuesToDoldKan (DoldKanKGn n c) (CocycleFaceValues q values) =
-  DoldKanSimplex q $ foldl' solve [] (reverse $ doldKanSurjections n q)
+  DoldKanSimplex q $ foldl' solve [] (reverse $ surjections q n)
   where
     valueAt coordinate = fromMaybe (unit c) (lookup coordinate values)
-    solve solved surj@(DoldKanSurjection _ coordinate) =
+    solve solved surj@(Surjection _ coordinate) =
       let value =
             prod
               c
@@ -150,9 +151,9 @@ doldKanToCocycleValues ::
   CocycleFaceValues (Element c)
 doldKanToCocycleValues (DoldKanKGn n c) (DoldKanSimplex q s) =
   CocycleFaceValues q $
-    mapMaybe nonzeroValue (doldKanSurjections n q)
+    mapMaybe nonzeroValue (surjections q n)
   where
-    nonzeroValue (DoldKanSurjection _ coordinate) =
+    nonzeroValue (Surjection _ coordinate) =
       let value = sectionSum c coordinate s
        in if value == unit c
             then Nothing

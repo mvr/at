@@ -27,6 +27,7 @@ import qualified Math.Topology.SSet.ProductSpec
 import qualified Math.Topology.SSet.RPnSpec
 import qualified Math.Topology.SSet.SkeletonSpec
 import qualified Math.Topology.SSet.SphereSpec
+import qualified Math.Topology.SSet.SurjectionSpec
 import qualified Math.Topology.SSet.TwistedProductSpec
 import qualified Math.Topology.SSet.WhiteheadSpec
 import qualified Math.Topology.SSetSpec

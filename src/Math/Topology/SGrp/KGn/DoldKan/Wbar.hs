@@ -26,14 +26,13 @@ import Math.Topology.SGrp.KGn.DoldKan (
   DoldKanGeomSimplex (DoldKanGeomSimplex),
   DoldKanKGn (DoldKanKGn),
   DoldKanSimplex (DoldKanSimplex),
-  DoldKanSurjection (DoldKanSurjection),
-  doldKanSurjections,
  )
 import Math.Topology.SGrp.Wbar
 import qualified Math.Topology.SGrp.Wbar as Wbar
 import Math.Topology.SGrp.WbarDiscrete
 import qualified Math.Topology.SGrp.WbarDiscrete as WbarDiscrete
 import Math.Topology.SSet
+import Math.Topology.SSet.Surjection
 
 -- | A concrete simplicial Eilenberg--Mac Lane group together with its abelian
 -- coefficient group and comparison from the standard Dold--Kan model.
@@ -62,7 +61,7 @@ denseDegreeOneValues ::
 denseDegreeOneValues
   c
   (DoldKanGeomSimplex (DoldKanSimplex degree summands)) =
-    valueAt <$> doldKanSurjections 1 degree
+    valueAt <$> surjections degree 1
     where
       valueAt coordinate =
         fromMaybe (unit c) (lookup coordinate summands)
@@ -130,8 +129,8 @@ splitDoldKan (DoldKanGeomSimplex (DoldKanSimplex degree summands)) =
   )
   where
     (headValues, tailValues) = partitionEithers (splitSummand <$> summands)
-    splitSummand (DoldKanSurjection _ ts, n) =
+    splitSummand (Surjection _ ts, n) =
       case ts of
         0 : rest -> Left (reindex rest, n)
         _ -> Right (reindex ts, n)
-    reindex ts = DoldKanSurjection (degree - 1) (subtract 1 <$> ts)
+    reindex ts = Surjection (degree - 1) (subtract 1 <$> ts)
