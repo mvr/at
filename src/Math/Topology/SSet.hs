@@ -49,12 +49,7 @@ instance Applicative FormalDegen where
   (<*>) = ap
 
 instance Monad FormalDegen where
-  FormalDegen mask s >>= f = applyMask mask (f s)
-    where
-      applyMask 0 result = result
-      applyMask remaining result =
-        let i = countTrailingZeros remaining
-         in applyMask (clearBit remaining i) (degen result i)
+  FormalDegen m s >>= f = applyDegenMask m (f s)
 
 isDegen :: FormalDegen a -> Bool
 isDegen (FormalDegen mask _) = mask /= 0
@@ -257,7 +252,7 @@ newtype Morphism a b = Morphism
   }
 
 onSimplex :: Morphism a b -> Simplex a -> Simplex b
-onSimplex (Morphism f) (FormalDegen mask s) = applyDegenMask mask (f s)
+onSimplex (Morphism f) s = s >>= f
 
 instance Constrained.Semigroupoid Morphism where
   type Object Morphism a = SSet a
