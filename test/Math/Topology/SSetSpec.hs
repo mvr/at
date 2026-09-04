@@ -35,6 +35,10 @@ spec = do
       simplex `shouldBe` Degen 2 (Degen 0 (NonDegen 'x'))
       degenList simplex `shouldBe` [2, 0]
 
+    it "normalises degeneracies constructed with the pattern synonym" $ do
+      Degen 0 (Degen 0 (NonDegen 'x'))
+        `shouldBe` Degen 1 (Degen 0 (NonDegen 'x'))
+
     it "composes degeneracies through substitution" $ do
       let simplex = Degen 2 (Degen 0 (NonDegen 'x'))
           substituted = simplex >>= const (Degen 1 (NonDegen 'y'))

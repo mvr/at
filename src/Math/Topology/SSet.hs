@@ -19,9 +19,7 @@ pattern NonDegen a = FormalDegen 0 a
 pattern Degen :: Int -> FormalDegen a -> FormalDegen a
 pattern Degen i s <- (splitDegen -> Just (i, s))
   where
-    Degen i (FormalDegen mask a)
-      | i < 0 || i >= finiteBitSize mask = error "Degen: invalid index"
-      | otherwise = FormalDegen (setBit mask i) a
+    Degen i s = degen s i
 
 {-# COMPLETE NonDegen, Degen #-}
 
