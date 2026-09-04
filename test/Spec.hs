@@ -13,6 +13,7 @@ import qualified Math.Algebra.ChainComplex.FundamentalCocycleSpec
 import qualified Math.Algebra.ChainComplex.HomSpec
 import qualified Math.Algebra.ChainComplex.ShiftSpec
 import qualified Math.Algebra.ChainComplex.TensorSpec
+import qualified Math.Algebra.ChainComplex.TruncationSpec
 import qualified Math.Algebra.CombinationSpec
 import qualified Math.Algebra.GroupSpec
 import qualified Math.Algebra.Group.FreeSpec
@@ -53,6 +54,7 @@ spec = do
   Math.Algebra.ChainComplex.TensorSpec.spec
   Math.Algebra.ChainComplex.Algebra.BarSpec.spec
   Math.Algebra.ChainComplex.ShiftSpec.spec
+  Math.Algebra.ChainComplex.TruncationSpec.spec
   Math.Algebra.AbGroupPres.MatrixOpsSpec.spec
   Math.Algebra.AbGroupPresSpec.spec
   Math.Algebra.ChainComplex.HomSpec.spec

@@ -71,6 +71,7 @@ library
     Math.Algebra.ChainComplex.Shift
     Math.Algebra.ChainComplex.Sum
     Math.Algebra.ChainComplex.Tensor
+    Math.Algebra.ChainComplex.Truncation
     Math.Algebra.ChainComplex.TwistedTensor
     Math.Algebra.Combination
     Math.Algebra.Group
@@ -185,6 +186,7 @@ test-suite spec
     Math.Algebra.ChainComplex.Reduction.Properties
     Math.Algebra.ChainComplex.ShiftSpec
     Math.Algebra.ChainComplex.TensorSpec
+    Math.Algebra.ChainComplex.TruncationSpec
     Math.Algebra.CombinationSpec
     Math.Algebra.GroupSpec
     Math.Algebra.Group.FreeSpec
