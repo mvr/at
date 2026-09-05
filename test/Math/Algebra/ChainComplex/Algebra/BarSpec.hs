@@ -1,12 +1,15 @@
 module Math.Algebra.ChainComplex.Algebra.BarSpec where
 
-import Control.Monad (forM_, replicateM)
+import qualified Control.Category.Constrained as Constrained
+import Control.Exception (evaluate)
+import Control.Monad (forM_)
 import Test.Hspec
 
 import Math.Algebra.Bicomplex hiding (FiniteType)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Algebra.Bar
 import Math.Algebra.ChainComplex.Disk
+import Math.Algebra.Combination (singleComb)
 import Math.Algebra.Group
 import Math.Topology.SGrp.WbarDiscrete
 import Math.Topology.SSet.NChains
@@ -23,73 +26,95 @@ instance CC.ChainComplex NegativeLine where
   degree _ _ = -1
   diff _ = CC.morphismZeroOfDeg (-1)
 
+instance CC.FiniteType NegativeLine where
+  basis _ (-1) = [()]
+  basis _ _ = []
+
+-- Requiring the class here also checks that the instance is available
+-- without a connectedness assumption on the original complex.
+oneReducedDimensions :: (CC.OneReducedChainComplex a, CC.FiniteType a) => a -> [Int]
+oneReducedDimensions a = fmap (CC.dim a) [-1 .. 2]
+
 spec :: Spec
 spec = do
-  describe "unrestricted tensor suspension" $ do
-    let tensorSusp = TensorSusp (Disk 2)
+  describe "Bar tensor truncation" $ do
+    let t = BarTensor (Disk 1)
 
-    ChainComplexProperties.checkChainConditionOn
-      tensorSusp
-      [[], [DiskBase], [DiskBoundary], [DiskInterior], [DiskInterior, DiskInterior]]
-
-    it "allows degree-zero generators" $
-      CC.degree tensorSusp [DiskBase] `shouldBe` 1
-
-  describe "augmentation-ideal truncation" $ do
-    let ideal = AugmentationIdeal (Disk 1)
-
-    ChainComplexProperties.checkChainConditionOn
-      ideal
-      [DiskInterior]
+    ChainComplexProperties.checkChainConditionOn t [[], [DiskInterior]]
 
     it "discards degree-zero boundaries" $
-      CC.diff ideal `CC.onBasis` DiskInterior `shouldBe` 0
+      CC.diff t `CC.onBasis` [DiskInterior] `shouldBe` 0
 
     it "excludes negative-degree generators" $
-      CC.isBasis (AugmentationIdeal NegativeLine) () `shouldBe` False
+      CC.isBasis (BarTensor NegativeLine) [()] `shouldBe` False
 
-    it "has lower bound one without requiring a bound on the input" $
-      CC.lowerBound (AugmentationIdeal NegativeLine) `shouldBe` 1
+    it "has lower bound zero without requiring a bound on the input" $
+      CC.lowerBound (BarTensor NegativeLine) `shouldBe` 0
 
-  describe "augmentation-ideal words" $ do
-    let ideal = AugmentationIdeal (Disk 2)
+  describe "Bar tensor algebra" $ do
+    it "is bounded below by zero" $
+      CC.lowerBound (BarTensor (Disk 2)) `shouldBe` 0
 
-    it "handles empty words and impossible degrees or lengths" $ do
-      augmentationIdealWords ideal 0 0 `shouldBe` [[]]
-      augmentationIdealWords ideal 1 0 `shouldBe` []
-      augmentationIdealWords ideal 0 (-1) `shouldBe` []
-      augmentationIdealWords ideal 1 2 `shouldBe` []
+    it "is one-reduced even for an input with multiple degree-zero generators" $
+      oneReducedDimensions (BarTensor (Disk 1)) `shouldBe` [0, 1, 0, 1]
 
-    it "enumerates each word of the requested length and degree once" $
-      forM_ [0 .. 3] $ \l ->
-        forM_ [-1 .. 7] $ \d -> do
-          let ws = replicateM l [DiskBoundary, DiskInterior]
-          augmentationIdealWords ideal d l
-            `shouldMatchList` filter ((== d) . sum . fmap (CC.degree ideal)) ws
+    it "is one-reduced even for a negative-degree input" $
+      oneReducedDimensions (BarTensor NegativeLine) `shouldBe` [0, 1, 0, 0]
 
-  describe "tensor suspension algebra" $ do
-    it "has lower bound zero, including the empty word" $ do
-      CC.lowerBound (barTensor (Disk 2)) `shouldBe` 0
-      CC.basis (barTensor (Disk 2)) 0 `shouldBe` [[]]
+    it "has no words in negative bidegrees" $
+      forM_ [(-1, 0), (-1, -1), (0, -1), (1, -1)] $ \d ->
+        bibasis (BarTensor (Disk 2)) d `shouldBe` []
 
-    AlgebraProperties.check 4 (barTensor (Disk 2))
-    AlgebraProperties.checkAugmented 4 (barTensor (Disk 2))
+    it "includes the empty word only at bidegree (0,0)" $ do
+      bibasis (BarTensor (Disk 2)) (0, 0) `shouldBe` [[]]
+      bibasis (BarTensor (Disk 2)) (0, 1) `shouldBe` []
+
+    AlgebraProperties.check 4 (BarTensor (Disk 2))
+    AlgebraProperties.checkAugmented 4 (BarTensor (Disk 2))
 
   it "restricts Bar to the augmentation ideal" $
-    CC.isBasis (barTensor (Disk 2)) [DiskBase] `shouldBe` False
+    CC.isBasis (BarTensor (Disk 2)) [DiskBase] `shouldBe` False
 
-  describe "tensor algebra reduction signs" $
+  describe "Bar tensor reduction" $
     ReductionProperties.check
       10
-      (barTensor (Disk 2))
-      (barTensor ())
-      (barTensorReduction (Disk 2) () (diskReduction (Disk 2)))
+      (BarTensor (Disk 2))
+      (BarTensor ())
+      (barTensorReduction (Disk 2) (diskReduction (Disk 2)))
+
+  describe "Bar shuffle" $ do
+    let a = Disk 2
+
+    it "uses the empty word as a unit, including on itself" $
+      forM_ [[], [DiskBoundary], [DiskInterior, DiskBoundary]] $ \w -> do
+        shuffle a [] w `shouldBe` singleComb w
+        shuffle a w [] `shouldBe` singleComb w
+
+    it "cancels the square of an odd suspended generator" $
+      shuffle a [DiskInterior] [DiskInterior] `shouldBe` 0
+
+    it "introduces no sign when crossing an even suspended generator" $
+      shuffle a [DiskBoundary] [DiskInterior]
+        `shouldBe` singleComb [DiskBoundary, DiskInterior] + singleComb [DiskInterior, DiskBoundary]
+
+    it "uses the suspended degree of the whole remaining word" $
+      shuffle a [DiskInterior, DiskBoundary] [DiskInterior]
+        `shouldBe` singleComb [DiskInterior, DiskBoundary, DiskInterior]
+
+  describe "Bar functor" $ do
+    let a = Bar (BarTensor (Disk 2))
+        f = barFunc (Constrained.id :: CC.Morphism (BarTensor Disk) (BarTensor Disk))
+
+    it "preserves identity" $
+      f `ChainComplexProperties.isIdOnAll` ([0 .. 6] >>= CC.basis a)
+
+    it "rejects nonzero degrees" $
+      forM_ [-1, 1] $ \d ->
+        evaluate (barFunc (CC.morphismZeroOfDeg d :: CC.Morphism (BarTensor Disk) (BarTensor Disk)))
+          `shouldThrow` errorCall "tensorAlgebraFunc: expected a degree-zero morphism"
 
   describe "Bar" $ do
     let a = Bar (NChains (WbarDiscrete (Zmod 3)))
-    it "inherits the tensor algebra's lower bound" $
-      CC.lowerBound a `shouldBe` 0
-
     describe "is a bicomplex" $ do
       let as = do
             h <- [0 .. 5]

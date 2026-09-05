@@ -4,6 +4,7 @@ module Math.Algebra.ChainComplex.Shift where
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Reduction
 import Math.Algebra.Combination
+import Math.Algebra.ChainComplex.Tensor
 import Prelude hiding (id, return, (.))
 
 -- | Shift a chain complex by an arbitrary number of degrees, so
@@ -87,3 +88,14 @@ desuspReduction ::
   Reduction a b ->
   Reduction (Desusp a) (Desusp b)
 desuspReduction r = sameBasisReduction (shiftReduction (-1) r)
+
+tensorSusp ::
+  (ChainComplex a, ChainComplex b) =>
+  a ->
+  b ->
+  Morphism
+    (Tensor (Susp a) (Susp b))
+    (Susp (Tensor a b))
+tensorSusp a _ = Morphism (-1) $ \(x, y) ->
+  kozulRule (degree a x + 1) (singleComb (x, y))
+
