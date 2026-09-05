@@ -54,11 +54,11 @@ data HomotopyError
 
 data SomeSpace
   = forall a.
-    (Effective a, CC.FiniteType (Model a)) =>
+    (Effective a, CC.FiniteType (Model a), CC.BoundedBelow (Model a)) =>
     SomeSpace a (Model a) [Arrow AbGroupPres]
 
 someSpace ::
-  (Effective a, CC.FiniteType (Model a)) =>
+  (Effective a, CC.FiniteType (Model a), CC.BoundedBelow (Model a)) =>
   a ->
   SomeSpace
 someSpace a = SomeSpace a effectiveModel (CC.chainDiffs effectiveModel)
@@ -70,14 +70,16 @@ data SomeEilenbergMacLane c
     ( DoldKanWbarModel g,
       CoefficientGroup g ~ c,
       Effective g,
-      CC.FiniteType (Model g)
+      CC.FiniteType (Model g),
+      CC.BoundedBelow (Model g)
     ) =>
     SomeEilenbergMacLane g
 
 iteratedEilenbergMacLane ::
   ( DoldKanWbarModel g,
     Effective g,
-    CC.FiniteType (Model g)
+    CC.FiniteType (Model g),
+    CC.BoundedBelow (Model g)
   ) =>
   Int ->
   g ->
@@ -114,7 +116,7 @@ killHomologyGroup degree space@(SomeSpace a effectiveModel differentials) =
 
 -- | Compute pi_2 through pi_n by successive Whitehead stages.
 homotopyGroupsThrough ::
-  (OneReduced a, Effective a, CC.FiniteType (Model a)) =>
+  (OneReduced a, Effective a, CC.FiniteType (Model a), CC.BoundedBelow (Model a)) =>
   Int ->
   a ->
   Either HomotopyError [(Int, AbGroupPres)]
@@ -135,7 +137,7 @@ homotopyGroupsThrough target a
 
 -- | Compute a single homotopy group of a 1-reduced simplicial set.
 homotopyGroup ::
-  (OneReduced a, Effective a, CC.FiniteType (Model a)) =>
+  (OneReduced a, Effective a, CC.FiniteType (Model a), CC.BoundedBelow (Model a)) =>
   Int ->
   a ->
   Either HomotopyError AbGroupPres

@@ -5,7 +5,6 @@ module Math.Topology.SSet where
 import qualified Control.Category.Constrained as Constrained
 import Control.Monad (ap)
 import Data.Bits
-import Prelude hiding (Bounded)
 
 -- A formal degeneracy is stored as a bit mask, with pattern synonyms
 -- retaining the recursive interface used by the simplicial identities.
@@ -222,9 +221,6 @@ someSimplices a n f = fmap NonDegen (f n) ++ (degensOf =<< someSimplices a (n - 
 
 allSimplices :: (FiniteType a) => a -> Int -> [Simplex a]
 allSimplices a n = someSimplices a n (geomBasis a)
-
-class SSet a => Bounded a where
-  amplitude :: a -> [Int]
 
 class SSet a => Pointed a where
   geomBasepoint :: a -> GeomSimplex a

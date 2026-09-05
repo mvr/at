@@ -53,6 +53,9 @@ instance DVF a => ChainComplex (CriticalComplex a) where
   degree (CriticalComplex a) = degree a
   diff (CriticalComplex a) = dK a (diff a)
 
+instance (DVF a, BoundedBelow a) => BoundedBelow (CriticalComplex a) where
+  lowerBound (CriticalComplex a) = lowerBound a
+
 instance FiniteCritical a => FiniteType (CriticalComplex a) where
   basis (CriticalComplex a) = criticalBasis a
 

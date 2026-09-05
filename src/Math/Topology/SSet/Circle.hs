@@ -1,8 +1,6 @@
 -- | The simplicial circle with one vertex and one non-degenerate edge.
 module Math.Topology.SSet.Circle where
 
-import Prelude hiding (Bounded)
-
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
@@ -28,9 +26,6 @@ instance FiniteType Circle where
   geomBasis _ 0 = [CircleBasepoint]
   geomBasis _ 1 = [CircleEdge]
   geomBasis _ _ = []
-
-instance Bounded Circle where
-  amplitude _ = [0, 1]
 
 instance Pointed Circle where
   geomBasepoint _ = CircleBasepoint

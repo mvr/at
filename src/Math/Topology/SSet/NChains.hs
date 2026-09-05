@@ -3,10 +3,10 @@
 module Math.Topology.SSet.NChains where
 
 import Control.Category.Constrained
-import Prelude hiding (Bounded, Functor, return)
+import Prelude hiding (Functor, return)
 
-import Math.Algebra.ChainComplex as CC hiding (Bounded, FiniteType, Morphism (..), amplitude)
-import qualified Math.Algebra.ChainComplex as CC (Bounded, FiniteType (..), Morphism (..), amplitude)
+import Math.Algebra.ChainComplex as CC hiding (FiniteType, Morphism (..))
+import qualified Math.Algebra.ChainComplex as CC (FiniteType (..), Morphism (..))
 import Math.Algebra.Combination
 import Math.Topology.SSet
 
@@ -32,8 +32,8 @@ instance FiniteType a => CC.FiniteType (NChains a) where
   dim (NChains a) i = length (geomBasis a i)
   basis (NChains a) = geomBasis a
 
-instance Bounded a => CC.Bounded (NChains a) where
-  amplitude (NChains a) = amplitude a
+instance SSet a => CC.BoundedBelow (NChains a) where
+  lowerBound _ = 0
 
 instance ZeroReduced a => CC.ConnectedChainComplex (NChains a)
 

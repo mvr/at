@@ -1,7 +1,5 @@
 module Math.Topology.SSet.Skeleton where
 
-import Prelude hiding (Bounded)
-
 import Math.Topology.SSet
 
 data Skeleton a = Skeleton Int a
@@ -27,11 +25,6 @@ instance FiniteType a => FiniteType (Skeleton a) where
   geomBasis (Skeleton n a) i
     | i <= n = SkeletonSimplex <$> geomBasis a i
     | otherwise = []
-
--- `a` shouldn't have to be bounded here, but replacing `amplitude`
--- with `[0..n]` actually might make things worse rather than better
-instance Bounded a => Bounded (Skeleton a) where
-  amplitude (Skeleton n a) = filter (<= n) (amplitude a)
 
 instance Pointed a => Pointed (Skeleton a) where
   geomBasepoint (Skeleton _ a) = SkeletonSimplex (geomBasepoint a)

@@ -32,6 +32,9 @@ instance (ChainComplex a) => ChainComplex (Shift a) where
   degree (Shift k a) b = degree a b + k
   diff (Shift k a) = shiftMorphism k (diff a)
 
+instance BoundedBelow a => BoundedBelow (Shift a) where
+  lowerBound (Shift k a) = k + lowerBound a
+
 instance (FiniteType a) => FiniteType (Shift a) where
   dim (Shift k a) n = dim a (n - k)
   basis (Shift k a) n = basis a (n - k)
@@ -42,6 +45,9 @@ instance ChainComplex a => ChainComplex (Susp a) where
   degree (Susp a) = degree (Shift 1 a)
   diff (Susp a) = sameBasisMorphism (diff (Shift 1 a))
 
+instance BoundedBelow a => BoundedBelow (Susp a) where
+  lowerBound (Susp a) = lowerBound (Shift 1 a)
+
 instance FiniteType a => FiniteType (Susp a) where
   dim (Susp a) = dim (Shift 1 a)
   basis (Susp a) = basis (Shift 1 a)
@@ -51,6 +57,9 @@ instance ChainComplex a => ChainComplex (Desusp a) where
   isBasis (Desusp a) = isBasis (Shift (-1) a)
   degree (Desusp a) = degree (Shift (-1) a)
   diff (Desusp a) = sameBasisMorphism (diff (Shift (-1) a))
+
+instance BoundedBelow a => BoundedBelow (Desusp a) where
+  lowerBound (Desusp a) = lowerBound (Shift (-1) a)
 
 instance FiniteType a => FiniteType (Desusp a) where
   dim (Desusp a) = dim (Shift (-1) a)

@@ -22,6 +22,9 @@ instance ChainComplex a => ChainComplex (NaiveTruncation a) where
       then zeroCombination
       else diff a `onBasis` b
 
+instance ChainComplex a => BoundedBelow (NaiveTruncation a) where
+  lowerBound (NaiveTruncation n _) = n
+
 instance FiniteType a => FiniteType (NaiveTruncation a) where
   dim (NaiveTruncation n a) d
     | d < n = 0

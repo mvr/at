@@ -83,6 +83,12 @@ instance (Algebra a, Coalgebra c) => ChainComplex (TwistedTensor a c) where
     sameBasisMorphism $
       diff (Perturbed (Tensor a c) (twistedTensorPerturbation twisted))
 
+instance
+  (Algebra a, Coalgebra c, BoundedBelow a, BoundedBelow c) =>
+  BoundedBelow (TwistedTensor a c)
+  where
+  lowerBound (TwistedTensor a c _) = lowerBound (Tensor a c)
+
 toTwisted ::
   (Algebra a, Coalgebra c) =>
   Perturbed (Tensor a c) ->

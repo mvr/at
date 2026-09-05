@@ -2,7 +2,6 @@
 module Math.Topology.SSet.RPn where
 
 import Data.Coerce
-import Prelude hiding (Bounded)
 
 import Math.Topology.SGrp.KGn
 import Math.Topology.SSet
@@ -26,9 +25,6 @@ instance SSet RPn where
 
 instance FiniteType RPn where
   geomBasis (RPn n) = coerce (geomBasis (Skeleton n KZmod2_1))
-
-instance Bounded RPn where
-  amplitude (RPn n) = [0 .. n]
 
 instance Pointed RPn where
   geomBasepoint (RPn n) = coerce (geomBasepoint KZmod2_1)

@@ -73,6 +73,9 @@ instance OneReducedChainComplex c => ChainComplex (CoaugmentationCoideal c) wher
   diff (CoaugmentationCoideal c) =
     Morphism (-1) (onBasis (diff c))
 
+instance OneReducedChainComplex c => BoundedBelow (CoaugmentationCoideal c) where
+  lowerBound _ = 2
+
 instance
   (OneReducedChainComplex c, FiniteType c) =>
   FiniteType (CoaugmentationCoideal c)
@@ -87,15 +90,18 @@ coidealWords ::
   Int ->
   Int ->
   [[Basis c]]
-coidealWords _ 0 0 = [[]]
-coidealWords _ _ wordLength | wordLength <= 0 = []
-coidealWords _ totalDegree wordLength
-  | totalDegree < 2 * wordLength = []
-coidealWords coideal totalDegree wordLength = do
-  generatorDegree <- [2 .. totalDegree - 2 * (wordLength - 1)]
-  b <- basis coideal generatorDegree
-  bs <- coidealWords coideal (totalDegree - generatorDegree) (wordLength - 1)
-  pure (b : bs)
+coidealWords coideal d l = go (d - l * lo) l
+  where
+    lo = lowerBound coideal
+
+    -- n is the excess degree above the minimum for the remaining letters.
+    go 0 0 = [[]]
+    go _ l | l <= 0 = []
+    go n l = do
+      i <- [0 .. n]
+      b <- basis coideal (lo + i)
+      bs <- go (n - i) (l - 1)
+      pure (b : bs)
 
 secondQuadrantBidegrees :: Int -> [(Int, Int)]
 secondQuadrantBidegrees totalDegree
@@ -119,6 +125,12 @@ instance
   FiniteType (TensorDesusp (CoaugmentationCoideal c))
   where
   basis tensorDesusp = basis (Tot tensorDesusp)
+
+instance
+  OneReducedChainComplex c =>
+  BoundedBelow (TensorDesusp (CoaugmentationCoideal c))
+  where
+  lowerBound _ = 0
 
 instance
   OneReducedChainComplex c =>
@@ -185,6 +197,12 @@ instance
   isBasis (Cobar c) = isBasis (Tot (Cobar c))
   degree (Cobar c) = degree (Tot (Cobar c))
   diff (Cobar c) = sameBasisMorphism (diff (Tot (Cobar c)))
+
+instance
+  (CoaugmentedCoalgebra c, OneReducedChainComplex c) =>
+  BoundedBelow (Cobar c)
+  where
+  lowerBound (Cobar c) = lowerBound (cobarTensor c)
 
 instance
   (CoaugmentedCoalgebra c, OneReducedChainComplex c) =>

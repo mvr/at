@@ -1,5 +1,6 @@
 module Math.Algebra.ChainComplex.Algebra.BarSpec where
 
+import Control.Monad (forM_, replicateM)
 import Test.Hspec
 
 import Math.Algebra.Bicomplex hiding (FiniteType)
@@ -47,7 +48,30 @@ spec = do
     it "excludes negative-degree generators" $
       CC.isBasis (AugmentationIdeal NegativeLine) () `shouldBe` False
 
+    it "has lower bound one without requiring a bound on the input" $
+      CC.lowerBound (AugmentationIdeal NegativeLine) `shouldBe` 1
+
+  describe "augmentation-ideal words" $ do
+    let ideal = AugmentationIdeal (Disk 2)
+
+    it "handles empty words and impossible degrees or lengths" $ do
+      augmentationIdealWords ideal 0 0 `shouldBe` [[]]
+      augmentationIdealWords ideal 1 0 `shouldBe` []
+      augmentationIdealWords ideal 0 (-1) `shouldBe` []
+      augmentationIdealWords ideal 1 2 `shouldBe` []
+
+    it "enumerates each word of the requested length and degree once" $
+      forM_ [0 .. 3] $ \l ->
+        forM_ [-1 .. 7] $ \d -> do
+          let ws = replicateM l [DiskBoundary, DiskInterior]
+          augmentationIdealWords ideal d l
+            `shouldMatchList` filter ((== d) . sum . fmap (CC.degree ideal)) ws
+
   describe "tensor suspension algebra" $ do
+    it "has lower bound zero, including the empty word" $ do
+      CC.lowerBound (barTensor (Disk 2)) `shouldBe` 0
+      CC.basis (barTensor (Disk 2)) 0 `shouldBe` [[]]
+
     AlgebraProperties.check 4 (barTensor (Disk 2))
     AlgebraProperties.checkAugmented 4 (barTensor (Disk 2))
 
@@ -63,6 +87,9 @@ spec = do
 
   describe "Bar" $ do
     let a = Bar (NChains (WbarDiscrete (Zmod 3)))
+    it "inherits the tensor algebra's lower bound" $
+      CC.lowerBound a `shouldBe` 0
+
     describe "is a bicomplex" $ do
       let as = do
             h <- [0 .. 5]

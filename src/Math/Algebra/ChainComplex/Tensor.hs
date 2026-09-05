@@ -20,6 +20,9 @@ instance (ChainComplex a, ChainComplex b) => ChainComplex (Tensor a b) where
         mapMonotonic (,t) (diff a `onBasis` s)
           + kozulRule (degree a s) (mapMonotonic (s,) (diff b `onBasis` t))
 
+instance (BoundedBelow a, BoundedBelow b) => BoundedBelow (Tensor a b) where
+  lowerBound (Tensor a b) = lowerBound a + lowerBound b
+
 instance
   (ConnectedChainComplex a, ConnectedChainComplex b) =>
   ConnectedChainComplex (Tensor a b)

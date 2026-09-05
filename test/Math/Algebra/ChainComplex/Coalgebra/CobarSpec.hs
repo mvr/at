@@ -1,5 +1,6 @@
 module Math.Algebra.ChainComplex.Coalgebra.CobarSpec where
 
+import Control.Monad (forM_, replicateM)
 import Test.Hspec
 
 import Math.Algebra.AbGroupPres (freeAbGroup)
@@ -44,6 +45,9 @@ instance ChainComplex SignCoalgebra where
     DesuspensionInterior -> singleComb DesuspensionBoundary
     _ -> 0
 
+instance BoundedBelow SignCoalgebra where
+  lowerBound _ = 0
+
 instance ConnectedChainComplex SignCoalgebra
 
 instance OneReducedChainComplex SignCoalgebra
@@ -76,6 +80,33 @@ instance CoaugmentedCoalgebra SignCoalgebra where
 
 spec :: Spec
 spec = describe "Cobar" $ do
+  describe "lower bounds" $ do
+    it "bounds the coaugmentation coideal below by two" $
+      lowerBound (CoaugmentationCoideal SignCoalgebra) `shouldBe` 2
+
+    it "bounds the tensor algebra below by zero, including the empty word" $ do
+      lowerBound (cobarTensor SignCoalgebra) `shouldBe` 0
+      basis (cobarTensor SignCoalgebra) 0 `shouldBe` [[]]
+
+    it "preserves the bound when adding the coproduct differential" $
+      lowerBound (Cobar SignCoalgebra) `shouldBe` 0
+
+  describe "coideal words" $ do
+    let coideal = CoaugmentationCoideal SignCoalgebra
+
+    it "handles empty words and impossible degrees or lengths" $ do
+      coidealWords coideal 0 0 `shouldBe` [[]]
+      coidealWords coideal 1 0 `shouldBe` []
+      coidealWords coideal 0 (-1) `shouldBe` []
+      coidealWords coideal 3 2 `shouldBe` []
+
+    it "enumerates each word of the requested length and degree once" $
+      forM_ [0 .. 3] $ \l ->
+        forM_ [-1 .. 16] $ \d -> do
+          let ws = replicateM l ([2 .. 5] >>= basis coideal)
+          coidealWords coideal d l
+            `shouldMatchList` filter ((== d) . sum . fmap (degree coideal)) ws
+
   describe "unrestricted tensor desuspension" $ do
     let tensorDesusp = TensorDesusp (Disk 1)
 

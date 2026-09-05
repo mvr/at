@@ -12,7 +12,7 @@ import Math.Algebra.Combination
 
 import qualified Math.Algebra.ChainComplex.Properties as ChainComplexProperties
 
-check :: (Algebra a, FiniteType a, Show (Basis a)) => Int -> a -> Spec
+check :: (Algebra a, FiniteType a, BoundedBelow a, Show (Basis a)) => Int -> a -> Spec
 check n a = do
   let multiplication = muMor a
       unit = unitMor a
@@ -50,7 +50,7 @@ check n a = do
     (multiplyLeft, multiplyRight) `ChainComplexProperties.isEqOnAll` tripleBasis
 
 checkAugmented ::
-  (AugmentedAlgebra a, FiniteType a, Show (Basis a)) =>
+  (AugmentedAlgebra a, FiniteType a, BoundedBelow a, Show (Basis a)) =>
   Int ->
   a ->
   Spec

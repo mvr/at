@@ -100,6 +100,9 @@ instance ChainComplex a => ChainComplex (AugmentationIdeal a) where
         then zeroCombination
         else singleComb image
 
+instance ChainComplex a => BoundedBelow (AugmentationIdeal a) where
+  lowerBound _ = 1
+
 instance FiniteType a => FiniteType (AugmentationIdeal a) where
   basis (AugmentationIdeal a) d
     | d <= 0 = []
@@ -117,15 +120,18 @@ augmentationIdealWords ::
   Int ->
   Int ->
   [[Basis a]]
-augmentationIdealWords _ 0 0 = [[]]
-augmentationIdealWords _ _ wordLength | wordLength <= 0 = []
-augmentationIdealWords _ totalDegree wordLength
-  | totalDegree < wordLength = []
-augmentationIdealWords ideal totalDegree wordLength = do
-  generatorDegree <- [1 .. totalDegree - (wordLength - 1)]
-  b <- basis ideal generatorDegree
-  bs <- augmentationIdealWords ideal (totalDegree - generatorDegree) (wordLength - 1)
-  pure (b : bs)
+augmentationIdealWords ideal d l = go (d - l * lo) l
+  where
+    lo = lowerBound ideal
+
+    -- n is the excess degree above the minimum for the remaining letters.
+    go 0 0 = [[]]
+    go _ l | l <= 0 = []
+    go n l = do
+      i <- [0 .. n]
+      b <- basis ideal (lo + i)
+      bs <- go (n - i) (l - 1)
+      pure (b : bs)
 
 instance
   FiniteType a =>
@@ -141,6 +147,9 @@ instance
   FiniteType (TensorSusp (AugmentationIdeal a))
   where
   basis tensorSusp = basis (Tot tensorSusp)
+
+instance ChainComplex a => BoundedBelow (TensorSusp (AugmentationIdeal a)) where
+  lowerBound _ = 0
 
 instance ChainComplex a => Algebra (TensorSusp a) where
   unitMor _ = basisMorphism (const [])
@@ -207,6 +216,9 @@ instance (AugmentedAlgebra a, ConnectedChainComplex a) => ChainComplex (Bar a) w
   isBasis (Bar a) = isBasis (Tot (Bar a))
   degree (Bar a) = degree (Tot (Bar a))
   diff (Bar a) = sameBasisMorphism (diff (Tot (Bar a)))
+
+instance (AugmentedAlgebra a, ConnectedChainComplex a) => BoundedBelow (Bar a) where
+  lowerBound (Bar a) = lowerBound (barTensor a)
 
 instance
   (AugmentedAlgebra a, ConnectedChainComplex a, FiniteType a) =>

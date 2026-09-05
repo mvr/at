@@ -18,6 +18,9 @@ instance (ChainComplex a, ChainComplex b) => ChainComplex (Sum a b) where
       go (Left s) = mapMonotonic Left (diff a `onBasis` s)
       go (Right t) = mapMonotonic Right (diff b `onBasis` t)
 
+instance (BoundedBelow a, BoundedBelow b) => BoundedBelow (Sum a b) where
+  lowerBound (Sum a b) = lowerBound a `min` lowerBound b
+
 instance (FiniteType a, FiniteType b) => FiniteType (Sum a b) where
   dim (Sum a b) n = dim a n + dim b n
   basis (Sum a b) n = (Left <$> basis a n) ++ (Right <$> basis b n)

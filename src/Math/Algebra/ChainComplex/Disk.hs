@@ -29,6 +29,9 @@ instance ChainComplex Disk where
     DiskInterior -> singleComb DiskBoundary
     _ -> 0
 
+instance BoundedBelow Disk where
+  lowerBound _ = 0
+
 instance FiniteType Disk where
   basis (Disk n) d
     | n <= 0 = []

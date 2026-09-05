@@ -37,6 +37,10 @@ instance (ChainComplex b, ChainComplex c, ChainComplex d) => ChainComplex (Bicon
           (mapMonotonic FromC (g `onBasis` s))
           (mapMonotonic FromD (diff d `onBasis` s))
 
+instance (BoundedBelow b, BoundedBelow c, BoundedBelow d) => BoundedBelow (Bicone b c d) where
+  lowerBound (Bicone b c d _ _) =
+    lowerBound b `min` (lowerBound c - 1) `min` lowerBound d
+
 instance (FiniteType b, FiniteType c, FiniteType d) => FiniteType (Bicone b c d) where
   dim (Bicone b c d _ _) n = dim b n + dim c (n + 1) + dim d n
   basis (Bicone b c d _ _) n = (FromB <$> basis b n) ++ (FromC <$> basis c (n + 1)) ++ (FromD <$> basis d n)

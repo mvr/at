@@ -1,8 +1,6 @@
 -- | The \(n\)-sphere \(S^n\)
 module Math.Topology.SSet.Sphere where
 
-import Prelude hiding (Bounded)
-
 import Math.Topology.SSet
 import Math.Topology.SSet.Effective
 
@@ -30,9 +28,6 @@ instance FiniteType Sphere where
     | i == 0 = [Basepoint]
     | i == n = [Cell]
     | otherwise = []
-
-instance Bounded Sphere where
-  amplitude (Sphere n) = [0, n]
 
 instance Pointed Sphere where
   geomBasepoint _ = Basepoint

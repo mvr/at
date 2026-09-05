@@ -46,6 +46,9 @@ instance (ChainComplex a) => ChainComplex (Perturbed a) where
   degree (Perturbed a _) = degree a
   diff (Perturbed a delta) = sameBasisMorphism (diff a + delta)
 
+instance BoundedBelow a => BoundedBelow (Perturbed a) where
+  lowerBound (Perturbed a _) = lowerBound a
+
 instance ConnectedChainComplex a => ConnectedChainComplex (Perturbed a)
 
 instance OneReducedChainComplex a => OneReducedChainComplex (Perturbed a)
