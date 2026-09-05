@@ -99,3 +99,8 @@ tensorSusp ::
 tensorSusp a _ = Morphism (-1) $ \(x, y) ->
   kozulRule (degree a x + 1) (singleComb (x, y))
 
+desuspTensor ::
+  (ChainComplex a, ChainComplex b) =>
+  a -> b -> Morphism (Desusp (Tensor a b)) (Tensor (Desusp a) (Desusp b))
+desuspTensor a _ = Morphism (-1) $ \(x, y) ->
+  kozulRule (degree a x) (singleComb (x, y))

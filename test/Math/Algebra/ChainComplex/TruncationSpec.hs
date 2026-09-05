@@ -3,8 +3,9 @@ module Math.Algebra.ChainComplex.TruncationSpec where
 import Test.Hspec
 
 import Math.Algebra.ChainComplex
-import Math.Algebra.ChainComplex.Coalgebra.Cobar (TensorDesusp (..))
 import Math.Algebra.ChainComplex.Disk
+import Math.Algebra.ChainComplex.Shift (Desusp (..))
+import Math.Algebra.ChainComplex.TensorAlgebra (TensorAlgebra (..))
 import Math.Algebra.ChainComplex.Truncation
 import Math.Algebra.Combination
 
@@ -22,7 +23,7 @@ spec = describe "naive truncation" $ do
     lowerBound truncated `shouldBe` 1
 
   it "gives a lower bound even when the original complex is unbounded below" $
-    lowerBound (NaiveTruncation (-2) (TensorDesusp ())) `shouldBe` (-2)
+    lowerBound (NaiveTruncation (-2) (TensorAlgebra (Desusp ()))) `shouldBe` (-2)
 
   it "excludes generators below the cutoff" $ do
     isBasis truncated DiskBase `shouldBe` False
