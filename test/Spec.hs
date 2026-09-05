@@ -11,6 +11,7 @@ import qualified Math.Algebra.ChainComplex.CoalgebraSpec
 import qualified Math.Algebra.ChainComplex.DiskSpec
 import qualified Math.Algebra.ChainComplex.FundamentalCocycleSpec
 import qualified Math.Algebra.ChainComplex.ShiftSpec
+import qualified Math.Algebra.ChainComplex.TensorAlgebraSpec
 import qualified Math.Algebra.ChainComplex.TensorSpec
 import qualified Math.Algebra.ChainComplex.TruncationSpec
 import qualified Math.Algebra.CombinationSpec
@@ -53,6 +54,7 @@ spec = do
   Math.Algebra.ChainComplex.TensorSpec.spec
   Math.Algebra.ChainComplex.Algebra.BarSpec.spec
   Math.Algebra.ChainComplex.ShiftSpec.spec
+  Math.Algebra.ChainComplex.TensorAlgebraSpec.spec
   Math.Algebra.ChainComplex.TruncationSpec.spec
   Math.Algebra.AbGroupPres.MatrixOpsSpec.spec
   Math.Algebra.AbGroupPresSpec.spec
