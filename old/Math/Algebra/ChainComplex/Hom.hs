@@ -1,3 +1,6 @@
+-- Archived prototype: this module depends on the retired Bounded/amplitude
+-- interface and is not part of the build. Its finite-matrix representation
+-- does not describe the general internal Hom of unbounded complexes.
 -- | Internal hom of chain complexes
 module Math.Algebra.ChainComplex.Hom where
 

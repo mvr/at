@@ -10,7 +10,6 @@ import qualified Math.Algebra.ChainComplex.Coalgebra.CobarSpec
 import qualified Math.Algebra.ChainComplex.CoalgebraSpec
 import qualified Math.Algebra.ChainComplex.DiskSpec
 import qualified Math.Algebra.ChainComplex.FundamentalCocycleSpec
-import qualified Math.Algebra.ChainComplex.HomSpec
 import qualified Math.Algebra.ChainComplex.ShiftSpec
 import qualified Math.Algebra.ChainComplex.TensorSpec
 import qualified Math.Algebra.ChainComplex.TruncationSpec
@@ -57,7 +56,6 @@ spec = do
   Math.Algebra.ChainComplex.TruncationSpec.spec
   Math.Algebra.AbGroupPres.MatrixOpsSpec.spec
   Math.Algebra.AbGroupPresSpec.spec
-  Math.Algebra.ChainComplex.HomSpec.spec
   Math.Topology.SSet.ProductSpec.spec
   Math.Topology.SSet.SphereSpec.spec
   Math.Topology.SSet.CircleSpec.spec

@@ -1,3 +1,4 @@
+-- Archived with the experimental Hom module; not part of the test suite.
 module Math.Algebra.ChainComplex.HomSpec where
 
 import Test.Hspec

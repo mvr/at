@@ -66,7 +66,6 @@ library
     Math.Algebra.ChainComplex.Disk
     Math.Algebra.ChainComplex.DVF
     Math.Algebra.ChainComplex.Equivalence
-    Math.Algebra.ChainComplex.Hom
     Math.Algebra.ChainComplex.Reduction
     Math.Algebra.ChainComplex.Shift
     Math.Algebra.ChainComplex.Sum
@@ -181,7 +180,6 @@ test-suite spec
     Math.Algebra.ChainComplex.DiskSpec
     Math.Algebra.ChainComplex.DVF.Properties
     Math.Algebra.ChainComplex.FundamentalCocycleSpec
-    Math.Algebra.ChainComplex.HomSpec
     Math.Algebra.ChainComplex.Properties
     Math.Algebra.ChainComplex.Reduction.Properties
     Math.Algebra.ChainComplex.ShiftSpec
