@@ -51,11 +51,4 @@ spec = describe "tensor products" $ do
       4
       (Tensor (Disk 2) (Disk 2))
       (Tensor () ())
-      ( tensorReduction
-          (Disk 2)
-          (Disk 2)
-          ()
-          ()
-          (diskReduction (Disk 2))
-          (diskReduction (Disk 2))
-      )
+      (tensorReduction (Disk 2) (Disk 2) () () (diskReduction (Disk 2)) (diskReduction (Disk 2)))

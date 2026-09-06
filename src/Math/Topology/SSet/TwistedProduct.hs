@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+
 -- | A principal \(G\)-bundle over \(A\), represented as a degree (-1) map of
 -- simplicial sets \(τ : A \to G\).
 --
@@ -80,27 +81,18 @@ instance (FiniteType f, FiniteType b, SGrp g) => FiniteType (TwistedProduct f b 
 instance (SSet f, SSet b, SGrp g) => DVF (TwistedProduct f b g) where
   vf (TwistedProduct f b _ _ _) = status (Product f b)
 
-instance
-  (FiniteType f, FiniteType b, SGrp g) =>
-  FiniteCritical (NChains (TwistedProduct f b g))
+instance (FiniteType f, FiniteType b, SGrp g) => FiniteCritical (NChains (TwistedProduct f b g))
 
-totalSpaceChainsIso ::
-  CC.Morphism
-    (Perturbed (NChains (Product f b)))
-    (NChains (TwistedProduct f b g))
+totalSpaceChainsIso :: CC.Morphism (Perturbed (NChains (Product f b))) (NChains (TwistedProduct f b g))
 totalSpaceChainsIso = sameBasisId
 
-totalSpaceChainsIsoInv ::
-  CC.Morphism
-    (NChains (TwistedProduct f b g))
-    (Perturbed (NChains (Product f b)))
+totalSpaceChainsIsoInv :: CC.Morphism (NChains (TwistedProduct f b g)) (Perturbed (NChains (Product f b)))
 totalSpaceChainsIsoInv = sameBasisId
 
 -- | The twisting changes only the zeroth face of a product simplex.
 twistedProductPerturbation ::
   (SSet f, SSet b, SGrp g) =>
-  TwistedProduct f b g ->
-  CC.Morphism (NChains (Product f b)) (NChains (Product f b))
+  TwistedProduct f b g -> CC.Morphism (NChains (Product f b)) (NChains (Product f b))
 twistedProductPerturbation t@(TwistedProduct f b _ _ _) =
   CC.Morphism (-1) perturb
   where
@@ -111,17 +103,9 @@ twistedProductPerturbation t@(TwistedProduct f b _ _ _) =
         twistedFace = geomFace t simplex 0
         untwistedFace = geomFace (Product f b) simplex 0
 
-instance
-  ( Effective f,
-    Effective b,
-    SGrp g
-  ) =>
-  Effective (TwistedProduct f b g)
-  where
+instance (Effective f, Effective b, SGrp g) => Effective (TwistedProduct f b g) where
   type Model (TwistedProduct f b g) = Perturbed (Tensor (Model f) (Model b))
 
   eff t@(TwistedProduct f b _ _ _) =
     composeLeft (NChains t) (isoToReduction totalSpaceChainsIso totalSpaceChainsIsoInv) $
-      perturbLeft
-        (eff (Product f b))
-        (twistedProductPerturbation t)
+      perturbLeft (eff (Product f b)) (twistedProductPerturbation t)

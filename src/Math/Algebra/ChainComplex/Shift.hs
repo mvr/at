@@ -3,8 +3,8 @@ module Math.Algebra.ChainComplex.Shift where
 
 import Math.Algebra.ChainComplex
 import Math.Algebra.ChainComplex.Reduction
-import Math.Algebra.Combination
 import Math.Algebra.ChainComplex.Tensor
+import Math.Algebra.Combination
 import Prelude hiding (id, return, (.))
 
 -- | Shift a chain complex by an arbitrary number of degrees, so
@@ -66,36 +66,19 @@ instance FiniteType a => FiniteType (Desusp a) where
   dim (Desusp a) = dim (Shift (-1) a)
   basis (Desusp a) = basis (Shift (-1) a)
 
-shiftReduction ::
-  (ChainComplex a, ChainComplex b) =>
-  Int ->
-  Reduction a b ->
-  Reduction (Shift a) (Shift b)
+shiftReduction :: (ChainComplex a, ChainComplex b) => Int -> Reduction a b -> Reduction (Shift a) (Shift b)
 shiftReduction k (Reduction f g h) =
-  Reduction
-    (shiftMorphism k f)
-    (shiftMorphism k g)
-    (shiftMorphism k h)
+  Reduction (shiftMorphism k f) (shiftMorphism k g) (shiftMorphism k h)
 
-suspReduction ::
-  (ChainComplex a, ChainComplex b) =>
-  Reduction a b ->
-  Reduction (Susp a) (Susp b)
+suspReduction :: (ChainComplex a, ChainComplex b) => Reduction a b -> Reduction (Susp a) (Susp b)
 suspReduction r = sameBasisReduction (shiftReduction 1 r)
 
-desuspReduction ::
-  (ChainComplex a, ChainComplex b) =>
-  Reduction a b ->
-  Reduction (Desusp a) (Desusp b)
+desuspReduction :: (ChainComplex a, ChainComplex b) => Reduction a b -> Reduction (Desusp a) (Desusp b)
 desuspReduction r = sameBasisReduction (shiftReduction (-1) r)
 
 tensorSusp ::
   (ChainComplex a, ChainComplex b) =>
-  a ->
-  b ->
-  Morphism
-    (Tensor (Susp a) (Susp b))
-    (Susp (Tensor a b))
+  a -> b -> Morphism (Tensor (Susp a) (Susp b)) (Susp (Tensor a b))
 tensorSusp a _ = Morphism (-1) $ \(x, y) ->
   kozulRule (degree a x + 1) (singleComb (x, y))
 

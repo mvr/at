@@ -31,12 +31,11 @@ newtype Wbar g = Wbar g
   deriving (Show)
 
 -- | Bar coordinates with unit entries omitted. Bit @p@ records that the
--- coordinate at position @p@ is the dimension-appropriate unit. Valid values
--- have no unit in the list and no mask bit beyond the represented dimension.
+-- coordinate at position @p@ is the dimension-appropriate unit.
 data WbarSimplex a = WbarSimplex {-# UNPACK #-} !Word [a]
   deriving (Show, Eq, Ord)
 
--- | Logical view of one compressed bar coordinate.
+-- Logical view of one bar simplex: empty, or a unit, or a non-unit.
 data WbarView a
   = WbarNilView
   | WbarUnitView !(WbarSimplex a)
@@ -52,11 +51,9 @@ viewWbar (WbarSimplex unitMask (entry : entries)) =
 viewWbar _ = error "viewWbar: invalid unit mask"
 {-# INLINE viewWbar #-}
 
--- | The empty bar.
 pattern WNil :: WbarSimplex a
 pattern WNil = WbarSimplex 0 []
 
--- | A dimension-appropriate unit followed by the remaining coordinates.
 pattern WUnit :: WbarSimplex a -> WbarSimplex a
 pattern WUnit rest <- (viewWbar -> WbarUnitView rest)
   where
@@ -65,7 +62,6 @@ pattern WUnit rest <- (viewWbar -> WbarUnitView rest)
         WbarSimplex unitMask entries ->
           WbarSimplex (setBit (unitMask `shiftL` 1) 0) entries
 
--- | A stored nonunit entry followed by the remaining coordinates.
 pattern WEntry :: a -> WbarSimplex a -> WbarSimplex a
 pattern WEntry entry rest <- (viewWbar -> WbarEntryView entry rest)
   where
@@ -204,9 +200,6 @@ instance (SGrp g) => SSet (Wbar g) where
   geomSimplexDim _ = wbarDimension
 
   geomFace _ WNil _ = undefined
-  -- TODO: need to make sure this matches with Kenzo's conventions,
-  -- multiplying on which side (for abelian groups of course it
-  -- doesn't matter)
   geomFace (Wbar g) bar i = normaliseWbar (wbarFaceEntries g bar i)
 
 instance SGrp g => Pointed (Wbar g) where
@@ -292,9 +285,7 @@ instance (SAb g, ZeroReduced g) => DVF (Wbar g) where
             WEntry entrySimplex (unnormaliseWbar tailSimplex)
   vf _ (WUnit _) = error "Wbar.vf: invalid leading unit"
 
-instance
-  (SAb g, ZeroReduced g, FiniteType g) =>
-  FiniteCritical (NChains (Wbar g))
+instance (SAb g, ZeroReduced g, FiniteType g) => FiniteCritical (NChains (Wbar g))
 
 stripBar :: Pointed g => g -> GeomSimplex (Wbar g) -> [GeomSimplex g]
 stripBar _ (WbarSimplex _ entries) = fmap underlyingGeom entries
@@ -351,7 +342,7 @@ instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where
 -- \twoheadrightarrow \bar W G\). The total space \(W G\) is
 -- contractible.
 canonicalTwist :: (SGrp g) => g -> Twist (Wbar g) g
-canonicalTwist g = Twist $ \bar -> case bar of
+canonicalTwist g = Twist $ \case
   WNil -> basepoint g
   WEntry entry _ -> entry
   WUnit _ -> error "canonicalTwist: invalid leading unit"

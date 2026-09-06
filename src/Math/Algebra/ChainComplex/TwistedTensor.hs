@@ -55,10 +55,7 @@ perturbationForCochain a c tauMor = delta
 -- @1 ⊗ ε@.
 cochainForPerturbation ::
   (Algebra a, Coalgebra c) =>
-  a ->
-  c ->
-  Morphism (Tensor a c) (Tensor a c) ->
-  Morphism c a
+  a -> c -> Morphism (Tensor a c) (Tensor a c) -> Morphism c a
 cochainForPerturbation a c delta =
   tensorUnitR
     . tensorFunc a c id (counitMor c)
@@ -68,8 +65,7 @@ cochainForPerturbation a c delta =
 
 twistedTensorPerturbation ::
   (Algebra a, Coalgebra c) =>
-  TwistedTensor a c ->
-  Morphism (Tensor a c) (Tensor a c)
+  TwistedTensor a c -> Morphism (Tensor a c) (Tensor a c)
 twistedTensorPerturbation (TwistedTensor a c tau) =
   perturbationForCochain a c tau
 
@@ -83,10 +79,7 @@ instance (Algebra a, Coalgebra c) => ChainComplex (TwistedTensor a c) where
     sameBasisMorphism $
       diff (Perturbed (Tensor a c) (twistedTensorPerturbation twisted))
 
-instance
-  (Algebra a, Coalgebra c, BoundedBelow a, BoundedBelow c) =>
-  BoundedBelow (TwistedTensor a c)
-  where
+instance (Algebra a, Coalgebra c, BoundedBelow a, BoundedBelow c) => BoundedBelow (TwistedTensor a c) where
   lowerBound (TwistedTensor a c _) = lowerBound (Tensor a c)
 
 toTwisted ::
