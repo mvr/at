@@ -9,7 +9,7 @@
 -- <https://doi.org/10.1007/s10208-013-9159-7>
 module Math.Topology.SGrp.KGn where
 
-import Control.Category.Constrained ((.))
+import Control.Category.Constrained (Iso (..), (.))
 import Math.Algebra.ChainComplex as CC hiding (FiniteType, Morphism)
 import qualified Math.Algebra.ChainComplex as CC
 import Math.Algebra.ChainComplex.Algebra
@@ -64,16 +64,16 @@ instance FiniteCritical (NChains KZ1) where
   criticalBasis _ 1 = [[1]]
   criticalBasis _ _ = []
 
-criticalIso :: CC.Morphism (CriticalComplex (NChains KZ1)) CircleComplex
-criticalIso = basisMorphism $ \case
-  [] -> Left ()
-  [1 :: Integer] -> Right ()
-  _ -> error "impossible"
-
-criticalIsoInv :: CC.Morphism CircleComplex (CriticalComplex (NChains KZ1))
-criticalIsoInv = basisMorphism $ \case
-  Left () -> []
-  Right () -> [1 :: Integer]
+criticalIso :: Iso CC.Morphism (CriticalComplex (NChains KZ1)) CircleComplex
+criticalIso = Iso forward backward
+  where
+    forward = basisMorphism $ \case
+      [] -> Left ()
+      [1 :: Integer] -> Right ()
+      _ -> error "impossible"
+    backward = basisMorphism $ \case
+      Left () -> []
+      Right () -> [1 :: Integer]
 
 instance Effective KZ1 where
   type Model KZ1 = CircleComplex
@@ -82,7 +82,7 @@ instance Effective KZ1 where
     fromRedLeft
       (NChains (WbarDiscrete Z))
       (Sum () (Susp ()))
-      (isoToReduction criticalIso criticalIsoInv . dvfReduction (NChains (WbarDiscrete Z)))
+      (isoToReduction criticalIso . dvfReduction (NChains (WbarDiscrete Z)))
 
 instance DVF (WbarDiscrete Zmod) where
   vf (WbarDiscrete (Zmod n)) [] = Critical

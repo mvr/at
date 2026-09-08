@@ -1,6 +1,6 @@
 module Math.Algebra.ChainComplex.Algebra.Properties where
 
-import Control.Category.Constrained (id, (.))
+import Control.Category.Constrained (Iso (..), id, (.))
 import Control.Monad (forM_)
 import Test.Hspec
 import Prelude hiding (id, (.))
@@ -35,18 +35,18 @@ check n a = do
   ChainComplexProperties.checkChainMap productComplex a "multiplication" productBasis multiplication
 
   it "has a left unit" $
-    let leftUnit = multiplication . tensorFunc () a unit id . tensorUnitLInv
+    let leftUnit = multiplication . tensorFunc () a unit id . isoBackward tensorUnitL
      in leftUnit `ChainComplexProperties.isIdOnAll` algebraBasis
 
   it "has a right unit" $
-    let rightUnit = multiplication . tensorFunc a () id unit . tensorUnitRInv
+    let rightUnit = multiplication . tensorFunc a () id unit . isoBackward tensorUnitR
      in rightUnit `ChainComplexProperties.isIdOnAll` algebraBasis
 
   it "is associative" $ do
     let triples = Tensor (Tensor a a) a
         tripleBasis = [0 .. n] >>= basis triples
         multiplyLeft = multiplication . tensorFunc productComplex a multiplication id
-        multiplyRight = multiplication . tensorFunc a productComplex id multiplication . tensorAssoc
+        multiplyRight = multiplication . tensorFunc a productComplex id multiplication . isoForward tensorAssoc
     (multiplyLeft, multiplyRight) `ChainComplexProperties.isEqOnAll` tripleBasis
 
 checkAugmented ::
@@ -72,6 +72,6 @@ checkAugmented n a = do
 
   it "preserves multiplication" $
     ( augmentation . multiplication,
-      tensorUnitL . tensorFunc a a augmentation augmentation
+      isoForward tensorUnitL . tensorFunc a a augmentation augmentation
     )
       `ChainComplexProperties.isEqOnAll` productBasis

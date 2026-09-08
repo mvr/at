@@ -1,6 +1,6 @@
 module Math.Algebra.ChainComplex.TensorSpec where
 
-import Control.Category.Constrained (id, (.))
+import Control.Category.Constrained (Iso (..), id, (.))
 import Control.Monad (forM_)
 import Test.Hspec
 import Prelude hiding (id, (.))
@@ -36,15 +36,14 @@ spec = describe "tensor products" $ do
     let left = Disk 2
         right = Disk 2
         swap = tensorSwap left right
-        swapBack = tensorSwap right left
 
     it "uses the Koszul sign" $
-      swap `onBasis` (DiskBoundary, DiskBoundary)
+      isoForward swap `onBasis` (DiskBoundary, DiskBoundary)
         `shouldBe` -(singleComb (DiskBoundary, DiskBoundary))
 
     it "is an involution" $
       forM_ ([0 .. 6] >>= basis (Tensor left right)) $ \b ->
-        (swapBack . swap) `onBasis` b `shouldBe` singleComb b
+        (isoBackward swap . isoForward swap) `onBasis` b `shouldBe` singleComb b
 
   describe "tensorReduction" $
     ReductionProperties.check

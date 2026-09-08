@@ -9,7 +9,7 @@
 -- Also anromero/resolutions.lisp in the fork
 module Math.Topology.SGrp.Wbar where
 
-import Control.Category.Constrained ((.))
+import Control.Category.Constrained (Iso (..), (.))
 import Data.Bits
 import Prelude hiding (id, return, (.))
 
@@ -24,7 +24,7 @@ import Math.Topology.SSet
 import Math.Topology.SSet.DVF
 import Math.Topology.SSet.Effective
 import Math.Topology.SSet.NChains
-import Math.Topology.SSet.Product hiding (criticalIso, criticalIsoInv)
+import Math.Topology.SSet.Product hiding (criticalIso)
 import Math.Topology.SSet.TwistedProduct
 
 newtype Wbar g = Wbar g
@@ -304,24 +304,14 @@ barOrientation g = go . fmap (geomSimplexDim g)
     go [] = 0
     go (d : ds) = d * (length ds + sum ds) + go ds
 
-criticalIso ::
-  (Pointed g) =>
-  g ->
-  CC.Morphism
-    (CriticalComplex (NChains (Wbar g)))
-    (Bar (NChains g))
-criticalIso g = CC.Morphism 0 $ \s ->
-  let as = stripBar g s
-   in CC.kozulRule (barOrientation g as) (singleComb as)
-
-criticalIsoInv ::
-  (SGrp g) =>
-  g ->
-  CC.Morphism
-    (Bar (NChains g))
-    (CriticalComplex (NChains (Wbar g)))
-criticalIsoInv g = CC.Morphism 0 $ \as ->
-  CC.kozulRule (barOrientation g as) (singleComb (reconstructBar g as))
+criticalIso :: SGrp g => g -> Iso CC.Morphism (CriticalComplex (NChains (Wbar g))) (Bar (NChains g))
+criticalIso g = Iso forward backward
+  where
+    forward = CC.Morphism 0 $ \s ->
+      let as = stripBar g s
+       in CC.kozulRule (barOrientation g as) (singleComb as)
+    backward = CC.Morphism 0 $ \as ->
+      CC.kozulRule (barOrientation g as) (singleComb (reconstructBar g as))
 
 wbarReduction ::
   (SAb g, ZeroReduced g) =>
@@ -330,7 +320,7 @@ wbarReduction ::
     (NChains (Wbar g))
     (Bar (NChains g))
 wbarReduction p@(Wbar g) =
-  isoToReduction (criticalIso g) (criticalIsoInv g)
+  isoToReduction (criticalIso g)
     . dvfReduction (NChains p)
 
 instance (SAb g, Effective g, ZeroReduced g) => Effective (Wbar g) where

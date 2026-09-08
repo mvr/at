@@ -3,6 +3,7 @@ module Math.Topology.SSet.ProductSpec where
 import Test.Hspec
 
 import Math.Algebra.ChainComplex.DVF
+import Math.Algebra.ChainComplex.Reduction (isoToReduction)
 import Math.Algebra.ChainComplex.Tensor
 import Math.Topology.SSet
 import Math.Topology.SSet.NChains
@@ -34,8 +35,7 @@ checkProduct n a b = do
       n
       (CriticalComplex (NChains p))
       (Tensor (NChains a) (NChains b))
-      Product.criticalIso
-      (Product.criticalIsoInv a b)
+      (Product.criticalIso a b)
 
   describe "dvfReduction" $
     ReductionProperties.check n (NChains p) (CriticalComplex (NChains p)) (dvfReduction (NChains p))

@@ -51,28 +51,24 @@ tensorFunc a1 _ (Morphism deg1 f1) (Morphism deg2 f2) =
     cachedF1 = memoiseOrd f1
     cachedF2 = memoiseOrd f2
 
-tensorAssoc :: Morphism ((a `Tensor` b) `Tensor` c) (a `Tensor` (b `Tensor` c))
-tensorAssoc = basisMorphism $ \((a, b), c) -> (a, (b, c))
-
-tensorAssocInv :: Morphism (a `Tensor` (b `Tensor` c)) ((a `Tensor` b) `Tensor` c)
-tensorAssocInv = basisMorphism $ \(a, (b, c)) -> ((a, b), c)
+tensorAssoc :: Iso Morphism ((a `Tensor` b) `Tensor` c) (a `Tensor` (b `Tensor` c))
+tensorAssoc =
+  Iso
+    (basisMorphism $ \((a, b), c) -> (a, (b, c)))
+    (basisMorphism $ \(a, (b, c)) -> ((a, b), c))
 
 -- | The symmetry of chain complexes, including the Koszul sign.
-tensorSwap :: (ChainComplex a, ChainComplex b) => a -> b -> Morphism (Tensor a b) (Tensor b a)
-tensorSwap a b = Morphism 0 $ \(left, right) ->
-  kozulRule (degree a left * degree b right) (singleComb (right, left))
+tensorSwap :: (ChainComplex a, ChainComplex b) => a -> b -> Iso Morphism (Tensor a b) (Tensor b a)
+tensorSwap a b = Iso (swap a b) (swap b a)
+  where
+    swap a b = Morphism 0 $ \(s, t) ->
+      kozulRule (degree a s * degree b t) (singleComb (t, s))
 
-tensorUnitL :: Morphism (Tensor () a) a
-tensorUnitL = basisMorphism snd
+tensorUnitL :: Iso Morphism (Tensor () a) a
+tensorUnitL = Iso (basisMorphism snd) (basisMorphism ((),))
 
-tensorUnitLInv :: Morphism a (Tensor () a)
-tensorUnitLInv = basisMorphism $ \a -> ((), a)
-
-tensorUnitR :: Morphism (Tensor a ()) a
-tensorUnitR = basisMorphism fst
-
-tensorUnitRInv :: Morphism a (Tensor a ())
-tensorUnitRInv = basisMorphism $ \a -> (a, ())
+tensorUnitR :: Iso Morphism (Tensor a ()) a
+tensorUnitR = Iso (basisMorphism fst) (basisMorphism (,()))
 
 tensorReduction ::
   (ChainComplex a1, ChainComplex a2, ChainComplex b1, ChainComplex b2) =>

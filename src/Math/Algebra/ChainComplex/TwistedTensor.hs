@@ -26,29 +26,12 @@ data TwistedTensor a c = TwistedTensor
 -- @C -> A@ and the right action of @A@ on itself.
 perturbationForCochain ::
   (Algebra a, Coalgebra c) =>
-  a ->
-  c ->
-  Morphism c a ->
-  Morphism (Tensor a c) (Tensor a c)
-perturbationForCochain a c tauMor = delta
-  where
-    (ClosedMorphism _ delta _) =
-      (mu ⊗ idC)
-        . assocInv
-        . (idA ⊗ (tau ⊗ idC))
-        . (idA ⊗ del)
-
-    mu = ClosedMorphism (Tensor a a) (muMor a) a
-    del = ClosedMorphism c (delMor c) (Tensor c c)
-    tau = ClosedMorphism c tauMor a
-    idA = ClosedMorphism a id a
-    idC = ClosedMorphism c id c
-    assocInv =
-      ClosedMorphism
-        (Tensor a (Tensor a c))
-        tensorAssocInv
-        (Tensor (Tensor a a) c)
-    (⊗) = tensorFuncArr
+  a -> c -> Morphism c a -> Morphism (Tensor a c) (Tensor a c)
+perturbationForCochain a c tau =
+  tensorFunc (Tensor a a) c (muMor a) id
+    . isoBackward tensorAssoc
+    . tensorFunc a (Tensor c c) id (tensorFunc c c tau id)
+    . tensorFunc a c id (delMor c)
 
 -- | Recover the twisting cochain from a perturbation on an algebra-first
 -- tensor product. The composite is @η ⊗ 1@, the perturbation, and
@@ -57,11 +40,11 @@ cochainForPerturbation ::
   (Algebra a, Coalgebra c) =>
   a -> c -> Morphism (Tensor a c) (Tensor a c) -> Morphism c a
 cochainForPerturbation a c delta =
-  tensorUnitR
+  isoForward tensorUnitR
     . tensorFunc a c id (counitMor c)
     . delta
     . tensorFunc () c (unitMor a) id
-    . tensorUnitLInv
+    . isoBackward tensorUnitL
 
 twistedTensorPerturbation ::
   (Algebra a, Coalgebra c) =>

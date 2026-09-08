@@ -29,9 +29,9 @@ instance (SGrp a, SGrp b) => SGrp (Product a b) where
   prodMor (Product a b) = (prodMor a × prodMor b) . αi . (id × α) . (id × (s × id)) . (id × αi) . α
     where
       (×) = prodFunc
-      α = prodAssoc
-      αi = prodAssocInv
-      s = prodSym
+      α = isoForward prodAssoc
+      αi = isoBackward prodAssoc
+      s = isoForward prodSym
   invMor (Product a b) = invMor a × invMor b
     where
       (×) = prodFunc

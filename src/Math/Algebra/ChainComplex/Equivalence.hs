@@ -59,8 +59,8 @@ instance Semigroupoid Equivalence where
 idEquiv :: (ChainComplex a) => a -> Equivalence a a
 idEquiv a = Equivalence a id a id a
 
-isoToEquiv :: (ChainComplex a, ChainComplex b) => a -> b -> Morphism a b -> Morphism b a -> Equivalence a b
-isoToEquiv a b f g = Equivalence a id a (isoToReduction f g) b
+isoToEquiv :: (ChainComplex a, ChainComplex b) => a -> b -> Iso Morphism a b -> Equivalence a b
+isoToEquiv a b i = Equivalence a id a (isoToReduction i) b
 
 fromRedLeft :: (ChainComplex a, ChainComplex b) => a -> b -> Reduction a b -> Equivalence a b
 fromRedLeft a b r = Equivalence a id a r b

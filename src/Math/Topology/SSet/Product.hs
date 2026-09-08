@@ -7,7 +7,7 @@
 -- some backwards, we follow Kenzo by going backwards.
 module Math.Topology.SSet.Product where
 
-import Control.Category.Constrained (fmap, (.))
+import Control.Category.Constrained (Iso (..), fmap, (.))
 import Data.Bits (clearBit, testBit, (.&.))
 import Prelude hiding (fmap, id, return, (.))
 
@@ -81,18 +81,20 @@ instance (OneReduced a, OneReduced b) => OneReduced (Product a b)
 instance (FiniteType a, FiniteType b) => FiniteType (Product a b) where
   geomBasis (Product a b) n = [(s, t) | s <- allSimplices a n, t <- allSimplices b n, isGeomSimplex (Product a b) (s, t)]
 
-prodSym :: Morphism (Product a b) (Product b a)
-prodSym = Morphism $ \(s, t) -> NonDegen (t, s)
+prodSym :: Iso Morphism (Product a b) (Product b a)
+prodSym = Iso swap swap
+  where
+    swap = Morphism $ \(s, t) -> NonDegen (t, s)
 
-prodAssoc :: Morphism (Product (Product a b) c) (Product a (Product b c))
-prodAssoc = Morphism $ \(st, r) ->
-  let (s, t) = prodUnnormalise st
-   in prodNormalise (s, prodNormalise (t, r))
-
-prodAssocInv :: Morphism (Product a (Product b c)) (Product (Product a b) c)
-prodAssocInv = Morphism $ \(s, tr) ->
-  let (t, r) = prodUnnormalise tr
-   in prodNormalise (prodNormalise (s, t), r)
+prodAssoc :: Iso Morphism (Product (Product a b) c) (Product a (Product b c))
+prodAssoc = Iso forward backward
+  where
+    forward = Morphism $ \(st, r) ->
+      let (s, t) = prodUnnormalise st
+       in prodNormalise (s, prodNormalise (t, r))
+    backward = Morphism $ \(s, tr) ->
+      let (t, r) = prodUnnormalise tr
+       in prodNormalise (prodNormalise (s, t), r)
 
 prodFunc :: Morphism a a' -> Morphism b b' -> Morphism (Product a b) (Product a' b')
 prodFunc m m' = Morphism $ \(s, t) -> prodNormalise (m `onSimplex` s, m' `onSimplex` t)
@@ -169,19 +171,9 @@ reconstructProduct a b (s, t) =
 {-# INLINE reconstructProduct #-}
 
 criticalIso ::
-  CC.Morphism
-    (CriticalComplex (NChains (Product a b)))
-    (Tensor (NChains a) (NChains b))
-criticalIso = basisMorphism stripProduct
-
-criticalIsoInv ::
   (SSet a, SSet b) =>
-  a ->
-  b ->
-  CC.Morphism
-    (Tensor (NChains a) (NChains b))
-    (CriticalComplex (NChains (Product a b)))
-criticalIsoInv a b = basisMorphism (reconstructProduct a b)
+  a -> b -> Iso CC.Morphism (CriticalComplex (NChains (Product a b))) (Tensor (NChains a) (NChains b))
+criticalIso a b = Iso (basisMorphism stripProduct) (basisMorphism (reconstructProduct a b))
 
 ezReduction ::
   (SSet a, SSet b) =>
@@ -190,7 +182,7 @@ ezReduction ::
     (NChains (Product a b))
     (Tensor (NChains a) (NChains b))
 ezReduction p@(Product a b) =
-  isoToReduction criticalIso (criticalIsoInv a b)
+  isoToReduction (criticalIso a b)
     . dvfReduction (NChains p)
 
 diagMor :: Morphism a (Product a a)

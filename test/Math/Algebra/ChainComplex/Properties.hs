@@ -1,6 +1,6 @@
 module Math.Algebra.ChainComplex.Properties where
 
-import Control.Category.Constrained (id, (.))
+import Control.Category.Constrained (Iso (..), id, (.))
 import Control.Monad (forM_, unless)
 import Math.Algebra.ChainComplex
 import Test.Hspec
@@ -44,19 +44,14 @@ checkChainMap a a' name as m = do
     forM_ as (\b -> m `onBasis` b `shouldSatisfy` validComb a')
   it ("∂ ∘ " ++ name ++ " = " ++ name ++ " ∘ ∂") $ (diff a' . m, m . diff a) `isEqOnAll` as
 
-checkIsoOn :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => [Basis a] -> [Basis b] -> Morphism a b -> Morphism b a -> Expectation
-checkIsoOn as bs m m' = (m' . m) `isIdOnAll` as >> (m . m') `isIdOnAll` bs
+checkIsoOn :: (ChainComplex a, ChainComplex b, Show (Basis a), Show (Basis b)) => [Basis a] -> [Basis b] -> Iso Morphism a b -> Expectation
+checkIsoOn as bs (Iso m m') = (m' . m) `isIdOnAll` as >> (m . m') `isIdOnAll` bs
 
 checkIso ::
   (FiniteType a, FiniteType b, Show (Basis a), Show (Basis b)) =>
-  Int ->
-  a ->
-  b ->
-  Morphism a b ->
-  Morphism b a ->
-  Expectation
-checkIso n a b m m' = do
+  Int -> a -> b -> Iso Morphism a b -> Expectation
+checkIso n a b i = do
   let as = [0 .. n] >>= basis a
   let bs = [0 .. n] >>= basis b
 
-  checkIsoOn as bs m m'
+  checkIsoOn as bs i

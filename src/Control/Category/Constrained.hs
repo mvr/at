@@ -32,6 +32,21 @@ instance Semigroupoid (->) where
 instance Category (->) where
   id = Prelude.id
 
+data Iso cat a b = Iso
+  { isoForward :: cat a b,
+    isoBackward :: cat b a
+  }
+
+instance Semigroupoid cat => Semigroupoid (Iso cat) where
+  type Object (Iso cat) a = Object cat a
+  Iso g g' . Iso f f' = Iso (g . f) (f' . g')
+
+instance Category cat => Category (Iso cat) where
+  id = Iso id id
+
+invert :: Iso cat a b -> Iso cat b a
+invert (Iso f g) = Iso g f
+
 newtype Sub (con :: i -> Constraint) (c :: i -> i -> Type) a b = Sub {incl :: c a b}
 
 instance Semigroupoid c => Semigroupoid (Sub con c) where
@@ -43,6 +58,9 @@ instance Category c => Category (Sub con c) where
 
 class Functor (dom :: i -> i -> Type) (cod :: j -> j -> Type) (f :: i -> j) where
   fmap :: (Object dom a, Object dom b) => dom a b -> cod (f a) (f b)
+
+instance Functor dom cod f => Functor (Iso dom) (Iso cod) f where
+  fmap (Iso f g) = Iso (fmap f) (fmap g)
 
 (<$>) :: (Functor dom cod f, Object dom a, Object dom b) => dom a b -> cod (f a) (f b)
 (<$>) = fmap
