@@ -20,6 +20,15 @@ spec = do
     AbelianCategoryProperties.spec (Proxy @AbGroupPres)
 
   describe "AbGroup" $ do
+    describe "presentation coordinates" $
+      it "removes killed generators from lifts when every relation is a unit" $ do
+        let p = fromPresentation $ M.fromList 3 1 [2, 3, 4]
+        p `shouldBe` freeAbGroup 2
+        (M.nrows $ fromReduced p, M.ncols $ fromReduced p) `shouldBe` (3, 2)
+        (M.nrows $ toReduced p, M.ncols $ toReduced p) `shouldBe` (2, 3)
+        toReduced p * fromReduced p `shouldBe` M.identity 2
+        toReduced p * presentation p `shouldBe` M.zero 2 1
+
     describe "normaliseElt" $ do
       it "preserves free coordinates" $
         eltVector (normaliseElt (freeAbGroup 2) (M.fromList 2 1 [7, -3]))
