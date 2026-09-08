@@ -1,0 +1,3 @@
+[submodule "vendor/matrix"]
+	path = vendor/matrix
+	url = https://github.com/mvr/matrix.git
