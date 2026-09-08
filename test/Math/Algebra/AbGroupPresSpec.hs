@@ -20,6 +20,19 @@ spec = do
     AbelianCategoryProperties.spec (Proxy @AbGroupPres)
 
   describe "AbGroup" $ do
+    describe "normaliseElt" $ do
+      it "preserves free coordinates" $
+        eltVector (normaliseElt (freeAbGroup 2) (M.fromList 2 1 [7, -3]))
+          `shouldBe` M.fromList 2 1 [7, -3]
+
+      it "reduces coefficients modulo the relation, not the reverse" $
+        eltVector (normaliseElt (fromPresentation $ M.fromList 1 1 [4]) (M.fromList 1 1 [9]))
+          `shouldBe` M.fromList 1 1 [1]
+
+      it "normalises negative torsion coefficients" $
+        eltVector (normaliseElt (fromPresentation $ M.fromList 1 1 [4]) (M.fromList 1 1 [-1]))
+          `shouldBe` M.fromList 1 1 [3]
+
     describe "isoClass" $ do
       it "survives class -> group -> class" $
         property $ do

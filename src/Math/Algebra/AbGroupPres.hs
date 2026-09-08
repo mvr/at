@@ -33,7 +33,7 @@ newtype AbGroupPresElt = AbGroupPresElt {eltVector :: (Matrix Integer)}
 normaliseElt :: AbGroupPres -> Matrix Integer -> AbGroupPresElt
 normaliseElt (AbGroupPres _ d _ _) c = AbGroupPresElt $ M.fromList (M.nrows d) 1 $ fmap (uncurry doMod) pairs
   where
-    pairs = zip (V.toList (M.getDiag d) ++ repeat 0) (M.toList c)
+    pairs = zip (M.toList c) (V.toList (M.getDiag d) ++ repeat 0)
     doMod x 0 = x
     doMod x d = x `mod` d
 
