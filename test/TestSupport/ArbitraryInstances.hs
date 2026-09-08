@@ -23,31 +23,31 @@ arbitraryMatrixOfSize r c = do
 
 arbitraryMatrix :: Arbitrary a => Gen (Matrix a)
 arbitraryMatrix = sized $ \i -> do
-  let s = max 1 (min i 5)
-  rows <- choose (1, s)
-  cols <- choose (1, s)
+  let s = min i 5
+  rows <- choose (0, s)
+  cols <- choose (0, s)
   arbitraryMatrixOfSize rows cols
 
 arbitraryMatrixOnesZeroes :: (Arbitrary a, Num a) => Gen (Matrix a)
 arbitraryMatrixOnesZeroes = sized $ \i -> do
-  let s = max 1 (min i 10)
-  rows <- choose (1, s)
-  cols <- choose (1, s)
+  let s = min i 10
+  rows <- choose (0, s)
+  cols <- choose (0, s)
   elts <- vectorOf (rows * cols) arbitrary
   return $ fromList rows cols elts
 
 arbitraryMatrixSmallEntries :: (Random a, Arbitrary a, Num a) => Gen (Matrix a)
 arbitraryMatrixSmallEntries = sized $ \i -> do
-  let s = max 1 (min i 5)
-  rows <- choose (1, s)
-  cols <- choose (1, s)
+  let s = min i 5
+  rows <- choose (0, s)
+  cols <- choose (0, s)
   elts <- vectorOf (rows * cols) $ choose (0, 10)
   return $ fromList rows cols elts
 
 allMinors :: Matrix a -> [Matrix a]
 allMinors m = do
-  r <- [0 .. (nrows m) - 1]
-  c <- [0 .. (ncols m) - 1]
+  r <- [1 .. nrows m]
+  c <- [1 .. ncols m]
   return $ minorMatrix r c m
 
 instance Arbitrary IsoClass where
@@ -66,9 +66,9 @@ instance Arbitrary AbGroupPres where
 
 instance Arbitrary (Arrow AbGroupPres) where
   arbitrary = sized $ \i -> do
-    let s = max 2 (min i 10)
-    domr <- choose (1, s)
-    codr <- choose (1, s)
+    let s = min i 10
+    domr <- choose (0, s)
+    codr <- choose (0, s)
 
     m <- arbitraryMatrixOfSize codr domr
     return $ morphismFromReducedMatrix (freeAbGroup $ fromIntegral domr) (freeAbGroup $ fromIntegral codr) m

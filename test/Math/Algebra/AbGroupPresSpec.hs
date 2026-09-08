@@ -1,5 +1,6 @@
 module Math.Algebra.AbGroupPresSpec where
 
+import Control.Monad (forM_)
 import Data.Proxy
 import Test.Hspec
 import Test.QuickCheck
@@ -8,6 +9,7 @@ import qualified Data.Matrix as M
 
 import Math.Algebra.AbGroupPres
 import Math.Algebra.AbGroupPres.IsoClass
+import Math.ValueCategory
 import Math.ValueCategory.Abelian
 import Math.ValueCategory.Additive
 
@@ -20,7 +22,34 @@ spec = do
     AbelianCategoryProperties.spec (Proxy @AbGroupPres)
 
   describe "AbGroup" $ do
-    describe "presentation coordinates" $
+    describe "presentation coordinates" $ do
+      it "uses no dummy generators or relations for zero and free groups" $
+        forM_ [0 .. 3] $ \n -> do
+          let p = freeAbGroup (fromIntegral n)
+          presentation p `shouldBe` M.zero n 0
+          reduced p `shouldBe` M.zero n 0
+          toReduced p `shouldBe` M.identity n
+          fromReduced p `shouldBe` M.identity n
+          length (indGenerators p) `shouldBe` n
+
+      it "reduces empty and all-zero presentations without padding" $
+        forM_ [0 .. 3] $ \r -> forM_ [0 .. 3] $ \c -> do
+          let p = fromPresentation (M.zero r c)
+          p `shouldBe` freeAbGroup (fromIntegral r)
+          reduced p `shouldBe` M.zero r 0
+          toReduced p `shouldBe` M.identity r
+          fromReduced p `shouldBe` M.identity r
+
+      it "removes every killed generator, even in a rectangular presentation" $
+        forM_ [(0, 0), (1, 1), (2, 3), (3, 2)] $ \(r, c) -> do
+          let p = fromPresentation $ M.setSize 0 r c (M.identity (min r c))
+              n = r - min r c
+          p `shouldBe` freeAbGroup (fromIntegral n)
+          reduced p `shouldBe` M.zero n 0
+          (M.nrows $ fromReduced p, M.ncols $ fromReduced p) `shouldBe` (r, n)
+          (M.nrows $ toReduced p, M.ncols $ toReduced p) `shouldBe` (n, r)
+          toReduced p * fromReduced p `shouldBe` M.identity n
+
       it "removes killed generators from lifts when every relation is a unit" $ do
         let p = fromPresentation $ M.fromList 3 1 [2, 3, 4]
         p `shouldBe` freeAbGroup 2
@@ -30,6 +59,9 @@ spec = do
         toReduced p * presentation p `shouldBe` M.zero 2 1
 
     describe "normaliseElt" $ do
+      it "represents the zero element of the trivial group by a 0-by-1 column" $
+        eltVector (normaliseElt zero (M.zero 0 1)) `shouldBe` M.zero 0 1
+
       it "preserves free coordinates" $
         eltVector (normaliseElt (freeAbGroup 2) (M.fromList 2 1 [7, -3]))
           `shouldBe` M.fromList 2 1 [7, -3]
@@ -62,6 +94,11 @@ spec = do
          in homology times2 times2 `shouldBe` zero
 
     describe "morphism equality" $ do
+      it "agrees for trivial groups with and without redundant generators" $ do
+        let p = fromPresentation (M.identity 2)
+        vid p `shouldBe` vid (zero :: AbGroupPres)
+        vid p `shouldBe` zeroArrow p p
+
       it "distinguishes arrows with different endpoints" $ do
         let zmod2 = fromPresentation $ M.fromList 1 1 [2]
             zmod3 = fromPresentation $ M.fromList 1 1 [3]

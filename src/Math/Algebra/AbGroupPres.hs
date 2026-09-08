@@ -49,9 +49,7 @@ columnStdBasis :: Int -> Int -> Matrix Integer
 columnStdBasis c i = M.matrix c 1 (\(j, _) -> if i == j then 1 else 0)
 
 indGenerators :: AbGroupPres -> [AbGroupPresElt]
-indGenerators a@(AbGroupPres _ d _ _)
-  | a == zero = []
-  | otherwise = (AbGroupPresElt . columnStdBasis c) <$> [1 .. c]
+indGenerators (AbGroupPres _ d _ _) = (AbGroupPresElt . columnStdBasis c) <$> [1 .. c]
   where
     c = M.nrows d
 
@@ -65,16 +63,12 @@ instance Show AbGroupPres where
   show = show . isoClass
 
 fromIsoClass :: IsoClass -> AbGroupPres
-fromIsoClass (IsoClass 0 []) = zero
 fromIsoClass (IsoClass rank torsion) = AbGroupPres m m i i
   where
     invFactors = elementaryDivisorsToInvariantFactors torsion
     rows = fromIntegral (rank + fromIntegral (length invFactors))
-    cols = max 1 (length invFactors)
-    m =
-      M.extendTo 0 rows cols $
-        M.diagonal 0 $
-          V.fromList invFactors
+    cols = length invFactors
+    m = M.extendTo 0 rows cols $ M.diagonal 0 $ V.fromList invFactors
     i = M.identity rows
 
 freeAbGroup :: Integer -> AbGroupPres
@@ -90,23 +84,16 @@ stripOnes ::
   (Matrix Integer, Matrix Integer, Matrix Integer) ->
   (Matrix Integer, Matrix Integer, Matrix Integer)
 stripOnes (li, l, d) =
-  ( M.submatrix newrows (M.nrows li) 1 (M.ncols li) li,
-    M.submatrix 1 (M.nrows l) newrows (M.ncols l) l,
-    M.submatrix newrows (M.nrows d) newcols (M.ncols d) d
+  ( M.submatrix s (M.nrows li) 1 (M.ncols li) li,
+    M.submatrix 1 (M.nrows l) s (M.ncols l) l,
+    M.submatrix s (M.nrows d) s (M.ncols d) d
   )
   where
     diag = V.toList $ M.getDiag d
-    countOnes = length $ takeWhile (== 1) diag
-    -- If the diagonal is all 1s, we have to be careful to avoid an empty matrix
-    (newrows, newcols) = case (countOnes == M.nrows d, countOnes == M.ncols d) of
-      (True, True) -> (countOnes, countOnes)
-      (True, False) -> (countOnes, countOnes)
-      (False, True) -> (countOnes + 1, countOnes)
-      (False, False) -> (countOnes + 1, countOnes + 1)
+    s = 1 + length (takeWhile (== 1) diag)
 
 -- Remove useless relations:
 -- Delete cols that are all 0
--- TODO: this may fail on d with 0 cols
 stripZeroes ::
   (Matrix Integer, Matrix Integer, Matrix Integer) ->
   (Matrix Integer, Matrix Integer, Matrix Integer)
@@ -117,7 +104,7 @@ stripZeroes (li, l, d) =
   )
   where
     diag = V.toList $ M.getDiag d
-    nonZeroes = max (length $ filter (/= 0) diag) 1
+    nonZeroes = length $ takeWhile (/= 0) diag
 
 reducePresentation :: Matrix Integer -> (Matrix Integer, Matrix Integer, Matrix Integer)
 reducePresentation m =
@@ -138,12 +125,7 @@ fromPresentation m = AbGroupPres m (M.forceMatrix d) (M.forceMatrix li) (M.force
 -- MX = 0   <->   exists Y. X = LY
 -- So the image of L is the kernel of M
 matrixKernel :: Matrix Integer -> Matrix Integer
-matrixKernel m
-  | nonzeroes == 0 = M.identity (M.ncols m)
-  | nonzeroes == M.ncols m = M.zero (M.ncols m) 0
-  | otherwise =
-      M.forceMatrix $
-        M.submatrix 1 (M.nrows ri) (nonzeroes + 1) (M.ncols ri) ri
+matrixKernel m = M.forceMatrix $ M.submatrix 1 (M.nrows ri) (nonzeroes + 1) (M.ncols ri) ri
   where
     (Triple _ _ d _ ri) = smithNormalForm m
     diag = V.toList $ M.getDiag d
@@ -152,11 +134,7 @@ matrixKernel m
 -- This solves (M L) (X Y)^T = 0 and returns the part of the solution
 -- corresponding to X.
 matrixKernelModulo :: Matrix Integer -> Matrix Integer -> Matrix Integer
-matrixKernelModulo m l
-  | M.ncols kernel == 0 = M.zero (M.ncols m) 0
-  | otherwise =
-      M.forceMatrix $
-        M.submatrix 1 (M.ncols m) 1 (M.ncols kernel) kernel
+matrixKernelModulo m l = M.forceMatrix $ M.submatrix 1 (M.ncols m) 1 (M.ncols kernel) kernel
   where
     kernel = matrixKernel (m <|> l)
 
@@ -171,12 +149,7 @@ divideDiag s a = do
         (q, 0) -> Just q
         _ -> Nothing
   x <- sequence $ M.elementwise doDivide stripes a
-  case compare (M.nrows s) (M.ncols s) of
-    EQ -> return x
-    LT ->
-      let diff = M.ncols s - M.nrows s
-       in return $ x M.<-> M.zero diff (M.ncols a)
-    GT -> return $ M.submatrix 1 (M.ncols s) 1 (M.ncols x) x
+  return $ M.setSize 0 (M.ncols s) (M.ncols a) x
 
 -- If MX = A, find an X
 -- In other words, 'right divide'
@@ -228,12 +201,7 @@ instance Num AbMorphism where
   signum = error "AbMorphism: signum"
 
 instance AdditiveCategory AbGroupPres where
-  zero =
-    AbGroupPres
-      (M.fromList 1 1 [1])
-      (M.fromList 1 1 [1])
-      (M.fromList 1 1 [1])
-      (M.fromList 1 1 [1])
+  zero = freeAbGroup 0
 
   looseZeroMorphism a b = mor $ morphismFromFullMatrix a b (M.zero (M.nrows $ presentation b) (M.nrows $ presentation a))
 

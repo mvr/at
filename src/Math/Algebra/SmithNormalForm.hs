@@ -171,7 +171,7 @@ ensureAllDivide s = do
       smallestR = s + blockR
       smallestC = s + blockC
 
-  when (s /= M.nrows m && s /= M.ncols m && remainder /= mss) $ do
+  when (remainder /= mss) $ do
     modify $ addRowMultiple s 1 smallestR
     t <- get
     let q = M.getElem s smallestC (middle t) `quot` mss

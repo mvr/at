@@ -20,7 +20,6 @@ import Math.Algebra.Group
 import Math.Algebra.SmithNormalForm
 import Math.ValueCategory (Arrow, mor)
 import Math.ValueCategory.Abelian
-import Math.ValueCategory.Additive
 
 class Ord (Basis a) => ChainComplex a where
   type Basis a
@@ -187,21 +186,10 @@ fromChainGrpElt a n (AbGroupPresElt m) =
   fromTerms $ zip (fromIntegral <$> M.toList m) (basis a n)
 
 chainGroup :: FiniteType a => a -> Int -> AbGroupPres
--- chainGroup a n | n < 0 = zero
 chainGroup a n = freeAbGroup (fromIntegral (dim a n))
 
 chainDiff :: FiniteType a => a -> Int -> Arrow AbGroupPres
--- chainDiff a n | n < 0 = zeroArrow zero zero
--- chainDiff a 0 = toZero (chainGroup a 0)
-chainDiff a n
-  | rows == 0 && cols == 0 = zeroArrow zero zero
-  | rows == 0 = toZero (chainGroup a n)
-  | cols == 0 = fromZero (chainGroup a (n - 1))
-  | otherwise =
-      morphismFromFullMatrix
-        (chainGroup a n)
-        (chainGroup a (n - 1))
-        (M.matrix rows cols findCoef)
+chainDiff a n = morphismFromFullMatrix (chainGroup a n) (chainGroup a (n - 1)) (M.matrix rows cols findCoef)
   where
     rows = dim a (n - 1)
     cols = dim a n
@@ -337,9 +325,7 @@ fundamentalCocyclesWithDiffs ::
   Arrow AbGroupPres ->
   Arrow AbGroupPres ->
   [FundamentalCocycle a]
-fundamentalCocyclesWithDiffs a n outgoing incoming
-  | isExact incoming outgoing = []
-  | otherwise = fmap (makeCocycle leftChange) nontrivialRows
+fundamentalCocyclesWithDiffs a n outgoing incoming = fmap (makeCocycle leftChange) nontrivialRows
   where
     cycles = matrixKernel (fullMorphism (mor outgoing))
     boundaries = fullMorphism (mor incoming)
